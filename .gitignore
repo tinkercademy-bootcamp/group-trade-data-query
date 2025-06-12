@@ -1,0 +1,81 @@
+*.out
+.clangd
+external-tools/*
+profiling-data/*
+perf.*
+*.log
+
+# =====================
+# General 
+# =====================
+.DS_Store
+Thumbs.db
+
+# Compiled Object files
+*.d
+*.o
+*.lo
+*.slo
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+
+# Debugging and profiling
+*.gcda
+*.gcno
+*.gcov
+
+/bin/
+/build/
+build/
+/pkg/
+/vendor/
+/test/chat_load_tester
+*.test
+*.sum
+
+*.class
+*.jar
+*.war
+*.ear
+*.jmod
+
+# Compilation and dependencies
+/.gradle/
+/.mvn/
+/target/
+/out/
+
+# IDE Configuration Files
+/.idea/
+/*.iml
+/.classpath
+/.project
+/.settings/
+/perf.*
+/.vscode/
+
+#additions: 
+/data
