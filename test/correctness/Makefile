@@ -17,3 +17,10 @@ CLIENT_SRC := $(SRC_DIR)/client
 SERVER_EXEC := $(SERVER_BUILD)/server
 CLIENT_EXEC := $(CLIENT_BUILD)/client
 TEST_CLIENT := $(TEST_BUILD)/test_client
+
+# Compiler settings
+CC := gcc
+CXX := g++
+CFLAGS := -Wall -Wextra -std=c11 -g -DDEBUG
+CXXFLAGS := -Wall -Wextra -std=c++17 -g -DDEBUG
+LDFLAGS := -pthread
