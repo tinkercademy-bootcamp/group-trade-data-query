@@ -50,3 +50,17 @@ struct TradeData {
 
   uint8_t taker_side;       // 1 = ask, 2 = bid
 };
+
+/**
+* @struct Result
+* @brief struct with fields for the lowest and highest prices for a specific start time.
+*
+* @param start_time
+* @param lowest_price
+* @param highest_price
+ */
+struct Result {
+  uint64_t start_time; 
+  Price lowest_price;
+  Price highest_price;
+};
