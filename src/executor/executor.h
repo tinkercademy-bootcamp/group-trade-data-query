@@ -33,6 +33,7 @@ public:
 
 private:
     // Any Internal members can be added here
+    std::vector<TradeData> &trades;
 };
 
 #endif
