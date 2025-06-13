@@ -65,5 +65,3 @@ server: ## Build server for testing
 client: ## Build client for testing
 	@echo "$(YELLOW)Building client via client's Makefile...$(NC)"
 	@$(MAKE) -C $(CLIENT_SRC) BUILD_DIR=$(CLIENT_BUILD)
-
-	
