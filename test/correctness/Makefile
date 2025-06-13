@@ -39,3 +39,31 @@ BLUE := \033[0;34m
 NC := \033[0m
 
 all: setup server client test-client run-tests
+
+setup: ## Create test directories and files
+	@echo "$(YELLOW)Setting up correctness test environment...$(NC)"
+	@mkdir -p $(SERVER_BUILD) $(CLIENT_BUILD) $(TEST_BUILD) $(TEST_DATA_DIR)
+	@if [ ! -f $(SERVER_EXEC) ]; then \
+		echo "$(YELLOW)Server executable not found. Building...$(NC)"; \
+		$(MAKE) server || (echo "$(RED)✗ Server build failed$(NC)" && exit 1); \
+	else \
+		echo "$(GREEN)✓ Server already built$(NC)"; \
+	fi
+	@if [ ! -f $(CLIENT_EXEC) ]; then \
+		echo "$(YELLOW)Client executable not found. Building...$(NC)"; \
+		$(MAKE) client || (echo "$(RED)✗ Client build failed$(NC)" && exit 1); \
+	else \
+		echo "$(GREEN)✓ Client already built$(NC)"; \
+	fi
+	@echo "$(GREEN)✓ Test environment ready$(NC)"
+
+
+server: ## Build server for testing
+	@echo "$(YELLOW)Building server via server's Makefile...$(NC)"
+	@$(MAKE) -C $(SERVER_SRC) BUILD_DIR=$(SERVER_BUILD)
+
+client: ## Build client for testing
+	@echo "$(YELLOW)Building client via client's Makefile...$(NC)"
+	@$(MAKE) -C $(CLIENT_SRC) BUILD_DIR=$(CLIENT_BUILD)
+
+	
