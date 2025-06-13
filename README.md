@@ -9,20 +9,27 @@ The following is the current directory structure of the directory of the repo
 ├── Makefile
 ├── README.md
 ├── src
-│   ├── client
-│   │   └── Makefile
-│   ├── Makefile
+│   ├── client
+│   │   ├── client.cc
+│   │   ├── client.h
+│   │   └── Makefile
+│   ├── Makefile
+│   ├── server
+│   │   ├── Makefile
+│   │   ├── receiver.cc
+│   │   ├── sender.cc
+│   │   ├── sender.h
+│   │   ├── server.cc
+│   │   └── server.h
 |   ├── executor
-|   │   └──executor.h
-│   ├── server
-│   │   └── Makefile
-│   └── utils
-|       └──helper
-│       │    └── utils.h
-│       ├──net
+|   │   └──executor.h
+│   └── utils
+│       ├── helper
+│       │   └── utils.h
+│       ├── net
 │       │   ├── net.cc
-|       │   └── net.h
-│       └── trades.h
+│       │   └── net.h
+│       └── query.h
 └── test
     ├── correctness
     │   └── Makefile
