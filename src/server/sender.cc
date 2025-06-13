@@ -1,16 +1,22 @@
 #include "sender.h"
 
-void OffloadQueue::serialise_and_enqueue(int sockfd, const std::string& final_result) {
-    std::string serialised_data = serialise(final_result);
-    queue_.push({sockfd, serialised_data});
+void OffloadQueue::serialise_and_enqueue(int sockfd,
+                                         const std::string& final_result) {
+  std::string serialised_data = serialise(final_result);
+  queue_.push({sockfd, serialised_data});
 }
 
 void OffloadQueue::offload_one() {
-    if (!queue_.empty()) {
-        auto [sockfd, data] = queue_.front();
-        send_data(sockfd, data);
-        queue_.pop();
-    }
+  if (!queue_.empty()) {
+    auto [sockfd, data] = queue_.front();
+    send_data(sockfd, data);
+    queue_.pop();
+  }
+}
+
+std::pair<int, std::string> OffloadQueue::front() { return queue_.front(); }
+void OffloadQueue::push(const std::pair<int, std::string>& data) {
+  queue_.push(data);
 }
 
 void send_data(int sockfd, const std::string& data) {
