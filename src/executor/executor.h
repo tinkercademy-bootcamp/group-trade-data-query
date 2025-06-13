@@ -4,21 +4,34 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
 
-#include "../utils/trades.h"
+#include "../utils/query.h"
 
 /**
  * @class Executor
  * @brief Handles execution of trade data queries including price metrics and raw data retrieval.
  */
 class Executor {
-public:    
-    std::vector<std::pair<std::pair<Price, Price>, std::pair<Quantity, Quantity>>> lowest_and_highest_prices(const std::vector<TradeData>& trades, const TradeDataQuery& query);
-    std::vector<TradeData> send_raw_data(TradeDataQuery& query);
-
+public:
+    /**
+     * @brief Computes the lowest and highest prices within the given query window.
+     *
+     * @param query  A TradeDataQuery specifying the symbol, time window, resolution, and metrics.
+     * @return A vector of pairs of price structs representing the lowest and highest prices found.
+     */
+    std::vector<std::pair<Price, Price>> lowest_and_highest_prices(const TradeDataQuery &query);
+    /**
+     * @brief Retrieves raw trade data corresponding to the query parameters.
+     *
+     * @param query  A TradeDataQuery defining the criteria for raw data selection.
+     * @return A vector of TradeData objects matching the query range and filters.
+     */
+    std::vector<TradeData> send_raw_data(TradeDataQuery &query);
 
 private:
-    std::vector<TradeData>& trades;
+    // Any Internal members can be added here
+    std::vector<TradeData> &trades;
 };
 
-#endif // EXECUTOR_H
+#endif
