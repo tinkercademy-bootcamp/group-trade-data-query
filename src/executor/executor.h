@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "../utils/query.h"
 
@@ -31,6 +32,7 @@ public:
 
 private:
     // Any Internal members can be added here
+    std::vector<TradeData> &trades;
 };
 
 #endif
