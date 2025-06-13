@@ -46,7 +46,7 @@ void client::Client::connect_to_server(
 
 //   for(int i=0; i<count; i++) {
 //     Price price_struct;
-//     ssize_t n_msg = recv(client_socket_fd, buffer.data(), msg_len, 0);
+//     ssize_t n = recv(sockfd, ptr + total, len - total, 0);
 //   }
 
 // }
