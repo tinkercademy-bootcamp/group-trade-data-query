@@ -1,9 +1,5 @@
 *.out
 .clangd
-external-tools/*
-profiling-data/*
-perf.*
-*.log
 
 # =====================
 # General 
@@ -75,6 +71,7 @@ Thumbs.db
 /.settings/
 /perf.*
 /.vscode/
+/.idea/
 
 #additions: 
 /data
