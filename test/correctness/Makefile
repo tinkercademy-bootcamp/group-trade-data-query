@@ -24,3 +24,9 @@ CXX := g++
 CFLAGS := -Wall -Wextra -std=c11 -g -DDEBUG
 CXXFLAGS := -Wall -Wextra -std=c++17 -g -DDEBUG
 LDFLAGS := -pthread
+
+# Test configuration
+SERVER_PORT := 8080
+TEST_DATA_DIR := ./test_data
+MAX_CLIENTS := 10
+TEST_TIMEOUT := 30
