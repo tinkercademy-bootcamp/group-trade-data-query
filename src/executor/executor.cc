@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm>
+#include <ranges>
 
 std::vector<std::pair<Price, Price>> Executor::lowest_and_highest_prices(
     const TradeDataQuery& query) {
