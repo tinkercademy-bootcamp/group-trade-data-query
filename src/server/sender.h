@@ -1,3 +1,4 @@
+#pragma once
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/epoll.h>
@@ -9,6 +10,9 @@
 #include <queue>
 #include <stdexcept>
 #include <string>
+#include <vector>
+
+#include "../utils/query.h"
 
 class OffloadQueue {
  public:
@@ -26,3 +30,5 @@ class OffloadQueue {
 
 std::string serialise(const std::string& final_result);
 void send_data(int sockfd, const std::string& data);
+void send_without_serialisation(int sockfd, Result& result);
+void send_without_serialisation(int sockfd, TradeData& data);
