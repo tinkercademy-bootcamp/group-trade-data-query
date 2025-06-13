@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "../utils/trades.h"
+#include "../utils/query.h"
 
 /**
  * @class Executor
