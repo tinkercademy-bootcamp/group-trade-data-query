@@ -12,6 +12,8 @@ The following is the current directory structure of the directory of the repo
 │   ├── client
 │   │   └── Makefile
 │   ├── Makefile
+|   ├── executor
+|   │   └──executor.h
 │   ├── server
 │   │   └── Makefile
 │   └── utils
@@ -20,7 +22,7 @@ The following is the current directory structure of the directory of the repo
 │       ├──net
 │       │   ├── net.cc
 |       │   └── net.h
-│       └── query.h
+│       └── trades.h
 └── test
     ├── correctness
     │   └── Makefile
