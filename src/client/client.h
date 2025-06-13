@@ -5,6 +5,8 @@
 #include <string>
 #include "../utils/query.h"
 
+struct Price;  // Temporary struct as a filler. delete once the struct is finalized.
+
 namespace client {
     class Client {
         // This class encapsulates the socket connection and basic communication
@@ -22,6 +24,7 @@ namespace client {
          * @throws std::runtime_error if sending fails or client is not connected.
          */
         void send_message(const TradeDataQuery &message);
+        // std::vector<std::pair<Price, Price>> read_min_max(int count);
         int get_socket_fd() const; // Getter for the socket
         // Destroys the Client object, ensuring the socket is closed.
         ~Client();
