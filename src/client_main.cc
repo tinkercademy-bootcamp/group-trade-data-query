@@ -54,16 +54,7 @@ int main(int argc, char* argv[]) {
 
   while (g_client_running) {
     TradeDataQuery query;
-    std::cout << "Enter symbol id: ";
-    std::cin >> query.symbol_id;
-    std::cout << "Enter start time point: ";
-    std::cin >> query.start_time_point;
-    std::cout << "Enter end time point: ";
-    std::cin >> query.end_time_point;
-    std::cout << "Enter resolution: ";
-    std::cin >> query.resolution;
-    std::cout << "Enter metrics: ";
-    std::cin >> query.metrics;
+    std::cin >> query.symbol_id >> query.start_time_point >> query.end_time_point >> query.resolution >> query.metrics;
 
     chat_client->send_message(query);
   }
