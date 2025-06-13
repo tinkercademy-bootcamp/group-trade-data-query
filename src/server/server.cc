@@ -2,9 +2,10 @@
 #include "../utils/helper/utils.h"
 #include "../utils/net/net.h"
 #include "../utils/query.h"
+#include "sender.h"
 
 /////////////////
-std::vector<int> execute_task() {
+std::vector<int> execute_task(TradeDataQuery query) {
   // Example implementation: returns a vector with some integers
   std::vector<int> results;
   // ... perform task logic here ...
@@ -65,7 +66,7 @@ void EpollServer::run() {
             close(events[i].data.fd);
             break;
           } else {
-              helper::check_error(handle_trade_data_query(query)<0,"Failed to handle the query");
+                helper::check_error(handle_trade_data_query(events[i].data.fd, query) < 0, "Failed to handle the query");
           }
         }
       }
@@ -73,9 +74,16 @@ void EpollServer::run() {
   }
 }
 
-int handle_trade_data_query(TradeDataQuery query){
+int EpollServer::handle_trade_data_query(int sock,TradeDataQuery query){
+  task_queue_.push(std::make_pair(sock, query));
+  while (!task_queue_.empty()) {
+    auto [client_sock, task_query] = task_queue_.front();
+    task_queue_.pop();
+    std::vector<int> result = execute_task(task_query);
+    send_without_serialisation(client_sock, result);
+  }
 
-    return 0;
+  return 0;
 }
 
 void EpollServer::accept_connection() {
