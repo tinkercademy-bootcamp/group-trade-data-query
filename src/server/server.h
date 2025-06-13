@@ -1,7 +1,9 @@
 #pragma once
 #include <netinet/in.h>
-#include <queue>
 #include <sys/epoll.h>
+
+#include <queue>
+
 #include "../utils/net/net.h"
 #include "../utils/query.h"
 
@@ -12,8 +14,8 @@ class EpollServer {
   ~EpollServer();
 
   void run();
-  
-  private:
+
+ private:
   sockaddr_in server_address_;
   int server_listen_fd_;
   int epoll_fd_;
