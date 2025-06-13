@@ -7,7 +7,7 @@ SRC_DIR := $(ROOT_DIR)/src
 BUILD_DIR := $(ROOT_DIR)/build
 SERVER_BUILD := $(BUILD_DIR)
 CLIENT_BUILD := $(BUILD_DIR)
-TEST_BUILD := ./build
+TEST_BUILD := $(BUILD_DIR)
 
 # Source paths
 SERVER_SRC := $(SRC_DIR)/server
@@ -17,6 +17,7 @@ CLIENT_SRC := $(SRC_DIR)/client
 SERVER_EXEC := $(SERVER_BUILD)/server
 CLIENT_EXEC := $(CLIENT_BUILD)/client
 TEST_CLIENT := $(TEST_BUILD)/test_client
+DUMMY_CLIENT := dummy_client
 
 # Compiler settings
 CC := gcc
@@ -38,7 +39,11 @@ YELLOW := \033[1;33m
 BLUE := \033[0;34m
 NC := \033[0m
 
-all: setup server client test-client run-tests
+# all: setup server client test-client run-tests
+# all: test-client run-tests
+all: run-dummy-tests
+
+run-dummy-tests: dummy-client test-client run-tests
 
 setup: ## Create test directories and files
 	@echo "$(YELLOW)Setting up correctness test environment...$(NC)"
@@ -65,3 +70,15 @@ server: ## Build server for testing
 client: ## Build client for testing
 	@echo "$(YELLOW)Building client via client's Makefile...$(NC)"
 	@$(MAKE) -C $(CLIENT_SRC) BUILD_DIR=$(CLIENT_BUILD)
+
+dummy-client:  ## Build the C++ multithreaded test driver
+	@echo "$(YELLOW)Building dummy client driver...$(NC)"
+	$(CXX) $(CXXFLAGS) -o $(DUMMY_CLIENT) dummy-client.cpp $(LDFLAGS)
+
+test-client: ## Build the C++ multithreaded test driver
+	@echo "$(YELLOW)Building test client driver...$(NC)"
+	$(CXX) $(CXXFLAGS) -o $(TEST_CLIENT) test-client.cpp $(LDFLAGS)
+
+run-tests: test-client ## Run tests using the test driver
+	@echo "$(BLUE)Running tests...$(NC)"
+	@$(TEST_CLIENT)

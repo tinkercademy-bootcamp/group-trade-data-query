@@ -1,4 +1,6 @@
-#pragma once
+#ifndef QUERY_H
+#define QUERY_H
+
 #include <cstdint>
 /**
  * @struct TradeDataQuery
@@ -70,3 +72,5 @@ struct Result {
   Price lowest_price;
   Price highest_price;
 };
+
+#endif
