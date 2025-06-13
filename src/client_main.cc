@@ -58,6 +58,6 @@ int main(int argc, char* argv[]) {
 
     chat_client->send_message(query);
   }
-
+  
   return EXIT_SUCCESS;
 }
