@@ -3,7 +3,7 @@
 
 #include <netinet/in.h>
 #include <string>
-#include "../../utils/query.h"
+#include "../utils/query.h"
 
 namespace tt::chat::client {
     class Client {
