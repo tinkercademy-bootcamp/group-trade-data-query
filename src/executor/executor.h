@@ -13,7 +13,7 @@
  */
 class Executor {
 public:    
-    std::vector<std::pair<Price, Price>> lowest_and_highest_prices(const std::vector<TradeData>& trades, const TradeDataQuery& query);
+    std::vector<std::pair<std::pair<Price, Price>, std::pair<Quantity, Quantity>>> lowest_and_highest_prices(const std::vector<TradeData>& trades, const TradeDataQuery& query);
     std::vector<TradeData> send_raw_data(TradeDataQuery& query);
 
 
