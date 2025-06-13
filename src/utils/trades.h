@@ -1,11 +1,20 @@
 #include <cstdint>
-
+/**
+ * @struct TradeDataQuery
+ * @brief Represents a query for trade data within a specified time range and resolution.
+ *
+ * @param symbol_id         The unique identifier for the symbol.
+ * @param start_time_point  The start of the time range for the query (in nanoseconds since epoch).
+ * @param end_time_point    The end of the time range for the query (in nanoseconds since epoch).
+ * @param resolution        The data resolution i.e., 0 indicates raw data feed.
+ * @param metrics           Bit flags specifying which trade metrics to include in the result.
+ */
 struct TradeDataQuery {
   uint32_t symbol_id;
   uint64_t start_time_point;
-  uint64_t end_time_point; // trades at end time are excluded
-  uint64_t resolution;   // 0 to mean raw data feed
-  uint64_t metrics;      // bit flag
+  uint64_t end_time_point; 
+  uint64_t resolution; 
+  uint64_t metrics;     
 };
 
 /**
