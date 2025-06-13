@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <string>
 #include "../utils/query.h"
+#include <vector>
 
 struct Price;  // Temporary struct as a filler. delete once the struct is finalized.
 

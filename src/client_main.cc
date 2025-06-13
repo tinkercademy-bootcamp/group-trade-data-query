@@ -57,7 +57,15 @@ int main(int argc, char* argv[]) {
     std::cin >> query.symbol_id >> query.start_time_point >> query.end_time_point >> query.resolution >> query.metrics;
 
     chat_client->send_message(query);
+    std::vector<Result> output = chat_client->read_min_max();
+
+    for(Result data : output) {
+      std::cout << "Timestamp: " << data.start_time 
+        << "; Min Price: " << data.lowest_price.price << "e" << data.lowest_price.price_exponent
+        << "; Max Price: " << data.highest_price.price << "e" << data.highest_price.price_exponent
+        << std::endl;
+    }
   }
-  
+
   return EXIT_SUCCESS;
 }
