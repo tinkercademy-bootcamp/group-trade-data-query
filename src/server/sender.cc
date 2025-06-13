@@ -1,5 +1,18 @@
 #include "sender.h"
 
+void OffloadQueue::serialise_and_enqueue(int sockfd, const std::string& final_result) {
+    std::string serialised_data = serialise(final_result);
+    queue_.push({sockfd, serialised_data});
+}
+
+void OffloadQueue::offload_one() {
+    if (!queue_.empty()) {
+        auto [sockfd, data] = queue_.front();
+        send_data(sockfd, data);
+        queue_.pop();
+    }
+}
+
 void send_data(int sockfd, const std::string& data) {
   ssize_t bytes_sent = send(sockfd, data.c_str(), data.size(), 0);
   if (bytes_sent < 0) {
@@ -13,10 +26,3 @@ void send_data(int sockfd, const std::string& data) {
 
 // not implemented for now
 std::string serialise(const std::string& final_result) { return final_result; }
-
-OffloadQueue queue_of_data_to_be_sent;
-
-void OffloadQueue::serialise_and_enqueue(const std::string& final_result) {
-  std::string serialised_data = serialise(final_result);
-  queue_of_data_to_be_sent.push(serialised_data);
-}
