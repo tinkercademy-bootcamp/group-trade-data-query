@@ -112,10 +112,3 @@ void make_non_blocking(int sock) {
   helper::check_error(flags == -1, "Failed to get socket flags");
   helper::check_error(fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1, "Failed to set socket to non-blocking");
 }
-
-void EpollServer::bind_server() {
-  helper::check_error(
-      bind(server_listen_fd_, reinterpret_cast<sockaddr*>(&server_address_),
-           sizeof(server_address_)) < 0,
-      "Failed to bind server socket");
-}
