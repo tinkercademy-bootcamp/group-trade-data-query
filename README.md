@@ -24,6 +24,9 @@ The following is the current directory structure of the directory of the repo
 └── test
     ├── correctness
     │   └── Makefile
+    |   └── test-client.cpp
+    |   └── dummy-client.cpp
+    |   └── basic-tests.json
     ├── Makefile
     ├── performance
     │   └── Makefile
