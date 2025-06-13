@@ -3,6 +3,7 @@
 
 #include <netinet/in.h>
 #include <string>
+#include "../../utils/query.h"
 
 namespace tt::chat::client {
     class Client {
@@ -20,7 +21,7 @@ namespace tt::chat::client {
          * @param message The message string to send.
          * @throws std::runtime_error if sending fails or client is not connected.
          */
-        void send_message(const std::string &message);
+        void send_message(const TradeDataQuery &message);
         int get_socket_fd() const; // Getter for the socket
         // Destroys the Client object, ensuring the socket is closed.
         ~Client();
