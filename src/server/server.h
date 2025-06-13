@@ -2,6 +2,7 @@
 #include <netinet/in.h>
 #include <sys/epoll.h>
 #include "../utils/net/net.h"
+#include "../utils/query.h"
 
 void make_non_blocking(int sock);
 class EpollServer {
@@ -18,4 +19,5 @@ class EpollServer {
   void accept_connection();
   void add_to_epoll(int sock);
   void bind_server();
+  int handle_trade_data_query(TradeDataQuery query);
 };

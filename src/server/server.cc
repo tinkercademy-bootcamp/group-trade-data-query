@@ -1,6 +1,21 @@
 #include "server.h"
 #include "../utils/helper/utils.h"
 #include "../utils/net/net.h"
+#include "../utils/query.h"
+
+/////////////////
+std::vector<int> execute_task() {
+  // Example implementation: returns a vector with some integers
+  std::vector<int> results;
+  // ... perform task logic here ...
+  results.push_back(1);
+  results.push_back(2);
+  results.push_back(3);
+  return results;
+}
+/////////////////
+
+constexpr int MAX_EVENTS = 10;
 
 EpollServer::EpollServer(int port)
     : server_listen_fd_(net::create_socket()),
@@ -19,6 +34,48 @@ EpollServer::~EpollServer() {
 void EpollServer::run() {
   helper::check_error(listen(server_listen_fd_, SOMAXCONN) < 0,
                       "Failed to listen on server socket");
+  epoll_event events[MAX_EVENTS];
+  while (true){
+    int n = epoll_wait(epoll_fd_, events, MAX_EVENTS, -1);
+    helper::check_error(n == -1, "epoll_wait failed");
+
+    for (int i = 0; i < n; ++i) {
+      if (events[i].data.fd == server_listen_fd_) {
+        // Accept all incoming connections
+        while (true) {
+          int client_fd = accept(server_listen_fd_, nullptr, nullptr);
+          if (client_fd == -1) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) break;
+            helper::check_error(true, "Failed to accept connection");
+          }
+          make_non_blocking(client_fd);
+          add_to_epoll(client_fd);
+        }
+      } else if (events[i].events & EPOLLIN) {
+        // Read data from client
+        TradeDataQuery query;
+        while (true) {
+          ssize_t count = recv(events[i].data.fd, &query, sizeof(query), 0);
+          if (count == -1) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) break;
+            close(events[i].data.fd);
+            break;
+          } else if (count == 0) {
+            // Connection closed
+            close(events[i].data.fd);
+            break;
+          } else {
+              helper::check_error(handle_trade_data_query(query)<0,"Failed to handle the query");
+          }
+        }
+      }
+    }
+  }
+}
+
+int handle_trade_data_query(TradeDataQuery query){
+
+    return 0;
 }
 
 void EpollServer::accept_connection() {
