@@ -4,11 +4,13 @@
 #include "../utils/net/net.h"
 #include "../utils/query.h"
 #include "sender.h"
+#include <spdlog/spdlog.h>
 
 /////////////////
 
 std::vector<TradeData> execute_task(TradeDataQuery& query) {
   // Dummy implementation: return an empty vector
+  spdlog::info("Query processed for TradeDataQuery id: {}", query.id);
   return {};
 }
 /////////////////
@@ -27,6 +29,7 @@ EpollServer::EpollServer(int port)
 EpollServer::~EpollServer() {
   close(server_listen_fd_);
   close(epoll_fd_);
+  spdlog::info("Server ended");
 }
 
 void EpollServer::run() {
@@ -60,9 +63,11 @@ void EpollServer::run() {
             break;
           } else if (count == 0) {
             // Connection closed
+            spdlog::info("Connection closed by client fd {}", static_cast<int>(events[i].data.fd));
             close(events[i].data.fd);
             break;
           } else {
+            spdlog::info("Processing query from client fd {}", static_cast<int>(events[i].data.fd));
             helper::check_error(
                 handle_trade_data_query(events[i].data.fd, query) < 0,
                 "Failed to handle the query");
@@ -131,6 +136,11 @@ void EpollServer::accept_connection() {
   helper::check_error(client_fd < 0, "Failed to accept connection");
   make_non_blocking(client_fd);
   add_to_epoll(client_fd);
+
+  char client_ip[INET_ADDRSTRLEN];
+  inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
+  int client_port = ntohs(client_addr.sin_port);
+  spdlog::info("Accepted connection from {}:{}. Assigned fd: {}", client_ip, client_port, client_fd);
 }
 
 void EpollServer::add_to_epoll(int sock) {
@@ -139,7 +149,8 @@ void EpollServer::add_to_epoll(int sock) {
   event.events = EPOLLIN | EPOLLET;  // Edge-triggered, read events
 
   helper::check_error(epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, sock, &event) == -1,
-                      "Failed to add client socket to epoll");
+                      "Failed to add socket to epoll");
+  spdlog::info("Socket {} added to epoll.", sock);
 }
 
 void make_non_blocking(int sock) {
@@ -147,6 +158,7 @@ void make_non_blocking(int sock) {
   helper::check_error(flags == -1, "Failed to get socket flags");
   helper::check_error(fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1,
                       "Failed to set socket to non-blocking");
+  spdlog::info("Server switched socket {} to non-blocking mode.", sock);
 }
 
 void EpollServer::bind_server() {
@@ -154,4 +166,5 @@ void EpollServer::bind_server() {
       bind(server_listen_fd_, reinterpret_cast<sockaddr*>(&server_address_),
            sizeof(server_address_)) < 0,
       "Failed to bind server socket");
+  spdlog::info("Server bound to port {}", ntohs(server_address_.sin_port));
 }
