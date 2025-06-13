@@ -45,6 +45,7 @@ Thumbs.db
 
 /bin/
 /build/
+/src/build/
 /pkg/
 /vendor/
 /test/chat_load_tester
