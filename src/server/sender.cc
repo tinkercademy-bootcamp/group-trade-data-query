@@ -16,7 +16,7 @@ std::string serialise(const std::string& final_result) { return final_result; }
 
 OffloadQueue queue_of_data_to_be_sent;
 
-void serialise_and_enqueue(const std::string& final_result) {
+void OffloadQueue::serialise_and_enqueue(const std::string& final_result) {
   std::string serialised_data = serialise(final_result);
   queue_of_data_to_be_sent.push(serialised_data);
 }
