@@ -1,11 +1,12 @@
 #include "executor.h"
-#include "../utils/trades.h"
+#include "../utils/query.h"
 #include <cmath>
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 
 std::vector<std::pair<Price, Price>> Executor::lowest_and_highest_prices(
-    const std::vector<TradeData>& trades, const TradeDataQuery& query) {
+    const TradeDataQuery& query) {
 
     std::vector<std::pair<Price, Price>> result;
 
@@ -58,4 +59,14 @@ std::vector<std::pair<Price, Price>> Executor::lowest_and_highest_prices(
     }
 
     return result;
+}
+
+namespace ranges = std::ranges;
+
+std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
+{
+  auto it_start = std::ranges::lower_bound(trades, query.start_time_point, {}, &TradeData::created_at);
+  auto it_end = std::ranges::lower_bound(trades, query.end_time_point, {}, &TradeData::created_at);
+
+  return std::vector<TradeData>(it_start, it_end);
 }
