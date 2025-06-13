@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-
 client::Client::Client(int port, const std::string &server_address)
     : socket_{net::create_socket()} {
     sockaddr_in address = create_server_address(server_address, port);
@@ -41,3 +40,13 @@ void client::Client::connect_to_server(
         connect(sock, (sockaddr *)&server_address, sizeof(server_address));
     helper::check_error(err_code < 0, "Connection Failed.\n");
 }
+
+// std::vector<std::pair<Price, Price>> client::Client::read_min_max(int count) {
+//   std::vector<std::pair<Price, Price>> buffer(count);
+
+//   for(int i=0; i<count; i++) {
+//     Price price_struct;
+//     ssize_t n_msg = recv(client_socket_fd, buffer.data(), msg_len, 0);
+//   }
+
+// }
