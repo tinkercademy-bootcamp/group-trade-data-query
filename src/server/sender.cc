@@ -14,11 +14,6 @@ void OffloadQueue::offload_one() {
   }
 }
 
-std::pair<int, std::string> OffloadQueue::front() { return queue_.front(); }
-void OffloadQueue::push(const std::pair<int, std::string>& data) {
-  queue_.push(data);
-}
-
 void send_data(int sockfd, const std::string& data) {
   ssize_t bytes_sent = send(sockfd, data.c_str(), data.size(), 0);
   if (bytes_sent < 0) {

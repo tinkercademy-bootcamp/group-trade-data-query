@@ -18,8 +18,8 @@ class OffloadQueue {
  private:
   std::queue<std::pair<int, std::string>> queue_;
 
-  std::pair<int, std::string> front();
-  void push(const std::pair<int, std::string>& data);
+  std::pair<int, std::string> front() { return queue_.front(); }
+  void push(const std::pair<int, std::string>& data) { queue_.push(data); }
   void pop() { queue_.pop(); }
   bool empty() const { return queue_.empty(); }
 };
