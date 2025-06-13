@@ -4,20 +4,18 @@ The following is the current directory structure of the directory of the repo
 
 ```
 .
+├── build
+├── .gitignore
 ├── Makefile
 ├── README.md
 ├── src
 │   ├── client
 │   │   └── Makefile
 │   ├── Makefile
-│   ├── preprocessors
 │   ├── server
-│   │   ├── executor
-│   │   ├── Makefile
-│   │   └── serializer
+│   │   └── Makefile
 │   └── utils
-│       ├── helper
-│       └── net
+│       └── query.h
 └── test
     ├── correctness
     │   └── Makefile
