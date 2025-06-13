@@ -18,19 +18,19 @@ struct TradeDataQuery {
 };
 
 /**
- * @struct price
+ * @struct Price
  * @brief Represents a price with its associated exponent for decimal scaling.
  */
-struct price {
+struct Price {
   uint32_t price;
   int8_t price_exponent;
 };
 
 /**
-* @struct quantity
+* @struct Quantity
 * @brief Represents a quantity with its associated exponent for decimal scaling.
 */
-struct quantity {
+struct Quantity {
   uint32_t quantity;
   int8_t quantity_exponent;
 };
@@ -45,8 +45,8 @@ struct TradeData {
   uint64_t trade_id;
 
   
-  price price;
-  quantity quantity;
+  Price price;
+  Quantity quantity;
 
   uint8_t taker_side;       // 1 = ask, 2 = bid
 };
