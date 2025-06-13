@@ -1,5 +1,9 @@
 # Trading Query Project
 
+## External Tools
+run `make libs` to install nlohmann (a test dependency)
+
+## Dir Structure
 The following is the current directory structure of the directory of the repo
 
 ```
