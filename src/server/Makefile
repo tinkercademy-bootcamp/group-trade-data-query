@@ -15,9 +15,8 @@ LDFLAGS += $(LIB_FLAGS)
 BUILD_DIR := build
 SRC_DIR   := ../../src
 
-# find all .cc under src (including server-main.cc & utils) and in this directory's server subdir
-SRCS := $(shell find $(SRC_DIR) -type f -name '*.cc') \
-        $(shell find server -maxdepth 1 -type f -name '*.cc')
+# find all server-related .cc under src, excluding client code
+SRCS := $(shell find $(SRC_DIR) -type f -name '*.cc' -not -path '*/client/*' -not -name 'client_main.cc')
 
 OBJS          := $(SRCS:%=$(BUILD_DIR)/%.o)
 NON_MAIN_OBJS := $(filter-out %server-main.cc.o,$(OBJS))
