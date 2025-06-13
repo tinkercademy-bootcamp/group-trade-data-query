@@ -6,6 +6,8 @@
 #include <vector>
 #include <algorithm>
 
+#include <iterator>
+
 #include "../utils/query.h"
 
 /**
