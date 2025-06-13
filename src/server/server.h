@@ -1,6 +1,7 @@
 #pragma once
 #include <netinet/in.h>
 #include <sys/epoll.h>
+#include "../utils/net/net.h"
 
 class EpollServer {
  public:
