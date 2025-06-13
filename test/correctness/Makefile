@@ -5,8 +5,8 @@
 ROOT_DIR := ../..
 SRC_DIR := $(ROOT_DIR)/src
 BUILD_DIR := $(ROOT_DIR)/build
-SERVER_BUILD := $(BUILD_DIR)/server
-CLIENT_BUILD := $(BUILD_DIR)/client
+SERVER_BUILD := $(BUILD_DIR)
+CLIENT_BUILD := $(BUILD_DIR)
 TEST_BUILD := ./build
 
 # Source paths
@@ -37,3 +37,5 @@ GREEN := \033[0;32m
 YELLOW := \033[1;33m
 BLUE := \033[0;34m
 NC := \033[0m
+
+all: setup server client test-client run-tests
