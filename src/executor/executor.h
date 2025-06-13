@@ -14,7 +14,7 @@
 class Executor {
 public:    
     std::vector<std::pair<price, price>> lowest_and_highest_prices(TradeDataQuery& query);
-    std::vector<TradeDataQuery> send_raw_data (TradeDataQuery& query);
+    std::vector<TradeDataQuery> send_raw_data(TradeDataQuery& query);
 
 
 private:
