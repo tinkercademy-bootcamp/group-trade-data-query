@@ -1,4 +1,5 @@
 #include "executor.h"
+
 #include "../utils/query.h"
 #include <cmath>
 #include <iostream>
@@ -61,6 +62,7 @@ std::vector<std::pair<Price, Price>> Executor::lowest_and_highest_prices(
 
     return result;
 }
+
 
 namespace ranges = std::ranges;
 
