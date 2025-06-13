@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include "../src/utils/query.h"
 
 /**
  * @brief Parse a CSV file and return a vector of TradeData structs.
