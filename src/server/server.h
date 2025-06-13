@@ -6,6 +6,7 @@
 
 #include "../utils/net/net.h"
 #include "../utils/query.h"
+#include "../executor/executor.h"
 
 void make_non_blocking(int sock);
 class EpollServer {

@@ -80,10 +80,22 @@ int EpollServer::handle_trade_data_query(int sock, TradeDataQuery query) {
     auto [client_sock, task_query] = task_queue_.front();
 
     task_queue_.pop();
-    auto result = execute_task(task_query);
+    std::vector<Result> rresult;
+    std::vector<TradeData> tresult;
+    Executor exec;
+    int result_size;
+    bool t_not_r;
+    if (task_query.resolution < 0){
+      rresult = exec.lowest_and_highest_prices(task_query);
+      int result_size = static_cast<int>(rresult.size());
+      t_not_r=false;
 
+  } else{
+      tresult = exec.send_raw_data(task_query);
+      int result_size = static_cast<int>(rresult.size());
+      t_not_r=false;
+    }
     // First, send the size of the result vector
-    int result_size = static_cast<int>(result.size());
     ssize_t bytes_sent =
         send(client_sock, &result_size, sizeof(result_size), 0);
     if (bytes_sent < 0) {
@@ -96,8 +108,14 @@ int EpollServer::handle_trade_data_query(int sock, TradeDataQuery query) {
     }
 
     // Then, send each TradeData struct in the result vector
-    for (auto& data : result) {
+    if (t_not_r) {
+      for (auto& data : tresult) {
       send_without_serialisation(client_sock, data);
+      }
+    } else {
+      for (auto& data : rresult) {
+      send_without_serialisation(client_sock, data);
+      }
     }
   }
 
