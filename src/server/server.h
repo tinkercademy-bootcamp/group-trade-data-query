@@ -15,4 +15,6 @@ class EpollServer {
   int epoll_fd_;
   void accept_connection();
   void add_to_epoll();
+  void make_non_blocking();
+  void bind_server();
 };
