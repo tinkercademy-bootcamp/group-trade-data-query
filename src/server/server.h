@@ -1,5 +1,6 @@
 #pragma once
 #include <netinet/in.h>
+#include <queue>
 #include <sys/epoll.h>
 #include "../utils/net/net.h"
 #include "../utils/query.h"
@@ -19,5 +20,6 @@ class EpollServer {
   void accept_connection();
   void add_to_epoll(int sock);
   void bind_server();
-  int handle_trade_data_query(TradeDataQuery query);
+  int handle_trade_data_query(int sock, TradeDataQuery query);
+  std::queue<std::pair<int, TradeDataQuery>> task_queue_;
 };
