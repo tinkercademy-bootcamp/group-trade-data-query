@@ -24,7 +24,7 @@ namespace client {
          * @throws std::runtime_error if sending fails or client is not connected.
          */
         void send_message(const TradeDataQuery &message);
-        Result read_min_max();
+        std::vector<Result> read_min_max();
         /**
          * @brief Get the socket fd object
          * 
