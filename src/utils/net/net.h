@@ -9,7 +9,7 @@
 
 #include "../helper/utils.h"
 
-namespace tt::chat::net {
+namespace net {
 
     // Creates a socket and returns the socket file descriptor
     int create_socket();
@@ -17,7 +17,7 @@ namespace tt::chat::net {
     // Inputs port, creates address and returns it
     sockaddr_in create_address(int port);
 
-} // namespace tt::chat::net
+} // namespace net
 
 #endif
 
