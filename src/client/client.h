@@ -6,8 +6,6 @@
 #include "../utils/query.h"
 #include <vector>
 
-struct Price;  // Temporary struct as a filler. delete once the struct is finalized.
-
 namespace client {
     class Client {
         // This class encapsulates the socket connection and basic communication
