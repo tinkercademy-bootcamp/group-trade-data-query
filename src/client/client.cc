@@ -41,12 +41,13 @@ void client::Client::connect_to_server(
     helper::check_error(err_code < 0, "Connection Failed.\n");
 }
 
-// std::vector<std::pair<Price, Price>> client::Client::read_min_max(int count) {
-//   std::vector<std::pair<Price, Price>> buffer(count);
+Result client::Client::read_min_max() {
 
-//   for(int i=0; i<count; i++) {
-//     Price price_struct;
-//     ssize_t n = recv(sockfd, ptr + total, len - total, 0);
-//   }
+  std::vector<Result> output;
 
-// }
+  for(int i=0; i<count; i++) {
+    Price price_struct;
+    ssize_t n = recv(sockfd, ptr + total, len - total, 0);
+  }
+
+}
