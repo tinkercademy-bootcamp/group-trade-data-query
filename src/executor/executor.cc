@@ -47,7 +47,7 @@ std::vector<std::pair<Price, Price>> Executor::lowest_and_highest_prices(
             result[static_cast<size_t>(offset / query.resolution)].second = max_price;
         }
 
-        double price_value = trade.price.price * std::pow(10, trade.price.price_exponent);
+        double price_value = trade.price.price * std::pow(10, trade.price.price_exponent) * trade.quantity.quantity * std::pow(10, trade.quantity.quantity_exponent);
         
         if (price_value > max_price_value) {
             max_price_value = price_value;
