@@ -4,8 +4,7 @@
 #include <netinet/in.h>
 #include <string>
 #include "../utils/query.h"
-
-struct Price;  // Temporary struct as a filler. delete once the struct is finalized.
+#include <vector>
 
 namespace client {
     class Client {
@@ -24,7 +23,12 @@ namespace client {
          * @throws std::runtime_error if sending fails or client is not connected.
          */
         void send_message(const TradeDataQuery &message);
-        // std::vector<std::pair<Price, Price>> read_min_max(int count);
+        std::vector<Result> read_min_max();
+        /**
+         * @brief Get the socket fd object
+         * 
+         * @return int 
+         */
         int get_socket_fd() const; // Getter for the socket
         // Destroys the Client object, ensuring the socket is closed.
         ~Client();
