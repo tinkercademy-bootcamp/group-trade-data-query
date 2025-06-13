@@ -18,7 +18,7 @@ public:
 
 
 private:
-    
+    std::vector<TradeData>& trades;
 };
 
 #endif // EXECUTOR_H
