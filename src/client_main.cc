@@ -12,6 +12,7 @@
 #include <errno.h>      
 
 #include "client/client.h"
+#include "utils/query.h"
 
 std::atomic<bool> g_client_running{true};
 
@@ -34,9 +35,9 @@ int main(int argc, char* argv[]) {
   spdlog::set_level(spdlog::level::info);
   spdlog::info("Command-line Chat Client starting to connect to {}:{}", server_ip, port);
 
-  std::unique_ptr<client::Client> chat_client_ptr;
+  std::optional<client::Client> chat_client;
   try {
-      chat_client_ptr = std::make_unique<client::Client>(port, server_ip);
+      chat_client.emplace(port, server_ip);
       std::cout << "Connected to server. Type messages or '/quit' to exit." << std::endl;
   } catch (const std::runtime_error& e) {
       spdlog::critical("Failed to create or connect client: {}", e.what());
@@ -46,6 +47,25 @@ int main(int argc, char* argv[]) {
       spdlog::critical("An unknown error occurred during client initialization.");
       std::cerr << "An unknown error occurred during client initialization." << std::endl;
       return EXIT_FAILURE;
+  }
+
+  int client_socket_fd = chat_client->get_socket_fd();
+  // std::thread reader_thread(read_loop, client_socket_fd);
+
+  while (g_client_running) {
+    TradeDataQuery query;
+    std::cout << "Enter symbol id: ";
+    std::cin >> query.symbol_id;
+    std::cout << "Enter start time point: ";
+    std::cin >> query.start_time_point;
+    std::cout << "Enter end time point: ";
+    std::cin >> query.end_time_point;
+    std::cout << "Enter resolution: ";
+    std::cin >> query.resolution;
+    std::cout << "Enter metrics: ";
+    std::cin >> query.metrics;
+
+    chat_client->send_message(query);
   }
 
   return EXIT_SUCCESS;
