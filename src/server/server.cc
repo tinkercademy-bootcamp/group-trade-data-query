@@ -1,18 +1,15 @@
 #include "server.h"
+
 #include "../utils/helper/utils.h"
 #include "../utils/net/net.h"
 #include "../utils/query.h"
 #include "sender.h"
 
 /////////////////
-std::vector<int> execute_task(TradeDataQuery query) {
-  // Example implementation: returns a vector with some integers
-  std::vector<int> results;
-  // ... perform task logic here ...
-  results.push_back(1);
-  results.push_back(2);
-  results.push_back(3);
-  return results;
+
+std::vector<TradeData> execute_task(TradeDataQuery& query) {
+  // Dummy implementation: return an empty vector
+  return {};
 }
 /////////////////
 
@@ -36,7 +33,7 @@ void EpollServer::run() {
   helper::check_error(listen(server_listen_fd_, SOMAXCONN) < 0,
                       "Failed to listen on server socket");
   epoll_event events[MAX_EVENTS];
-  while (true){
+  while (true) {
     int n = epoll_wait(epoll_fd_, events, MAX_EVENTS, -1);
     helper::check_error(n == -1, "epoll_wait failed");
 
@@ -66,7 +63,9 @@ void EpollServer::run() {
             close(events[i].data.fd);
             break;
           } else {
-                helper::check_error(handle_trade_data_query(events[i].data.fd, query) < 0, "Failed to handle the query");
+            helper::check_error(
+                handle_trade_data_query(events[i].data.fd, query) < 0,
+                "Failed to handle the query");
           }
         }
       }
@@ -74,13 +73,32 @@ void EpollServer::run() {
   }
 }
 
-int EpollServer::handle_trade_data_query(int sock,TradeDataQuery query){
+int EpollServer::handle_trade_data_query(int sock, TradeDataQuery query) {
   task_queue_.push(std::make_pair(sock, query));
+
   while (!task_queue_.empty()) {
     auto [client_sock, task_query] = task_queue_.front();
+
     task_queue_.pop();
-    std::vector<int> result = execute_task(task_query);
-    send_without_serialisation(client_sock, result);
+    auto result = execute_task(task_query);
+
+    // First, send the size of the result vector
+    int result_size = static_cast<int>(result.size());
+    ssize_t bytes_sent =
+        send(client_sock, &result_size, sizeof(result_size), 0);
+    if (bytes_sent < 0) {
+      throw std::runtime_error("Failed to send result size: " +
+                               std::string(strerror(errno)));
+    } else if (bytes_sent < static_cast<ssize_t>(sizeof(result_size))) {
+      std::cerr << "Warning: Only " << bytes_sent << " out of "
+                << sizeof(result_size) << " bytes sent for result size."
+                << std::endl;
+    }
+
+    // Then, send each TradeData struct in the result vector
+    for (auto& data : result) {
+      send_without_serialisation(client_sock, data);
+    }
   }
 
   return 0;
@@ -102,13 +120,13 @@ void EpollServer::add_to_epoll(int sock) {
   event.data.fd = sock;
   event.events = EPOLLIN | EPOLLET;  // Edge-triggered, read events
 
-  helper::check_error(
-      epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, sock, &event) == -1,
-      "Failed to add client socket to epoll");
+  helper::check_error(epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, sock, &event) == -1,
+                      "Failed to add client socket to epoll");
 }
 
 void make_non_blocking(int sock) {
   int flags = fcntl(sock, F_GETFL, 0);
   helper::check_error(flags == -1, "Failed to get socket flags");
-  helper::check_error(fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1, "Failed to set socket to non-blocking");
+  helper::check_error(fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1,
+                      "Failed to set socket to non-blocking");
 }
