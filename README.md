@@ -12,10 +12,17 @@ The following is the current directory structure of the directory of the repo
 │   ├── client
 │   │   └── Makefile
 │   ├── Makefile
+|   ├── executor
+|   │   └──executor.h
 │   ├── server
 │   │   └── Makefile
 │   └── utils
-│       └── query.h
+|       └──helper
+│       │    └── utils.h
+│       ├──net
+│       │   ├── net.cc
+|       │   └── net.h
+│       └── trades.h
 └── test
     ├── correctness
     │   └── Makefile
