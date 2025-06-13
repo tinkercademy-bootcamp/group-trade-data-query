@@ -1,10 +1,10 @@
 #include "server.h"
-// #include "../utils/helper/error_handling.h"
-#include "../utils/net/socket_helper.h"
+//#include "../utils/helper/utils.h"
+#include "../utils/net/net.h"
 
 EpollServer::EpollServer(int port)
     : server_listen_fd_(net::create_socket()),
-      server_address_(net::create_server_address(port)) {
+      server_address_(net::create_address(port)) {
   // set_non_blocking(server_listen_fd_);
   // opt_bind_listen();
   epoll_fd_ = epoll_create1(0);
