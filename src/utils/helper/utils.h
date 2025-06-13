@@ -7,7 +7,7 @@
 
 #include "spdlog/spdlog.h"
 
-namespace tt::chat {
+namespace helper {
 
   template <std::same_as<bool> T, std::convertible_to<std::string_view> S>
   void check_error(T test, S error_message) {
@@ -15,6 +15,6 @@ namespace tt::chat {
       SPDLOG_ERROR("{}", error_message);
       throw std::runtime_error(error_message);
     }  }
-} // namespace tt::chat
+} 
 
 #endif // UTILS_H

@@ -5,7 +5,7 @@
 #include <string>
 #include "../utils/query.h"
 
-namespace tt::chat::client {
+namespace client {
     class Client {
         // This class encapsulates the socket connection and basic communication
     public:
@@ -45,6 +45,6 @@ namespace tt::chat::client {
 
         static constexpr int kBufferSize = 1024;
     };
-} // namespace tt::chat::client
+} // namespace client
 
 #endif // CHAT_CLIENT_H
