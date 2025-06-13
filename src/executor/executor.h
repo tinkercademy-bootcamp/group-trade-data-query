@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <iterator>
 
 #include "../utils/trades.h"
 
