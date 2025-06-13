@@ -19,14 +19,14 @@ public:
      * @param query  A TradeDataQuery specifying the symbol, time window, resolution, and metrics.
      * @return A vector of pairs of price structs representing the lowest and highest prices found.
      */
-    std::vector<std::pair<price, price>> lowest_and_highest_prices(TradeDataQuery& query);
+    std::vector<Result> lowest_and_highest_prices(TradeDataQuery& query);
     /**
      * @brief Retrieves raw trade data corresponding to the query parameters.
      *
      * @param query  A TradeDataQuery defining the criteria for raw data selection.
-     * @return A vector of TradeDataQuery objects matching the query range and filters.
+     * @return A vector of TradeData objects matching the query range and filters.
      */
-    std::vector<TradeDataQuery> send_raw_data (TradeDataQuery& query);
+    std::vector<TradeData> send_raw_data (TradeDataQuery& query);
 
 
 private:
