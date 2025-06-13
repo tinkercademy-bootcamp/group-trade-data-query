@@ -15,6 +15,11 @@ The following is the current directory structure of the directory of the repo
 │   ├── server
 │   │   └── Makefile
 │   └── utils
+|       └──helper
+│       │    └── utils.h
+│       ├──net
+│       │   ├── net.cc
+|       │   └── net.h
 │       └── query.h
 └── test
     ├── correctness
