@@ -1,8 +1,14 @@
 #pragma once
 #include <netinet/in.h>
 #include <sys/epoll.h>
-#include "../utils/net/net.h"
 
+#include <queue>
+
+#include "../utils/net/net.h"
+#include "../utils/query.h"
+#include "../executor/executor.h"
+
+void make_non_blocking(int sock);
 class EpollServer {
  public:
   EpollServer(int port);
@@ -15,8 +21,8 @@ class EpollServer {
   int server_listen_fd_;
   int epoll_fd_;
   void accept_connection();
-
-  void add_to_epoll();
-  void make_non_blocking();
+  void add_to_epoll(int sock);
   void bind_server();
+  int handle_trade_data_query(int sock, TradeDataQuery query);
+  std::queue<std::pair<int, TradeDataQuery>> task_queue_;
 };
