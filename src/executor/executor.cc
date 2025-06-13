@@ -2,11 +2,12 @@
 #include "../utils/trades.h"
 #include <cmath>
 #include <iostream>
+#include <cassert>
 
-std::vector<std::pair<price, price>> Executor::lowest_and_highest_prices(
+std::vector<std::pair<Price, Price>> Executor::lowest_and_highest_prices(
     const std::vector<TradeData>& trades, const TradeDataQuery& query) {
 
-    std::vector<std::pair<price, price> > result;
+    std::vector<std::pair<Price, Price> > result;
 
     // Early exit if no trades available
     if (trades.empty()) {
@@ -20,45 +21,47 @@ std::vector<std::pair<price, price>> Executor::lowest_and_highest_prices(
         return result;
     }
 
-    // Calculate size of each time bucket based on resolution
+    assert(query.resolution > 0);
+
+    // Calculate size of each time bucket based on resolution // Assuming resolution > 0
     uint64_t num_buckets = (query.end_time_point - query.start_time_point + (query.resolution - 1)) / query.resolution;
-    // uint64_t bucket_size = (query.end_time_point - query.start_time_point) / query.resolution;
 
-    // Initialize result with sentinel values {-1, 0} indicating no data in bucket
-    result.resize(num_buckets, {{-1, 0}, {-1, 0}});
 
-    // Track lowest and highest trades for each bucket
-    // std::vector<const TradeData*> lowest_in_bucket(num_buckets, nullptr);
-    // std::vector<const TradeData*> highest_in_bucket(num_buckets, nullptr);
+    result = std::vector<std::pair<Price, Price>>(num_buckets, {Price{-1, 0}, Price{-1, 0}});
+
+    uint64_t offset = 0;
+    Price min_price = {-1, 0}, max_price = {-1, 0};
+    double min_price_value = __DBL_MAX__, max_price_value = __DBL_MIN__;
 
     // Iterate over all trades and bucket them
-    for (const Trade& trade : trades) {
-        if (trade.timestamp < query.start_time_point || trade.timestamp > query.end_time_point) {
+    for (const TradeData& trade : trades) {
+        if (trade.created_at < query.start_time_point || trade.created_at >= query.end_time_point) {
             continue;  // Skip trades outside query range
         }
 
         // We are determining which time bucket this trade belongs to
-        uint64_t offset = trade.timestamp - query.start_time_point;
-        size_t bucket_index = static_cast<size_t>(offset / num_buckets);
-
-        // Calculating the real price for comparison
-        double real_price = trade.price * std::pow(10.0, trade.price_exponent);
-        real_price = real_price * std::pow(trade.quantity, trade.quantity_exponent);
-
-        if (real_price < result[bucket_index]->price * std::pow(10.0, result[bucket_index]->price_exponent)) {
-            result[bucket_index] = {
-                .price = trade.price,
-                .price_exponent = trade.price_exponent
-            };
+        offset = (trade.created_at - offset);
+        if (offset >= query.resolution) {
+            offset = (offset % query.resolution);
+            result[static_cast<size_t>(offset / query.resolution)].first = min_price;
+            result[static_cast<size_t>(offset / query.resolution)].second = max_price;
         }
-        if (real_price > result[bucket_index]->price * std::pow(10.0, result[bucket_index]->price_exponent)) {
-            result[bucket_index] = {
-                .price = trade.price,
-                .price_exponent = trade.price_exponent
-            };
+
+        double price_value = trade.price.price * std::pow(10, trade.price.price_exponent);
+        
+        if (price_value > max_price_value) {
+            max_price_value = price_value;
+            max_price = trade.price;
         }
+        if (price_value < min_price_value) {
+            min_price_value = price_value;
+            min_price = trade.price;
+        }
+
+        // size_t bucket_index = static_cast<size_t>(offset / num_buckets);
+
+        // Calculating the real Price for comparison
     }
 
     return result;
 }
-
