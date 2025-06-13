@@ -1,4 +1,5 @@
 #pragma once
+#include <netinet/in.h>
 #include <sys/epoll.h>
 
 class EpollServer {
@@ -9,6 +10,7 @@ class EpollServer {
   void run();
 
  private:
+  sockaddr_in server_address_;
   int server_listen_fd_;
   int epoll_fd_;
   void accept_connection();
