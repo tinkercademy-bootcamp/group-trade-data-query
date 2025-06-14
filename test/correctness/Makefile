@@ -1,3 +1,8 @@
+# all: database-tests
+
+# database-tests: 
+
+
 .PHONY: all test clean server client run-tests smoke-test memory-test help
 .DEFAULT_GOAL := all
 
