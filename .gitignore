@@ -1,6 +1,6 @@
 src/server/build/
 */build/*
-./test/nlohmann/*
+/test/nlohmann/
 *.out
 .clangd
 
