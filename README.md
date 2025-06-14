@@ -24,13 +24,14 @@ The following is the current directory structure of the directory of the repo
 ├── process_data
 │   └── process_data_main.cc
 ├── README.md
+├── requirements.txt
 ├── src
 │   ├── client
 │   │   ├── client.cc
 │   │   ├── client.h
 │   │   └── Makefile
-│   ├── client_main.cc
 │   ├── executor
+│   │   ├── executor.cc
 │   │   └── executor.h
 │   ├── Makefile
 │   ├── server
@@ -40,6 +41,7 @@ The following is the current directory structure of the directory of the repo
 │   │   ├── sender.h
 │   │   ├── server.cc
 │   │   └── server.h
+│   ├── client_main.cc
 │   ├── server-main.cc
 │   └── utils
 │       ├── helper
@@ -52,7 +54,9 @@ The following is the current directory structure of the directory of the repo
     ├── correctness
     │   ├── basic-tests.json
     │   ├── db-tests
-    │   │   └── db-testcases
+    │   │   ├── db.ipynb
+    │   │   ├── db-testcases
+    │   │   └── db_testcases.py
     │   ├── dummy-client.cpp
     │   ├── Makefile
     │   └── test-client.cpp
