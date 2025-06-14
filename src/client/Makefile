@@ -1,21 +1,31 @@
-STD_FLAG:=-std=c++20
+STD_FLAG := -std=c++20
+LD_FLAGS := -lspdlog -lfmt
+BUILD_DIR := ../../build
+OBJ_DIR := $(BUILD_DIR)/obj
 
-LD_FLAGS:=-lspdlog -lfmt
+all: dirs $(BUILD_DIR)/client
 
-all: make_dir ../../build/client
+dirs:
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(OBJ_DIR)/client
+	mkdir -p $(OBJ_DIR)/net
 
-make_dir:
-	mkdir -p ../../build
+$(BUILD_DIR)/client: $(OBJ_DIR)/client/client_main.o $(OBJ_DIR)/client/client.o $(OBJ_DIR)/net/net.o
+	g++ $(STD_FLAG) $(OBJ_DIR)/client/client_main.o $(OBJ_DIR)/client/client.o $(OBJ_DIR)/net/net.o -o $(BUILD_DIR)/client $(LD_FLAGS)
 
-../../build/client:../../build/client_main.o ../client_main.cc ../../build/net.o ../utils/net/net.cc ../client_main.cc client.cc ../../build/client.o 
-	g++ $(STD_FLAG) ../../build/client_main.o ../../build/client.o  ../../build/net.o -o ../../build/client $(LD_FLAGS) 
-../../build/client_main.o:
-	g++ $(STD_FLAG) -c ../client_main.cc -o ../../build/client_main.o 
-../../build/net.o:../utils/net/net.cc
-	g++ $(STD_FLAG) -c ../utils/net/net.cc -o ../../build/net.o
+$(OBJ_DIR)/client/client_main.o: ../client_main.cc
+	g++ $(STD_FLAG) -c ../client_main.cc -o $(OBJ_DIR)/client/client_main.o
 
-../../build/client.o:client.cc
-	g++ $(STD_FLAG) -c client.cc -o ../../build/client.o 
+$(OBJ_DIR)/client/client.o: client.cc
+	g++ $(STD_FLAG) -c client.cc -o $(OBJ_DIR)/client/client.o
 
+$(OBJ_DIR)/net/net.o: ../utils/net/net.cc
+	g++ $(STD_FLAG) -c ../utils/net/net.cc -o $(OBJ_DIR)/net/net.o
+
+.PHONY: clean
 clean:
-	rm -rf ../../build
+	rm -rf $(BUILD_DIR)
+
+.PHONY: remake
+remake:
+	make clean && make
