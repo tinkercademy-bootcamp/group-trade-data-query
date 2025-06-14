@@ -35,41 +35,49 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
         std::istringstream ss(line);
         std::string token;
 
+        // Reads the symbol_id
         std::getline(ss, token, ',');
         uint32_t symbol_id = static_cast<uint32_t>(std::stoul(line.substr(0, line.find(','))));
 
         out.write(reinterpret_cast<const char*>(&symbol_id), sizeof(uint32_t));
 
+        // Reads the created_at timestamp
         std::getline(ss, token, ',');
         uint64_t created_at = static_cast<uint64_t>(std::stoull(token));
 
         out.write(reinterpret_cast<const char*>(&created_at), sizeof(uint64_t));
 
+        // Reads the trade_id
         std::getline(ss, token, ',');
         uint64_t trade_id = static_cast<uint64_t>(std::stoull(token));
 
         out.write(reinterpret_cast<const char*>(&trade_id), sizeof(uint64_t));
 
+        // Reads the price
         std::getline(ss, token, ',');
         uint32_t price_raw = static_cast<uint32_t>(std::stoul(token));
 
         out.write(reinterpret_cast<const char*>(&price_raw), sizeof(uint32_t));
         
-        std::getline(ss, token, ',');
-        uint8_t price_exponent = static_cast<int8_t>(std::stoi(token));
-
-        out.write(reinterpret_cast<const char*>(&price_exponent), sizeof(uint8_t));
-
+        // Reads the quantity
         std::getline(ss, token, ',');
         uint32_t quantity_raw = static_cast<uint32_t>(std::stoul(token));
-
+        
         out.write(reinterpret_cast<const char*>(&quantity_raw), sizeof(uint32_t));
 
+        // Reads the price_exponent
         std::getline(ss, token, ',');
-        uint8_t quantity_exponent = static_cast<int8_t>(std::stoi(token));
+        int8_t price_exponent = static_cast<int8_t>(std::stoi(token));
 
-        out.write(reinterpret_cast<const char*>(&quantity_exponent), sizeof(uint8_t));
+        out.write(reinterpret_cast<const char*>(&price_exponent), sizeof(int8_t));
+        
+        // Reads the quantity_exponent
+        std::getline(ss, token, ',');
+        int8_t quantity_exponent = static_cast<int8_t>(std::stoi(token));
 
+        out.write(reinterpret_cast<const char*>(&quantity_exponent), sizeof(int8_t));
+
+        // Reads the taker_side
         std::getline(ss, token, ',');
         uint8_t taker_side = 0; // Default value
         if (token.empty()) {
