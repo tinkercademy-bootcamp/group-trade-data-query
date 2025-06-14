@@ -6,7 +6,7 @@ libs:
 	mkdir -p test/nlohmann
 	curl -sL https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp -o ./test/nlohmann/json.hpp
 
-build/processor: process_data/process_data.cpp
+build/processor: process_data/process_data_main.cc
 	mkdir -p build
 	g++ -std=c++20 $^ -o $@
 
