@@ -1,9 +1,4 @@
-# all: database-tests
-
-# database-tests: 
-
-
-.PHONY: all test clean server client run-tests smoke-test memory-test help
+.PHONY: all test clean server client run-tests smoke-test memory-test help simulate-client
 .DEFAULT_GOAL := all
 
 # Directories
@@ -28,7 +23,7 @@ DUMMY_CLIENT := dummy_client
 CC := gcc
 CXX := g++
 CFLAGS := -Wall -Wextra -std=c11 -g -DDEBUG
-CXXFLAGS := -Wall -Wextra -std=c++17 -g -DDEBUG
+CXXFLAGS := -Wall -Wextra -std=c++20 -g -DDEBUG
 LDFLAGS := -pthread
 
 # Test configuration
@@ -47,7 +42,6 @@ NC := \033[0m
 # all: setup server client test-client run-tests
 # all: test-client run-tests
 all: run-dummy-tests
-
 run-dummy-tests: dummy-client test-client run-tests
 
 setup: ## Create test directories and files
@@ -87,3 +81,13 @@ test-client: ## Build the C++ multithreaded test driver
 run-tests: test-client ## Run tests using the test driver
 	@echo "$(BLUE)Running tests...$(NC)"
 	@$(TEST_CLIENT)
+
+simulate-client: client
+	@echo "$(YELLOW)Building simulate-client driver...$(NC)"
+	$(CXX) $(CXXFLAGS) -I$(CLIENT_SRC) \
+	  -o $(TEST_BUILD)/simulate-client \
+	  client-test.cc \
+	  $(CLIENT_SRC)/client.cc \
+	  $(ROOT_DIR)/src/utils/net/net.cc \
+	  -lfmt \
+	  $(LDFLAGS)
