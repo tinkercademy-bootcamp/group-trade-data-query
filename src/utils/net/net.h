@@ -12,10 +12,10 @@
 namespace net {
 
     // Creates a socket and returns the socket file descriptor
-    int create_socket();
+    int32_t create_socket();
 
     // Inputs port, creates address and returns it
-    sockaddr_in create_address(int port);
+    sockaddr_in create_address(int32_t port);
 
 } // namespace net
 
