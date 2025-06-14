@@ -1,58 +1,37 @@
-# src/server/Makefile
-
-CXX := g++
-
-CXXFLAGS := -std=c++20 -Wall -Wextra -pedantic -fsanitize=address
-CXX_DEBUG_FLAGS   := -g3 -ggdb3
-CXX_RELEASE_FLAGS := -O3
-CXXFLAGS += $(CXX_DEBUG_FLAGS)
-
-LDFLAGS := -fsanitize=address
-LIBS := fmt spdlog
-LIB_FLAGS := $(addprefix -l,$(LIBS))
-LDFLAGS += $(LIB_FLAGS)
-
+STD_FLAG := -std=c++20
+LD_FLAGS := -lspdlog -lfmt
 BUILD_DIR := ../../build
-SRC_DIR   := ../../src
+OBJ_DIR := $(BUILD_DIR)/obj
 
-# find all server-related .cc under src, excluding client code
-SERVER_SRCS := $(shell find $(SRC_DIR) -type f -name '*.cc' -not -path '*/client/*' -not -name 'client_main.cc')
-SERVER_OBJS := $(patsubst $(SRC_DIR)/%.cc,$(BUILD_DIR)/%.o,$(SERVER_SRCS))
+all: dirs $(BUILD_DIR)/server
 
+dirs:
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(OBJ_DIR)/server
+	mkdir -p $(OBJ_DIR)/net
 
-ALL_OBJS := $(sort $(SERVER_OBJS))
-DEPS := $(ALL_OBJS:.o=.d)
+$(BUILD_DIR)/server: $(OBJ_DIR)/server/server_main.o $(OBJ_DIR)/server/server.o $(OBJ_DIR)/net/net.o $(OBJ_DIR)/server/sender.o $(OBJ_DIR)/server/receiver.o
+	g++ $(STD_FLAG) $(OBJ_DIR)/server/server_main.o $(OBJ_DIR)/server/server.o $(OBJ_DIR)/net/net.o $(OBJ_DIR)/server/sender.o $(OBJ_DIR)/server/receiver.o -o $(BUILD_DIR)/server $(LD_FLAGS)
 
-INC_DIRS  := $(shell find $(SRC_DIR) -type d) \
-			 server \
-			 ../utils
-INC_FLAGS := $(addprefix -I,$(INC_DIRS))
+$(OBJ_DIR)/server/server_main.o: ../server_main.cc
+	g++ $(STD_FLAG) -c ../server_main.cc -o $(OBJ_DIR)/server/server_main.o
 
-CPPFLAGS := $(INC_FLAGS) -MMD -MP
+$(OBJ_DIR)/server/server.o: server.cc
+	g++ $(STD_FLAG) -c server.cc -o $(OBJ_DIR)/server/server.o
 
-.PHONY: all
-all: $(BUILD_DIR)/server-bin
+$(OBJ_DIR)/net/net.o: ../utils/net/net.cc
+	g++ $(STD_FLAG) -c ../utils/net/net.cc -o $(OBJ_DIR)/net/net.o
 
-$(BUILD_DIR)/server-bin: $(SERVER_OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+$(OBJ_DIR)/server/receiver.o: receiver.cc
+	g++ $(STD_FLAG) -c receiver.cc -o $(OBJ_DIR)/server/receiver.o
 
-# compile any .cc into build/%.o (preserving directory structure)
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc
-	mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
-
-.PHONY: print-vars
-print-vars:
-	@echo "SERVER_SRCS   = $(SERVER_SRCS)"
-	@echo "SERVER_OBJS   = $(SERVER_OBJS)"
-	@echo "ALL_OBJS      = $(ALL_OBJS)"
-	@echo "DEPS          = $(DEPS)"
-	@echo "INC_FLAGS     = $(INC_FLAGS)"
+$(OBJ_DIR)/server/sender.o: sender.cc
+	g++ $(STD_FLAG) -c sender.cc -o $(OBJ_DIR)/server/sender.o
 
 .PHONY: clean
 clean:
-	rm -rf build
+	rm -rf $(BUILD_DIR)
 
--include $(DEPS)
-
-
+.PHONY: remake
+remake:
+	make clean && make
