@@ -1,5 +1,5 @@
 #include "executor.h"
-#include "../../processed_data/preproc.h"
+// #include "../../processed_data/preproc.h"
 #include "../utils/query.h"
 #include <cmath>
 #include <iostream>
@@ -7,16 +7,51 @@
 #include <algorithm>
 #include <ranges>
 
+Executor::Executor() {
+    data.open("data/processed/trades-example.bin", std::ios::in | std::ios::binary);
+    if (!data.is_open()) {
+        std::cerr << "[Executor] Error: could not open trade data file.\n";
+        return;
+    }
+    trades_size = data.seekg(0, std::ios::end).tellg() / 31;
+    data.seekg(0, std::ios::beg);
+}
+
+bool Executor::read_trade_data(uint64_t ind, TradeData& trade) {
+    data.seekg(ind * sizeof(TradeData), std::ios::beg);
+    if (data.read(reinterpret_cast<char*>(&trade.symbol_id), sizeof(trade.symbol_id)) &&
+        data.read(reinterpret_cast<char*>(&trade.created_at), sizeof(trade.created_at)) &&
+        data.read(reinterpret_cast<char*>(&trade.trade_id), sizeof(trade.trade_id)) &&
+        data.read(reinterpret_cast<char*>(&trade.price.price), sizeof(trade.price.price)) &&
+        data.read(reinterpret_cast<char*>(&trade.price.price_exponent), sizeof(trade.price.price_exponent)) &&
+        data.read(reinterpret_cast<char*>(&trade.quantity.quantity), sizeof(trade.quantity.quantity)) &&
+        data.read(reinterpret_cast<char*>(&trade.quantity.quantity_exponent), sizeof(trade.quantity.quantity_exponent)) &&
+        data.read(reinterpret_cast<char*>(&trade.taker_side), sizeof(trade.taker_side))) {
+        std::cout << trade.symbol_id << " " 
+                  << trade.created_at << " "
+                  << trade.trade_id << " "
+                  << trade.price.price << " * 10^" 
+                  << static_cast<int>(trade.price.price_exponent) << " "
+                  << trade.quantity.quantity << " * 10^" 
+                  << static_cast<int>(trade.quantity.quantity_exponent) << " "
+                  << static_cast<int>(trade.taker_side) << "\n";
+        return true;
+    } else {
+        throw std::runtime_error("[Executor] Error reading trade data at index " + std::to_string(ind));
+    }
+    return false; // If we reach here, it means reading failed
+}
+
 std::vector<Result> Executor::lowest_and_highest_prices(
     const TradeDataQuery& query) {
 
     std::vector<Result> result;
 
     // Early exit if no trades available
-    if (trades.empty()) {
-        std::cout << "[Executor] No trades available.\n";
-        return result;
-    }
+    // if (trades.empty()) {
+    //     std::cout << "[Executor] No trades available.\n";
+    //     return result;
+    // }
 
     // Check if bit flag for min/max is enabled (bit 0)
     if ((query.metrics & (1 << 0)) == 0) {
@@ -36,27 +71,29 @@ std::vector<Result> Executor::lowest_and_highest_prices(
     uint64_t bucket_start_time = query.start_time_point;
     uint64_t ind = 0;
 
+    TradeData trade;
+
     for (uint64_t offset = query.start_time_point; offset < query.end_time_point; offset += query.resolution) {
         Price min_price = {0, 0};  // Reset min price
         Price max_price = {0, 0};  // Reset max price
         min_price_value = __DBL_MAX__;
         max_price_value = __DBL_MIN__;
 
-        while (trades[ind].created_at < query.start_time_point) ind++;
+        while (read_trade_data(ind, trade) && trade.created_at < query.start_time_point) ind++;
 
-        while (trades[ind].created_at < query.end_time_point && trades[ind].created_at < offset + query.resolution) {
-            double price_value = trades[ind].price.price * std::pow(10, trades[ind].price.price_exponent);
+        while (trade.created_at < query.end_time_point && trade.created_at < offset + query.resolution) {
+            double price_value = trade.price.price * std::pow(10, trade.price.price_exponent);
 
             if (price_value < min_price_value) {
                 min_price_value = price_value;
-                min_price = trades[ind].price;
+                min_price = trade.price;
             } 
             if (price_value > max_price_value) {
                 max_price_value = price_value;
-                max_price = trades[ind].price;
+                max_price = trade.price;
             }
             ind++;  // Move to the next trade
-            if (ind >= trades.size()) {
+            if (ind >= trades_size) {
                 break;  // No more trades to process
             }
         }
@@ -68,7 +105,7 @@ std::vector<Result> Executor::lowest_and_highest_prices(
         });
         bucket_start_time += query.resolution;
         ind++;  // Move to the next trade
-        if (ind >= trades.size()) {
+        if (ind >= trades_size) {
             break;  // No more trades to process
         }
     }
@@ -81,17 +118,19 @@ namespace ranges = std::ranges;
 
 std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 {
-  std::sort(trades.begin(), trades.end(), [](const TradeData& a, const TradeData& b) {
-        return a.created_at < b.created_at;
-    });
-  auto it_start = std::ranges::lower_bound(trades, query.start_time_point, {}, &TradeData::created_at);
-  auto it_end = std::ranges::lower_bound(trades, query.end_time_point, {}, &TradeData::created_at);
+    std::vector<TradeData> trades;
 
-  std::cout << "[Executor] Returning trades between " 
-            << query.start_time_point << " and " << query.end_time_point << ". "
-            << "Found: " << std::distance(it_start, it_end) << " trades.\n";
-
-  return std::vector<TradeData>(it_start, it_end);
+    for (uint64_t ind = 0; ind < trades_size; ind++) {
+        TradeData trade;
+        if (!read_trade_data(ind, trade)) {
+            std::cerr << "[Executor] Error reading trade data at index " << ind << ".\n";
+            continue;
+        }
+        if (trade.created_at >= query.start_time_point && trade.created_at < query.end_time_point) {
+            trades.push_back(trade);
+        }
+    }
+    return trades;
 }
 
 
@@ -101,9 +140,9 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 //         return 1;
 //     }
 //     std::string filename = argv[1];
-//     auto trades = parse_csv(filename);
+//     // auto trades = parse_csv(filename);
 
-//     Executor executor(trades);
+//     Executor executor;
 //     std::cout << "Parsed " << trades.size() << " trades from " << filename << std::endl;
 //     TradeDataQuery query = {
 //         .symbol_id = 1,

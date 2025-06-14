@@ -30,49 +30,70 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
             continue; // Skip empty lines or header
         }
 
+        // std::cout << out.tellp() << std::endl; // Debugging output to check current position in the output file
+
         std::istringstream ss(line);
         std::string token;
 
         std::getline(ss, token, ',');
         uint32_t symbol_id = static_cast<uint32_t>(std::stoul(line.substr(0, line.find(','))));
 
+        out.write(reinterpret_cast<const char*>(&symbol_id), sizeof(uint32_t));
+
         std::getline(ss, token, ',');
         uint64_t created_at = static_cast<uint64_t>(std::stoull(token));
+
+        out.write(reinterpret_cast<const char*>(&created_at), sizeof(uint64_t));
 
         std::getline(ss, token, ',');
         uint64_t trade_id = static_cast<uint64_t>(std::stoull(token));
 
+        out.write(reinterpret_cast<const char*>(&trade_id), sizeof(uint64_t));
+
         std::getline(ss, token, ',');
         uint32_t price_raw = static_cast<uint32_t>(std::stoul(token));
+
+        out.write(reinterpret_cast<const char*>(&price_raw), sizeof(uint32_t));
         
         std::getline(ss, token, ',');
         uint8_t price_exponent = static_cast<int8_t>(std::stoi(token));
 
+        out.write(reinterpret_cast<const char*>(&price_exponent), sizeof(uint8_t));
+
         std::getline(ss, token, ',');
         uint32_t quantity_raw = static_cast<uint32_t>(std::stoul(token));
+
+        out.write(reinterpret_cast<const char*>(&quantity_raw), sizeof(uint32_t));
 
         std::getline(ss, token, ',');
         uint8_t quantity_exponent = static_cast<int8_t>(std::stoi(token));
 
+        out.write(reinterpret_cast<const char*>(&quantity_exponent), sizeof(uint8_t));
+
         std::getline(ss, token, ',');
-        uint8_t taker_side = 0;
+        uint8_t taker_side = 0; // Default value
+        if (token.empty()) {
+            std::cerr << "Error: taker_side is empty in line: " << line << std::endl;
+            continue; // Skip this record if taker_side is empty
+        }
         if (token == "Ask" || token == "ask" || token == "1") {
-            taker_side = 1;
+            taker_side = 1; // Ask
         } else if (token == "Bid" || token == "bid" || token == "2") {
-            taker_side = 2;
-        } else {
-            taker_side = static_cast<uint8_t>(std::stoul(token));
+            taker_side = 2; // Bid
+        }
+        try {
+            taker_side = static_cast<uint8_t>(taker_side);
+            out.write(reinterpret_cast<const char*>(&taker_side), sizeof(uint8_t));
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Error: invalid taker_side value '" << token << "' in line: " << line << std::endl;
+            continue; // Skip this record if taker_side is invalid
         }
 
-        out.write(reinterpret_cast<const char *>(&symbol_id), sizeof(symbol_id));
-        out.write(reinterpret_cast<const char *>(&created_at), sizeof(created_at));
-        out.write(reinterpret_cast<const char *>(&trade_id), sizeof(trade_id));
-        out.write(reinterpret_cast<const char *>(&price_raw), sizeof(price_raw));
-        out.write(reinterpret_cast<const char *>(&price_exponent), sizeof(price_exponent));
-        out.write(reinterpret_cast<const char *>(&quantity_raw), sizeof(quantity_raw));
-        out.write(reinterpret_cast<const char *>(&quantity_exponent), sizeof(quantity_exponent));
-        out.write(reinterpret_cast<const char *>(&taker_side), sizeof(taker_side));
-        out.flush();
+
+        if (token.empty()) {
+            std::cerr << "Error: taker_side is empty in line: " << line << std::endl;
+            continue; // Skip this record if taker_side is empty
+        }
     }
 }
 
