@@ -1,4 +1,4 @@
-.PHONY: libs data
+all: libs server client test data
 
 CSVS := $(wildcard data/raw/*.csv)
 
@@ -16,3 +16,19 @@ data: $(CSVS) build/processor
 	@for file in $(CSVS); do \
 		./build/processor $$file; \
 	done
+
+server: build/server
+build/server:
+	echo "THIS WONT COMPILE BECAUSE OF MISSING EXECUTOR.CC; TEST WITH A DUMMY FUNCTION INSTEAD \(You can use early return in line 82 of server\)"
+	cd src/server && make && cd ../..
+
+client: build/client
+build/client:
+	cd src/client && make && cd ../..
+
+test: 
+	echo "NOT IMPLEMENTED BECAUSE CENTRAL TEST MAKEFILE ISN'T IMPLEMENTED YET"
+
+.PHONY: clean
+clean:
+	rm -rf build
