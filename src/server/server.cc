@@ -1,5 +1,5 @@
 #include "server.h"
-
+#include "../../processed_data/preproc.cc"
 #include "../utils/helper/utils.h"
 #include "../utils/net/net.h"
 #include "../utils/query.h"
@@ -87,18 +87,19 @@ int EpollServer::handle_trade_data_query(int sock, TradeDataQuery query) {
     task_queue_.pop();
     std::vector<Result> rresult;
     std::vector<TradeData> tresult;
-    Executor exec;
+    Executor exec(parse_csv("../data/trades-example.csv")); 
     int result_size;
     bool t_not_r;
-    if (task_query.resolution < 0){
+    if (task_query.resolution > 0){
       rresult = exec.lowest_and_highest_prices(task_query);
-      int result_size = static_cast<int>(rresult.size());
+      result_size = static_cast<int>(rresult.size());
       t_not_r=false;
 
   } else{
       tresult = exec.send_raw_data(task_query);
-      int result_size = static_cast<int>(rresult.size());
+      result_size = static_cast<int>(tresult.size());
       t_not_r=false;
+
     }
     // First, send the size of the result vector
     ssize_t bytes_sent =
