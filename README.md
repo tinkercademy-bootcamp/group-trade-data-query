@@ -22,7 +22,7 @@ The following is the current directory structure of the directory of the repo
 │       └── trades-tiny.csv
 ├── Makefile
 ├── process_data
-│   └── process_data.cpp
+│   └── process_data_main.cc
 ├── README.md
 ├── src
 │   ├── client
