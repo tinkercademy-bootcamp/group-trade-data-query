@@ -14,13 +14,16 @@
 class Executor
 {
 public:
+    
+    Executor(const std::vector<TradeData>& tradesInput) : trades(tradesInput) {};
+    ~Executor() = default;
     /**
      * @brief Computes the lowest and highest prices within the given query window.
      *
      * @param query  A TradeDataQuery specifying the symbol, time window, resolution, and metrics.
      * @return A vector of pairs of price structs representing the lowest and highest prices found.
      */
-    std::vector<Result> lowest_and_highest_prices(TradeDataQuery &query);
+    std::vector<Result> lowest_and_highest_prices(const TradeDataQuery &query);
     /**
      * @brief Retrieves raw trade data corresponding to the query parameters.
      *
@@ -31,6 +34,7 @@ public:
 
 private:
     // Any Internal members can be added here
+    std::vector<TradeData> trades;
 };
 
 #endif
