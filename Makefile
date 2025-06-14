@@ -10,7 +10,7 @@ build/client:
 	cd src/client && make && cd ../..
 
 test: 
-	echo "NOT IMPLEMENTED BECAUSE CENTRAL TEST MAKEFILE ISN"T IMPLEMENTED YET"
+	echo "NOT IMPLEMENTED BECAUSE CENTRAL TEST MAKEFILE ISN'T IMPLEMENTED YET"
 
 .PHONY: clean
 clean:
