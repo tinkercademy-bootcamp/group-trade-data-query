@@ -1,5 +1,14 @@
 # Trading Query Project
 
+## Makefiles
+Each component has its own makefile and can be compiled by running `make` in the respective directory. To make the whole program, call `make` from the project root.
+
+### Extending the Makefiles
+If your making a new main process, make a seperate Makefile.
+If you're adding components to an executable, make a new rule for the component's object file and add it as a pre-req for the target executable. Make sure to add any required directories in the `make dirs` target.
+
+In general, just read the Makefile and you'll immediately know what to do.
+
 ## External Tools
 run `make libs` to install nlohmann (a test dependency)
 
