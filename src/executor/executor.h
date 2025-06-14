@@ -4,6 +4,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
+
+#include <iterator>
 
 #include "../utils/query.h"
 
@@ -11,8 +14,7 @@
  * @class Executor
  * @brief Handles execution of trade data queries including price metrics and raw data retrieval.
  */
-class Executor
-{
+class Executor {
 public:
     
     Executor(const std::vector<TradeData>& tradesInput) : trades(tradesInput) {};
