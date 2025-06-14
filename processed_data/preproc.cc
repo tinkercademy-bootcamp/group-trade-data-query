@@ -11,6 +11,25 @@
  * @param filename Path to the CSV file
  * @return Vector of parsed TradeData records
  */
+
+// void print_trade(const TradeData& t) {
+//     std::cout
+//         << t.symbol_id << ','
+//         << t.created_at << ','
+//         << t.trade_id << ','
+//         << t.price.price << ','
+//         << t.quantity.quantity << ','
+//         << static_cast<int>(t.price.price_exponent) << ','
+//         << static_cast<int>(t.quantity.quantity_exponent) << ',';
+
+//     // Convert taker_side back to string
+//     if (t.taker_side == 1) std::cout << "Ask";
+//     else if (t.taker_side == 2) std::cout << "Bid";
+//     else std::cout << static_cast<int>(t.taker_side);  // fallback
+
+//     std::cout << '\n';
+// }
+
 std::vector<TradeData> parse_csv(const std::string& filename) {
     std::vector<TradeData> trades;
     std::ifstream file(filename);
@@ -71,25 +90,33 @@ std::vector<TradeData> parse_csv(const std::string& filename) {
     return trades;
 }
 
-// Simple test to verify parsing
-int main(int argc, char** argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <csv-file>\n";
-        return 1;
-    }
-    std::string filename = argv[1];
-    auto trades = parse_csv(filename);
+// // Simple test to verify parsing
+// int main(int argc, char** argv) {
+//     if (argc < 2) {
+//         std::cerr << "Usage: " << argv[0] << " <csv-file>\n";
+//         return 1;
+//     }
+//     std::string filename = argv[1];
+//     auto trades = parse_csv(filename);
 
-    std::cout << "Parsed " << trades.size() << " trades from " << filename << std::endl;
-    if (!trades.empty()) {
-        const auto& t = trades[0];
-        std::cout << "First record:\n"
-                  << "  symbol_id       = " << t.symbol_id << "\n"
-                  << "  created_at      = " << t.created_at << "\n"
-                  << "  trade_id        = " << t.trade_id << "\n"
-                  << "  price (raw)     = " << t.price.price << " * 10^" << int(t.price.price_exponent) << "\n"
-                  << "  quantity (raw)  = " << t.quantity.quantity << " * 10^" << int(t.quantity.quantity_exponent) << "\n"
-                  << "  taker_side      = " << int(t.taker_side) << "\n";
-    }
-    return 0;
-}
+//     std::cout << "Parsed " << trades.size() << " trades from " << filename << std::endl;
+//     if (!trades.empty()) {
+//         for (int i = 0; i < trades.size(); ++i) {
+//             const auto& t = trades[i];
+//             std::cout << "Record " << i + 1 << ":\n"
+//                       << "  symbol_id       = " << t.symbol_id << "\n"
+//                       << "  created_at      = " << t.created_at << "\n"
+//                       << "  trade_id        = " << t.trade_id << "\n"
+//                       << "  price (raw)     = " << t.price.price << " * 10^" << int(t.price.price_exponent) << "\n"
+//                       << "  quantity (raw)  = " << t.quantity.quantity << " * 10^" << int(t.quantity.quantity_exponent) << "\n"
+//                       << "  taker_side      = " << int(t.taker_side) << "\n";
+//         }
+//     }
+//     for (const auto& trade : trades) {
+//         print_trade(trade);
+//     }
+//     std::cout << "End of trades.\n";
+
+//     return 0;
+// }
+
