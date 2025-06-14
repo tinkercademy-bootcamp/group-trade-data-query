@@ -8,14 +8,21 @@ The following is the current directory structure of the directory of the repo
 
 ```
 .
-├── build
 ├── .gitignore
+├── build
+│   └── processor
 ├── data
+│   ├── processed
+│   │   ├── trades-example.bin
+│   │   ├── trades-small.bin
+│   │   └── trades-tiny.bin
 │   └── raw
 │       ├── trades-example.csv
 │       ├── trades-small.csv
 │       └── trades-tiny.csv
 ├── Makefile
+├── process_data
+│   └── process_data_main.cc
 ├── README.md
 ├── requirements.txt
 ├── src
@@ -34,6 +41,8 @@ The following is the current directory structure of the directory of the repo
 │   │   ├── sender.h
 │   │   ├── server.cc
 │   │   └── server.h
+│   ├── client_main.cc
+│   ├── server-main.cc
 │   └── utils
 │       ├── helper
 │       │   └── utils.h
