@@ -5,6 +5,7 @@
 #include <csignal>      
 #include <memory>      
 #include <vector>       
+#include <optional>
 
 #include <spdlog/spdlog.h>
 #include <unistd.h>     
@@ -14,6 +15,7 @@
 #include "client/client.h"
 #include "utils/query.h"
 
+#include <cmath> // for std::pow
 std::atomic<bool> g_client_running{true};
 
 int main(int argc, char* argv[]) {
@@ -59,11 +61,17 @@ int main(int argc, char* argv[]) {
     chat_client->send_message(query);
     std::vector<Result> output = chat_client->read_min_max();
 
-    for(Result data : output) {
-      std::cout << "Timestamp: " << data.start_time 
-        << "; Min Price: " << data.lowest_price.price << "e" << data.lowest_price.price_exponent
-        << "; Max Price: " << data.highest_price.price << "e" << data.highest_price.price_exponent
-        << std::endl;
+
+    for (const Result& data : output) {
+        int low_exp = static_cast<int>(data.lowest_price.price_exponent);
+        int high_exp = static_cast<int>(data.highest_price.price_exponent);
+
+        std::cout << "Timestamp: " << data.start_time
+                << "; Min Price: " << data.lowest_price.price << "e" << low_exp
+                << "; Max Price: " << data.highest_price.price << "e" << high_exp
+                << std::endl;
+
+
     }
   }
 
