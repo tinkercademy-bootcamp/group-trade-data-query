@@ -1,4 +1,4 @@
-all: libs server client test data
+all: libs server client test
 
 CSVS := $(wildcard data/raw/*.csv)
 
