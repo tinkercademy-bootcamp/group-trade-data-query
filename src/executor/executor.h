@@ -4,6 +4,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <algorithm>
+
+#include <iterator>
 
 #include "../utils/query.h"
 
@@ -11,8 +14,7 @@
  * @class Executor
  * @brief Handles execution of trade data queries including price metrics and raw data retrieval.
  */
-class Executor
-{
+class Executor {
 public:
     /**
      * @brief Computes the lowest and highest prices within the given query window.
@@ -20,7 +22,7 @@ public:
      * @param query  A TradeDataQuery specifying the symbol, time window, resolution, and metrics.
      * @return A vector of pairs of price structs representing the lowest and highest prices found.
      */
-    std::vector<Result> lowest_and_highest_prices(TradeDataQuery &query);
+    std::vector<std::pair<Price, Price>> lowest_and_highest_prices(const TradeDataQuery &query);
     /**
      * @brief Retrieves raw trade data corresponding to the query parameters.
      *
@@ -31,6 +33,7 @@ public:
 
 private:
     // Any Internal members can be added here
+    std::vector<TradeData> &trades;
 };
 
 #endif
