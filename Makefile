@@ -19,7 +19,6 @@ data: $(CSVS) build/processor
 
 server: build/server
 build/server:
-	echo "THIS WONT COMPILE BECAUSE OF MISSING EXECUTOR.CC; TEST WITH A DUMMY FUNCTION INSTEAD \(You can use early return in line 82 of server\)"
 	cd src/server && make && cd ../..
 
 client: build/client
