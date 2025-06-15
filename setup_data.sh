@@ -1,3 +1,6 @@
+# call it as `bash setup_data.sh <team_id>` where team_id is 1,2,3 or 4
+# it will automatically download, extract, clean and preprocess the data
+
 remote_data_dir="/home/trade-data"
 data_files="trades-example trades-tiny trades-small"
 final_dir="./data/raw"
@@ -24,3 +27,6 @@ for data_file in $data_files; do
     tar -xzvf "$final_dir/$data_file.tar.gz" -C "$final_dir"
 done
 
+make data
+make remove_spaces
+make processed_data
