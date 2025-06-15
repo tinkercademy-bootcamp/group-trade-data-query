@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS := -std=c++20# -Wall -Wextra -pedantic -fsanitize=address
+CXXFLAGS := -std=c++20 -Wall -Wextra -pedantic -fsanitize=address -g3 -ggdb3
 
 LDFLAGS := -fsanitize=address
 LIBS := fmt spdlog
