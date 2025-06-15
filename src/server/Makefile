@@ -9,10 +9,10 @@ dirs:
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(OBJ_DIR)/server
 	mkdir -p $(OBJ_DIR)/net
-	mkdir -p $(OBJ_DIR)/executor
+	mkdir -p $(OBJ_DIR)/query_engine
 
-$(BUILD_DIR)/server: $(OBJ_DIR)/server/server_main.o $(OBJ_DIR)/server/server.o $(OBJ_DIR)/net/net.o $(OBJ_DIR)/server/sender.o $(OBJ_DIR)/server/receiver.o $(OBJ_DIR)/executor/executor.o
-	g++ $(STD_FLAG) $(OBJ_DIR)/server/server_main.o $(OBJ_DIR)/server/server.o $(OBJ_DIR)/net/net.o $(OBJ_DIR)/server/sender.o $(OBJ_DIR)/server/receiver.o $(OBJ_DIR)/executor/executor.o -o $(BUILD_DIR)/server $(LD_FLAGS)
+$(BUILD_DIR)/server: $(OBJ_DIR)/server/server_main.o $(OBJ_DIR)/server/server.o $(OBJ_DIR)/net/net.o $(OBJ_DIR)/server/sender.o $(OBJ_DIR)/server/receiver.o $(OBJ_DIR)/query_engine/query_engine.o
+	g++ $(STD_FLAG) $(OBJ_DIR)/server/server_main.o $(OBJ_DIR)/server/server.o $(OBJ_DIR)/net/net.o $(OBJ_DIR)/server/sender.o $(OBJ_DIR)/server/receiver.o $(OBJ_DIR)/query_engine/query_engine.o -o $(BUILD_DIR)/server $(LD_FLAGS)
 
 $(OBJ_DIR)/server/server_main.o: ../server_main.cc
 	g++ $(STD_FLAG) -c ../server_main.cc -o $(OBJ_DIR)/server/server_main.o
@@ -29,8 +29,8 @@ $(OBJ_DIR)/server/receiver.o: receiver.cc
 $(OBJ_DIR)/server/sender.o: sender.cc
 	g++ $(STD_FLAG) -c sender.cc -o $(OBJ_DIR)/server/sender.o
 
-$(OBJ_DIR)/executor/executor.o: ../executor/executor.cc
-	g++ $(STD_FLAG) -c ../executor/executor.cc -o $(OBJ_DIR)/executor/executor.o
+$(OBJ_DIR)/query_engine/query_engine.o: ../query_engine/query_engine.cc
+	g++ $(STD_FLAG) -c ../query_engine/query_engine.cc -o $(OBJ_DIR)/query_engine/query_engine.o
 
 .PHONY: clean
 clean:
