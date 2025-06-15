@@ -1,4 +1,5 @@
 #include "server.h"
+#include "../query_engine/query_engine.h"
 // #include "../../processed_data/preproc.cc"
 #include "../utils/helper/utils.h"
 #include "../utils/net/net.h"
