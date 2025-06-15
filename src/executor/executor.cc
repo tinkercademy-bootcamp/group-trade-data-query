@@ -7,6 +7,10 @@
 #include <algorithm>
 #include <ranges>
 
+uint64_t int_ceil(uint64_t x, uint64_t y){
+    return (x/y) + (x%y != 0);
+}
+
 std::vector<Result> Executor::lowest_and_highest_prices(
     const TradeDataQuery& query) {
     std::vector<Result> result;
@@ -37,14 +41,21 @@ std::vector<Result> Executor::lowest_and_highest_prices(
     uint64_t ind = 0;
 
     for (uint64_t offset = query.start_time_point; offset < query.end_time_point; offset += query.resolution) {
+        if(ind >= trades.size()) break;
+
+        if(offset < trades[ind].created_at){
+            uint64_t times = int_ceil(trades[ind].created_at-offset+1, query.resolution)-1;
+            offset += query.resolution*times;
+        }
+
         Price min_price = {0, 0};  // Reset min price
         Price max_price = {0, 0};  // Reset max price
         min_price_value = __DBL_MAX__;
         max_price_value = __DBL_MIN__;
 
-        while (trades[ind].created_at < query.start_time_point) ind++;
+        while (ind < trades.size() && trades[ind].created_at < query.start_time_point) ind++;
 
-        while (trades[ind].created_at < query.end_time_point && trades[ind].created_at < offset + query.resolution) {
+        while (ind < trades.size() && trades[ind].created_at < query.end_time_point && trades[ind].created_at < offset + query.resolution) {
             double price_value = trades[ind].price.price * std::pow(10, trades[ind].price.price_exponent);
 
             if (price_value < min_price_value) {
@@ -61,16 +72,19 @@ std::vector<Result> Executor::lowest_and_highest_prices(
             }
         }
 
-        result.push_back({
-            bucket_start_time,
-            min_price,
-            max_price
-        });
-        bucket_start_time += query.resolution;
-        ind++;  // Move to the next trade
-        if (ind >= trades.size()) {
-            break;  // No more trades to process
+        std::cout << "Offset = " << offset << std::endl;
+        std::cout << "Min price ";
+        std::cout << min_price.price << std::endl;
+
+        if(min_price.price != 0){
+            result.push_back({
+                bucket_start_time,
+                min_price,
+                max_price
+            });
         }
+
+        bucket_start_time += query.resolution;
     }
 
     std::cout << "Size of result = " << result.size() << std::endl;

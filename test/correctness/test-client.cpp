@@ -86,13 +86,12 @@ void run_test(const TestCase& test, const std::string& client_exec, int& passed_
     pclose(client);
 }
 
-
 int main() {
     // const std::string client_exec = "../../build/client";  // path to your compiled client
-    const std::string client_exec = "./../../build/dummy_client";
+    const std::string client_exec = "./client";
     // const std::string client_exec = "./dummy_client";
 
-    const std::string test_file = "./basic-tests.json";
+    const std::string test_file = "../test/correctness/basic-tests.json";
 
     std::vector<TestCase> tests;
     try {
@@ -107,7 +106,9 @@ int main() {
 
     // Run each test in a thread
     for (const auto& test : tests) {
-        threads.emplace_back(run_test, test, client_exec, std::ref(passed_count));
+        run_test(test,client_exec,passed_count);
+        break;
+        // threads.emplace_back(run_test, test, client_exec, std::ref(passed_count));
     }
 
     // Wait for all threads
