@@ -24,14 +24,14 @@ int32_t main(int32_t argc, char* argv[]) {
   int32_t port = 8080;
 
   if (argc > 1) {
-      server_ip = argv[1];
+    server_ip = argv[1];
   }
   if (argc > 2) {
-      try {
-          port = std::stoi(argv[2]);
-      } catch (const std::exception& e) {
-          std::cerr << "Invalid port number: " << argv[2] << ". Using default " << port << std::endl;
-      }
+    try {
+      port = std::stoi(argv[2]);
+    } catch (const std::exception& e) {
+      std::cerr << "Invalid port number: " << argv[2] << ". Using default " << port << std::endl;
+    }
   }
 
   spdlog::set_level(spdlog::level::info);
@@ -39,16 +39,16 @@ int32_t main(int32_t argc, char* argv[]) {
 
   std::optional<client::Client> chat_client;
   try {
-      chat_client.emplace(port, server_ip);
-      std::cout << "Connected to server. Type messages or '/quit' to exit." << std::endl;
+    chat_client.emplace(port, server_ip);
+    std::cout << "Connected to server. Type messages or '/quit' to exit." << std::endl;
   } catch (const std::runtime_error& e) {
-      spdlog::critical("Failed to create or connect client: {}", e.what());
-      std::cerr << "Error connecting to server: " << e.what() << std::endl;
-      return EXIT_FAILURE;
+    spdlog::critical("Failed to create or connect client: {}", e.what());
+    std::cerr << "Error connecting to server: " << e.what() << std::endl;
+    return EXIT_FAILURE;
   } catch (...) {
-      spdlog::critical("An unknown error occurred during client initialization.");
-      std::cerr << "An unknown error occurred during client initialization." << std::endl;
-      return EXIT_FAILURE;
+    spdlog::critical("An unknown error occurred during client initialization.");
+    std::cerr << "An unknown error occurred during client initialization." << std::endl;
+    return EXIT_FAILURE;
   }
 
   int32_t client_socket_fd = chat_client->get_socket_fd();
@@ -63,10 +63,10 @@ int32_t main(int32_t argc, char* argv[]) {
 
 
     for (const Result& data : output) {
-        int32_t low_exp = static_cast<int32_t>(data.lowest_price.price_exponent);
-        int32_t high_exp = static_cast<int32_t>(data.highest_price.price_exponent);
+      int32_t low_exp = static_cast<int32_t>(data.lowest_price.price_exponent);
+      int32_t high_exp = static_cast<int32_t>(data.highest_price.price_exponent);
 
-        std::cout << "Timestamp: " << data.start_time
+      std::cout << "Timestamp: " << data.start_time
                 << "; Min Price: " << data.lowest_price.price << "e" << low_exp
                 << "; Max Price: " << data.highest_price.price << "e" << high_exp
                 << std::endl;
