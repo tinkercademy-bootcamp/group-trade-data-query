@@ -24,7 +24,7 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
     // Skip header
     if (!std::getline(file, line))
         return;
-
+    TradeData trade;
     while (std::getline(file, line)) {
         if (line.empty() || line == "symbol_id,created_at,trade_id,price,quantity,price_exponent,quantity_exponent,taker_side\n") {
             continue; // Skip empty lines or header
@@ -64,14 +64,18 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
             taker_side = static_cast<uint8_t>(std::stoul(token));
         }
 
-        out.write(reinterpret_cast<const char *>(&symbol_id), sizeof(symbol_id));
-        out.write(reinterpret_cast<const char *>(&created_at), sizeof(created_at));
-        out.write(reinterpret_cast<const char *>(&trade_id), sizeof(trade_id));
-        out.write(reinterpret_cast<const char *>(&price_raw), sizeof(price_raw));
-        out.write(reinterpret_cast<const char *>(&quantity_raw), sizeof(quantity_raw));
-        out.write(reinterpret_cast<const char *>(&price_exponent), sizeof(price_exponent));
-        out.write(reinterpret_cast<const char *>(&quantity_exponent), sizeof(quantity_exponent));
-        out.write(reinterpret_cast<const char *>(&taker_side), sizeof(taker_side));
+        // std::cout << sizeof(TradeData) << std::endl;
+
+        trade.symbol_id = symbol_id;
+        trade.created_at = created_at;
+        trade.trade_id = trade_id;
+        trade.price.price = price_raw;
+        trade.price.price_exponent = price_exponent;
+        trade.quantity.quantity = quantity_raw;
+        trade.quantity.quantity_exponent = quantity_exponent;
+        trade.taker_side = taker_side;
+
+        out.write(reinterpret_cast<const char *>(&trade), sizeof(TradeData));
         out.flush();
     }
 }

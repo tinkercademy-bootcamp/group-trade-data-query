@@ -19,14 +19,7 @@ Query_engine::Query_engine() {
 
 bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
     data.seekg(ind * sizeof(TradeData), std::ios::beg);
-    if (data.read(reinterpret_cast<char*>(&trade.symbol_id), sizeof(trade.symbol_id)) &&
-        data.read(reinterpret_cast<char*>(&trade.created_at), sizeof(trade.created_at)) &&
-        data.read(reinterpret_cast<char*>(&trade.trade_id), sizeof(trade.trade_id)) &&
-        data.read(reinterpret_cast<char*>(&trade.price.price), sizeof(trade.price.price)) &&
-        data.read(reinterpret_cast<char*>(&trade.quantity.quantity), sizeof(trade.quantity.quantity)) &&
-        data.read(reinterpret_cast<char*>(&trade.price.price_exponent), sizeof(trade.price.price_exponent)) &&
-        data.read(reinterpret_cast<char*>(&trade.quantity.quantity_exponent), sizeof(trade.quantity.quantity_exponent)) &&
-        data.read(reinterpret_cast<char*>(&trade.taker_side), sizeof(trade.taker_side))) {
+    if (data.read(reinterpret_cast<char *>(&trade), sizeof(TradeData))) {
         std::cout << trade.symbol_id << " " 
                   << trade.created_at << " "
                   << trade.trade_id << " "
