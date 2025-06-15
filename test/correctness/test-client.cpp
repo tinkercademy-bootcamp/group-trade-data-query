@@ -45,7 +45,7 @@ std::string trim(const std::string& s) {
     size_t end = s.find_last_not_of(" \n\r\t");
     return (end == std::string::npos) ? "" : s.substr(0, end + 1);
 }
-void run_test(const TestCase& test, const std::string& client_exec, int& passed_count) {
+void run_test(const TestCase& test, const std::string& client_exec, int32_t& passed_count) {
     std::string command = "echo \"" + test.input + "\" | " + client_exec + " 2>&1";
     {
         std::lock_guard<std::mutex> lock(cout_mutex);
@@ -87,7 +87,7 @@ void run_test(const TestCase& test, const std::string& client_exec, int& passed_
 }
 
 
-int main() {
+int32_t main() {
     // const std::string client_exec = "../../build/client";  // path to your compiled client
     const std::string client_exec = "./../../build/dummy_client";
     // const std::string client_exec = "./dummy_client";
@@ -102,7 +102,7 @@ int main() {
         return 1;
     }
 
-    int passed_count = 0;
+    int32_t passed_count = 0;
     std::vector<std::thread> threads;
 
     // Run each test in a thread
@@ -114,6 +114,6 @@ int main() {
     for (auto& t : threads) t.join();
 
     std::cout << "\nSummary: " << passed_count << "/" << tests.size() << " tests passed.\n";
-    return (passed_count == static_cast<int>(tests.size())) ? 0 : 1;
+    return (passed_count == static_cast<int32_t>(tests.size())) ? 0 : 1;
 
 }
