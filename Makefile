@@ -6,7 +6,7 @@ server:
 	cd src/server && make && cd ../..
 
 client:
-	cd src/client && make && cd ../..
+	cd src/client && make && cd ../..	
 
 test: 
 	echo "NOT IMPLEMENTED BECAUSE CENTRAL TEST MAKEFILE ISN'T IMPLEMENTED YET"
