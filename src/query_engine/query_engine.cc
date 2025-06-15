@@ -1,4 +1,4 @@
-#include "executor.h"
+#include "query_engine.h"
 #include "../../processed_data/preproc.h"
 #include "../utils/query.h"
 #include <cmath>
@@ -7,20 +7,20 @@
 #include <algorithm>
 #include <ranges>
 
-std::vector<Result> Executor::lowest_and_highest_prices(
+std::vector<Result> Query_engine::lowest_and_highest_prices(
     const TradeDataQuery& query) {
 
     std::vector<Result> result;
 
     // Early exit if no trades available
     if (trades.empty()) {
-        std::cout << "[Executor] No trades available.\n";
+        std::cout << "[Query_engine] No trades available.\n";
         return result;
     }
 
     // Check if bit flag for min/max is enabled (bit 0)
     if ((query.metrics & (1 << 0)) == 0) {
-        std::cout << "[Executor] Bit 0 (min/max) not set. Skipping computation.\n";
+        std::cout << "[Query_engine] Bit 0 (min/max) not set. Skipping computation.\n";
         return result;
     }
 
@@ -79,7 +79,7 @@ std::vector<Result> Executor::lowest_and_highest_prices(
 
 namespace ranges = std::ranges;
 
-std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
+std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
 {
   std::sort(trades.begin(), trades.end(), [](const TradeData& a, const TradeData& b) {
         return a.created_at < b.created_at;
@@ -87,7 +87,7 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
   auto it_start = std::ranges::lower_bound(trades, query.start_time_point, {}, &TradeData::created_at);
   auto it_end = std::ranges::lower_bound(trades, query.end_time_point, {}, &TradeData::created_at);
 
-  std::cout << "[Executor] Returning trades between " 
+  std::cout << "[Query_engine] Returning trades between " 
             << query.start_time_point << " and " << query.end_time_point << ". "
             << "Found: " << std::distance(it_start, it_end) << " trades.\n";
 
@@ -103,7 +103,7 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 //     std::string filename = argv[1];
 //     auto trades = parse_csv(filename);
 
-//     Executor executor(trades);
+//     Query_engine Query_engine(trades);
 //     std::cout << "Parsed " << trades.size() << " trades from " << filename << std::endl;
 //     TradeDataQuery query = {
 //         .symbol_id = 1,
@@ -112,7 +112,7 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 //         .resolution = 1000000000000000000, // 100 milliseconds
 //         .metrics = 1 // Enable min/max
 //     };
-//     auto results = executor.lowest_and_highest_prices(query);
+//     auto results = Query_engine.lowest_and_highest_prices(query);
 //     std::cout << "Computed " << results.size() << " results for lowest and highest prices.\n";
 //     for (const auto& res : results) {
 //         std::cout << "Start Time: " << res.start_time << ", "
@@ -121,7 +121,7 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 //                   << "Highest Price: " << res.highest_price.price << " * 10^" 
 //                   << static_cast<int>(res.highest_price.price_exponent) << "\n";
 //     }
-//     auto raw_data = executor.send_raw_data(query);
+//     auto raw_data = Query_engine.send_raw_data(query);
 //     std::cout << "Retrieved " << raw_data.size() << " raw trades.\n";
 //     for (const auto& trade : raw_data) {
 //         std::cout << "Trade ID: " << trade.trade_id << ", "
@@ -132,7 +132,7 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 //                   << "Quantity: " << trade.quantity.quantity << " * 10^" 
 //                   << static_cast<int>(trade.quantity.quantity_exponent) << "\n";
 //     }
-//     std::cout << "Executor operations completed successfully.\n";
+//     std::cout << "Query_engine operations completed successfully.\n";
     
 //     return 0;
 // }
