@@ -93,7 +93,7 @@ int EpollServer::handle_trade_data_query(int sock, TradeDataQuery query) {
     task_queue_.pop();
     std::vector<Result> rresult;
     std::vector<TradeData> tresult;
-    Executor exec(parse_csv("../data/trades-example.csv")); 
+    Executor exec(parse_csv("data/raw/trades-example.csv")); 
     int result_size;
     bool t_not_r;
     if (task_query.resolution > 0){
