@@ -6,7 +6,7 @@ int32_t net::create_socket() {
     return sock;
 }
 
-sockaddr_in net::create_address(int32_t port) {
+sockaddr_in net::create_address(uint16_t port) {
     sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_port = htons(port);

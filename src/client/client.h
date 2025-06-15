@@ -16,7 +16,7 @@ namespace client {
          * @param server_address The IP address or hostname of the server.
          * @throws std::runtime_error if socket creation or connection fails.
          */
-        Client(int32_t port, const std::string &server_address);
+        Client(uint16_t port, const std::string &server_address);
         /**
          * @brief Sends a message to the connected server.
          * @param message The message string to send.
@@ -42,7 +42,7 @@ namespace client {
          * @return A configured sockaddr_in structure.
          * @throws std::runtime_error on invalid address.
          */
-        sockaddr_in create_server_address(const std::string &server_ip, int32_t port);
+        sockaddr_in create_server_address(const std::string &server_ip, uint16_t port);
         /**
          * @brief Connects the client's socket to the specified server address.
          * @param server_address The sockaddr_in structure representing the server.

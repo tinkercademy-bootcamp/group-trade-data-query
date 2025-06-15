@@ -19,7 +19,7 @@ std::vector<TradeData> execute_task(TradeDataQuery& query) {
 
 constexpr int32_t MAX_EVENTS = 10;
 
-EpollServer::EpollServer(int32_t port)
+EpollServer::EpollServer(uint16_t port)
     : server_listen_fd_(net::create_socket()),
       server_address_(net::create_address(port)),
       epoll_fd_(epoll_fd_ = epoll_create1(0)) {
