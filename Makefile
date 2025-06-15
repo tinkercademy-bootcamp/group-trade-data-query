@@ -51,13 +51,12 @@ build/processor: process_data/process_data_main.cc
 	mkdir -p build
 	$(CXX) $(CXXFLAGS) $(CXX_RELEASE_FLAGS) $^ -o $@
 
-.PHONY: all clean libs data remove_spaces processed_data
+.PHONY: all clean libs data remove_spaces processed_data download-data
 
 # Don't add data to all as data is a PHONY target
 data:
 	mkdir -p data
 	mkdir -p data/raw
-	sh process_data/setup_data.sh
 
 remove_spaces:
 	@for file in $(CSVS); do \

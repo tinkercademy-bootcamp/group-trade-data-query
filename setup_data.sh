@@ -10,9 +10,14 @@ for data_file in $data_files; do
         continue
     fi
 
+    if [ -z "$1" ]; then
+            echo "Usage: sh setup_data.sh <team-id>, team-id can be 1,2,3 or 4"
+            exit 1
+    fi
+
     if [ ! -f "$final_dir/$data_file.tar.gz" ]; then
         echo "Downloading $data_file.tar.gz"
-        scp user@team3.tnkr.be:"$remote_data_dir/$data_file.tar.gz" "$final_dir/$data_file.tar.gz"
+        scp user@team$1.tnkr.be:"$remote_data_dir/$data_file.tar.gz" "$final_dir/$data_file.tar.gz"
     fi
 
     echo "Extracting $data_file.tar.gz"
