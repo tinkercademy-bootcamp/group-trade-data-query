@@ -73,4 +73,10 @@ struct Result {
   Price highest_price;
 };
 
+
+struct StdDevResult {
+    uint64_t start_time;
+    Price std_dev_price;
+};
+
 #endif

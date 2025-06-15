@@ -26,6 +26,11 @@ public:
      * @return A vector of pairs of price structs representing the lowest and highest prices found.
      */
     std::vector<Result> lowest_and_highest_prices(const TradeDataQuery &query);
+
+
+    std::vector<StdDevResult> price_standard_deviation(const TradeDataQuery& query);
+
+
     /**
      * @brief Retrieves raw trade data corresponding to the query parameters.
      *
