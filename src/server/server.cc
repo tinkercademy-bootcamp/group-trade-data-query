@@ -94,7 +94,7 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
     task_queue_.pop();
     std::vector<Result> rresult;
     std::vector<TradeData> tresult;
-    Executor exec; 
+    Query_engine exec; 
     int result_size;
     bool t_not_r;
     if (task_query.resolution > 0){

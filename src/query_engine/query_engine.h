@@ -14,11 +14,11 @@
  * @class Query_engine
  * @brief Handles execution of trade data queries including price metrics and raw data retrieval.
  */
-class Executor {
+class Query_engine {
 public:
     
-    Executor();
-    ~Executor() = default;
+    Query_engine();
+    ~Query_engine() = default;
     /**
      * @brief Computes the lowest and highest prices within the given query window.
      *
