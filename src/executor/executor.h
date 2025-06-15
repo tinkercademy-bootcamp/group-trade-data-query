@@ -1,5 +1,5 @@
-#ifndef QUERY_ENGINE_H
-#define QUERY_ENGINE_H
+#ifndef EXECUTOR_H
+#define EXECUTOR_H
 
 #include <memory>
 #include <string>
@@ -11,10 +11,10 @@
 #include "../utils/query.h"
 
 /**
- * @class Query_engine
+ * @class Executor
  * @brief Handles execution of trade data queries including price metrics and raw data retrieval.
  */
-class Query_engine {
+class Executor {
 public:
     
     Executor();

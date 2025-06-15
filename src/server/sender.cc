@@ -2,7 +2,7 @@
 
 #include "../utils/query.h"
 
-void OffloadQueue::serialise_and_enqueue(int32_t sockfd,
+void OffloadQueue::serialise_and_enqueue(int sockfd,
                                          const std::string& final_result) {
   std::string serialised_data = serialise(final_result);
   queue_.push({sockfd, serialised_data});
@@ -16,7 +16,7 @@ void OffloadQueue::offload_one() {
   }
 }
 
-void send_data(int32_t sockfd, const std::string& data) {
+void send_data(int sockfd, const std::string& data) {
   ssize_t bytes_sent = send(sockfd, data.c_str(), data.size(), 0);
   if (bytes_sent < 0) {
     throw std::runtime_error("Failed to send data: " +
@@ -30,7 +30,7 @@ void send_data(int32_t sockfd, const std::string& data) {
 // not implemented for now
 std::string serialise(const std::string& final_result) { return final_result; }
 
-void send_without_serialisation(int32_t sockfd, Result& result) {
+void send_without_serialisation(int sockfd, Result& result) {
   ssize_t bytes_sent = send(sockfd, &result, sizeof(result), 0);
   if (bytes_sent < 0) {
     throw std::runtime_error("Failed to send data: " +
@@ -41,7 +41,7 @@ void send_without_serialisation(int32_t sockfd, Result& result) {
   }
 }
 
-void send_without_serialisation(int32_t sockfd, TradeData& data) {
+void send_without_serialisation(int sockfd, TradeData& data) {
   ssize_t bytes_sent = send(sockfd, &data, sizeof(data), 0);
   if (bytes_sent < 0) {
     throw std::runtime_error("Failed to send data: " +
