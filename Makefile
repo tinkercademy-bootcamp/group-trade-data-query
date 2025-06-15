@@ -17,4 +17,6 @@ clean:
 # Add any external libraries here. Make sure you put the installation location in .gitignore, and update the README.
 libs:
 	mkdir -p ./test/nlohmann/
-	curl -sL https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp -o ./test/nlohmann/json.hpp
+	if [ ! -f ./test/nlohmann/json.hpp ]; then \
+		curl -sL https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp -o ./test/nlohmann/json.hpp; \
+	fi
