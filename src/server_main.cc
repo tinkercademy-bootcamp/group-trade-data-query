@@ -1,8 +1,8 @@
 #include "server/server.h"
 #include <spdlog/spdlog.h>  
 
-int32_t main(){
-  int32_t kPort;
+int main(){
+  int kPort;
   kPort = 8080;
   EpollServer server(kPort);
   spdlog::info("Server started on port {}", kPort);
