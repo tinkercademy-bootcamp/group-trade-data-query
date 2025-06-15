@@ -51,10 +51,19 @@ build/processor: process_data/process_data_main.cc
 	mkdir -p build
 	$(CXX) $(CXXFLAGS) $(CXX_RELEASE_FLAGS) $^ -o $@
 
-.PHONY: all clean libs data
+.PHONY: all clean libs data remove_spaces processed_data
 
 # Don't add data to all as data is a PHONY target
-data: build/processor $(CSVS)
+data:
+	mkdir -p data
+	mkdir -p data/raw
+
+remove_spaces:
+	@for file in $(CSVS); do \
+		sed -i 's/ //g' $$file; \
+	done
+
+processed_data: build/processor $(CSVS)
 	mkdir -p data/processed
 	@for file in $(CSVS); do \
 		$< $$file; \
