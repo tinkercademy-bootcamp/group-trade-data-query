@@ -24,10 +24,6 @@ SERVER_HEADERS := $(shell find src/server -type f -name '*.h') $(shell find src/
 
 PROCESS_DATA := $(SRC_DIR)/process_data/process_data_main.cc
 
-libs:
-	mkdir -p test/nlohmann
-	curl -sL https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp -o ./test/nlohmann/json.hpp
-
 build:
 	mkdir -p build
 
