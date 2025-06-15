@@ -39,9 +39,9 @@ The following is the current directory structure of the directory of the repo
 │   │   ├── client.cc
 │   │   ├── client.h
 │   │   └── Makefile
-│   ├── executor
-│   │   ├── executor.cc
-│   │   └── executor.h
+│   ├── query_engine
+│   │   ├── query_engine.cc
+│   │   └── query_engine.h
 │   ├── Makefile
 │   ├── server
 │   │   ├── Makefile
