@@ -1,4 +1,4 @@
-.PHONY: all test clean server client run-tests perf-test help
+.PHONY: all test clean run-tests perf-test help
 .DEFAULT_GOAL := all
 
 # Directories
@@ -9,13 +9,9 @@ SERVER_BUILD := $(BUILD_DIR)
 CLIENT_BUILD := $(BUILD_DIR)
 TEST_BUILD := $(BUILD_DIR)
 
-# Source paths
-SERVER_SRC := $(SRC_DIR)/server
-CLIENT_SRC := $(SRC_DIR)/client
-
 # Executables
-SERVER_EXEC := $(SERVER_BUILD)/server
-CLIENT_EXEC := $(CLIENT_BUILD)/client
+SERVER_EXEC := $(SERVER_BUILD)/server-bin
+CLIENT_EXEC := $(CLIENT_BUILD)/client-bin
 SIMPLE_TEST := $(TEST_BUILD)/simple_test
 DUMMY_CLIENT := $(TEST_BUILD)/dummy_client
 PERF_TEST := $(TEST_BUILD)/perf_test
@@ -67,7 +63,7 @@ help: ## Show available targets
 
 
 all:
-	$(MAKE) run-perf-tests USE_DUMMY=1
+	$(MAKE) run-perf-tests 
 
 run-perf-tests: setup dummy-client perf-test ## Run performance tests with configurable number of clients
 	@$(eval CLIENTS := $(or $(CLIENTS),$(DEFAULT_CLIENTS)))
@@ -107,7 +103,7 @@ run-incremental-tests: setup dummy-client perf-test ## Run perf tests incrementa
 
 
 
-setup: ## Create test directories and files
+setup: server client
 	@echo "$(YELLOW)Setting up performance test environment...$(NC)"
 	@mkdir -p $(SERVER_BUILD) $(CLIENT_BUILD) $(TEST_BUILD)
 	@if [ ! -f $(SERVER_EXEC) ]; then \
@@ -126,11 +122,11 @@ setup: ## Create test directories and files
 
 server: ## Build server for testing
 	@echo "$(YELLOW)Building server via server's Makefile...$(NC)"
-	@$(MAKE) -C $(SERVER_SRC) BUILD_DIR=$(SERVER_BUILD)
+	@$(MAKE) -C $(ROOT_DIR) build/server-bin
 
 client: ## Build client for testing
 	@echo "$(YELLOW)Building client via client's Makefile...$(NC)"
-	@$(MAKE) -C $(CLIENT_SRC) BUILD_DIR=$(CLIENT_BUILD)
+	@$(MAKE) -C $(ROOT_DIR) build/client-bin
 
 dummy-client: ## Build the dummy client for testing
 	@echo "$(YELLOW)Building dummy client...$(NC)"

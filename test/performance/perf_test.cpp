@@ -104,7 +104,7 @@ public:
         result.response_time_ms = 0.0;
         result.start_time = high_resolution_clock::now();
         
-        std::string command = "echo \"" + test.input + "\" | " + client_exec + " 2>&1";
+        std::string command = "sh -c 'printf \"" + test.input + "\\n\" | " + client_exec + "' 2>&1";
         
         FILE* client = popen(command.c_str(), "r");
         if (!client) {
@@ -133,6 +133,8 @@ public:
             result.passed = true;
         } else {
             result.error_message = test.error_msg;
+            std::cout<<"response: "<<response<<std::endl;
+            std::cout<<"expected: "<<test.expected_output<<std::endl;
         }
         
         pclose(client);

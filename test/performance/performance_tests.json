@@ -1,16 +1,16 @@
 {
   "tests": [
     {
-      "test_id": "uppercase_hello",
-      "input": "hello",
-      "expected_output": "hello_processed",
-      "error_msg": "Failed to convert 'hello' to uppercase."
+      "test_id": "test3",
+      "input": "1 1747267200000000000 1747267200000000001 1 1",
+      "expected_output": "Timestamp: 1747267200000000000; Min Price: 29913e-2; Max Price: 29913e-2",
+      "error_msg": "Test 1 failed."
     },
     {
-      "test_id": "uppercase_world",
-      "input": "world",
-      "expected_output": "world_processed",
-      "error_msg": "Failed to convert 'world' to uppercase."
+      "test_id": "test2",
+      "input": "1 1747267200000000000 1747267200017109815 10000000 1",
+      "expected_output": "Timestamp: 1747267200000000000; Min Price: 29913e-2; Max Price: 29913e-2",
+      "error_msg": "Test 2 failed."
     }
   ]
 }
