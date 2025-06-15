@@ -9,7 +9,6 @@
 
 std::vector<Result> Executor::lowest_and_highest_prices(
     const TradeDataQuery& query) {
-
     std::vector<Result> result;
 
     // Early exit if no trades available
@@ -28,7 +27,8 @@ std::vector<Result> Executor::lowest_and_highest_prices(
 
     // Calculate size of each time bucket based on resolution // Assuming resolution > 0
     uint64_t num_buckets = (query.end_time_point - query.start_time_point + (query.resolution - 1)) / query.resolution;
-
+    
+    std::cout << "Num buckets = " << num_buckets << std::endl;
 
     // result = std::vector<Result>(num_buckets);
 
@@ -72,6 +72,8 @@ std::vector<Result> Executor::lowest_and_highest_prices(
             break;  // No more trades to process
         }
     }
+
+    std::cout << "Size of result = " << result.size() << std::endl;
 
     return result;
 }
