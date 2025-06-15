@@ -57,6 +57,7 @@ build/processor: process_data/process_data_main.cc
 data:
 	mkdir -p data
 	mkdir -p data/raw
+	sh process_data/setup_data.sh
 
 remove_spaces:
 	@for file in $(CSVS); do \
