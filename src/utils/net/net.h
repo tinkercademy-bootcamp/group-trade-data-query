@@ -11,11 +11,18 @@
 
 namespace net {
 
-    // Creates a socket and returns the socket file descriptor
-    int create_socket();
+    int create_socket() {
+        int sock = socket(AF_INET, SOCK_STREAM, 0);
+        helper::check_error(sock < 0, "Socket creation error\n");
+        return sock;
+    }
 
-    // Inputs port, creates address and returns it
-    sockaddr_in create_address(int port);
+    sockaddr_in create_address(int port) {
+        sockaddr_in address;
+        address.sin_family = AF_INET;
+        address.sin_port = htons(port);
+        return address;
+    }
 
 } // namespace net
 
