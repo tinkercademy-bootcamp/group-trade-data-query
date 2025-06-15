@@ -1,4 +1,5 @@
 #include "server/server.h"
+#include <spdlog/spdlog.h>  
 
 int32_t main(){
   int32_t kPort;
