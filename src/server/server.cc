@@ -16,9 +16,9 @@ std::vector<TradeData> execute_task(TradeDataQuery& query) {
 
 /////////////////
 
-constexpr int MAX_EVENTS = 10;
+constexpr int32_t MAX_EVENTS = 10;
 
-EpollServer::EpollServer(int port)
+EpollServer::EpollServer(int32_t port)
     : server_listen_fd_(net::create_socket()),
       server_address_(net::create_address(port)),
       epoll_fd_(epoll_fd_ = epoll_create1(0)) {
@@ -43,14 +43,14 @@ void EpollServer::run() {
                       "Failed to listen on server socket");
   epoll_event events[MAX_EVENTS];
   while (true) {
-    int n = epoll_wait(epoll_fd_, events, MAX_EVENTS, -1);
+    int32_t n = epoll_wait(epoll_fd_, events, MAX_EVENTS, -1);
     helper::check_error(n == -1, "epoll_wait failed");
 
-    for (int i = 0; i < n; ++i) {
+    for (int32_t i = 0; i < n; ++i) {
       if (events[i].data.fd == server_listen_fd_) {
         // Accept all incoming connections
         while (true) {
-          int client_fd = accept(server_listen_fd_, nullptr, nullptr);
+          int32_t client_fd = accept(server_listen_fd_, nullptr, nullptr);
           if (client_fd == -1) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) break;
             helper::check_error(true, "Failed to accept connection");
@@ -69,11 +69,11 @@ void EpollServer::run() {
             break;
           } else if (count == 0) {
             // Connection closed
-            spdlog::info("Connection closed by client fd {}", static_cast<int>(events[i].data.fd));
+            spdlog::info("Connection closed by client fd {}", static_cast<int32_t>(events[i].data.fd));
             close(events[i].data.fd);
             break;
           } else {
-            spdlog::info("Processing query from client fd {}", static_cast<int>(events[i].data.fd));
+            spdlog::info("Processing query from client fd {}", static_cast<int32_t>(events[i].data.fd));
             helper::check_error(
                 handle_trade_data_query(events[i].data.fd, query) < 0,
                 "Failed to handle the query");
@@ -84,7 +84,7 @@ void EpollServer::run() {
   }
 }
 
-int EpollServer::handle_trade_data_query(int sock, TradeDataQuery query) {
+int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query) {
   task_queue_.push(std::make_pair(sock, query));
 
   while (!task_queue_.empty()) {
@@ -98,12 +98,12 @@ int EpollServer::handle_trade_data_query(int sock, TradeDataQuery query) {
     bool t_not_r;
     if (task_query.resolution > 0){
       rresult = exec.lowest_and_highest_prices(task_query);
-      result_size = static_cast<int>(rresult.size());
+      result_size = static_cast<int32_t>(rresult.size());
       t_not_r=false;
 
   } else{
       tresult = exec.send_raw_data(task_query);
-      result_size = static_cast<int>(tresult.size());
+      result_size = static_cast<int32_t>(tresult.size());
       t_not_r=false;
 
     }
@@ -137,7 +137,7 @@ int EpollServer::handle_trade_data_query(int sock, TradeDataQuery query) {
 void EpollServer::accept_connection() {
   sockaddr_in client_addr;
   socklen_t client_len = sizeof(client_addr);
-  int client_fd =
+  int32_t client_fd =
       accept(server_listen_fd_, reinterpret_cast<sockaddr*>(&client_addr),
              &client_len);
   helper::check_error(client_fd < 0, "Failed to accept connection");
@@ -146,11 +146,11 @@ void EpollServer::accept_connection() {
 
   char client_ip[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
-  int client_port = ntohs(client_addr.sin_port);
+  int32_t client_port = ntohs(client_addr.sin_port);
   spdlog::info("Accepted connection from {}:{}. Assigned fd: {}", client_ip, client_port, client_fd);
 }
 
-void EpollServer::add_to_epoll(int sock) {
+void EpollServer::add_to_epoll(int32_t sock) {
   epoll_event event{};
   event.data.fd = sock;
   event.events = EPOLLIN | EPOLLET;  // Edge-triggered, read events
@@ -160,8 +160,8 @@ void EpollServer::add_to_epoll(int sock) {
   spdlog::info("Socket {} added to epoll.", sock);
 }
 
-void make_non_blocking(int sock) {
-  int flags = fcntl(sock, F_GETFL, 0);
+void make_non_blocking(int32_t sock) {
+  int32_t flags = fcntl(sock, F_GETFL, 0);
   helper::check_error(flags == -1, "Failed to get socket flags");
   helper::check_error(fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1,
                       "Failed to set socket to non-blocking");
