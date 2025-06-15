@@ -7,7 +7,7 @@
 #include <cstring>
 #include "../src/utils/query.h"
 
-int main() {
+int32_t main() {
     std::ifstream file("data/processed/trades-example.bin");
 
     if (!file.is_open()) {
@@ -34,10 +34,10 @@ int main() {
     std::cout << "Created At: " << trade.created_at << std::endl;
     std::cout << "Trade ID: " << trade.trade_id << std::endl;
     std::cout << "Price: " << trade.price.price << " * 10^" 
-              << static_cast<int>(trade.price.price_exponent) << std::endl;
+              << static_cast<int32_t>(trade.price.price_exponent) << std::endl;
     std::cout << "Quantity: " << trade.quantity.quantity << " * 10^"
-                << static_cast<int>(trade.quantity.quantity_exponent) << std::endl;
-    std::cout << "Taker Side: " << static_cast<int>(trade.taker_side) << std::endl;
+                << static_cast<int32_t>(trade.quantity.quantity_exponent) << std::endl;
+    std::cout << "Taker Side: " << static_cast<int32_t>(trade.taker_side) << std::endl;
 
     
     file.close();
