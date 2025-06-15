@@ -7,14 +7,15 @@
 #include <arpa/inet.h>
 
 client::Client::Client(int port, const std::string &server_address)
-    : socket_{net::create_socket()} {
-    sockaddr_in address = create_server_address(server_address, port);
-    connect_to_server(socket_, address);
+    : socket_{net::create_socket()},
+    server_address_{create_server_address(server_address, port)} {
 }
 
 void client::Client::send_message(const TradeDataQuery &message) {
     
-    ssize_t bytes_sent = send(socket_, &message, sizeof(message), 0);
+    ssize_t bytes_sent = sendto(
+        socket_, &message, sizeof(message), 0,
+        reinterpret_cast<const sockaddr *>(&server_address_), sizeof(server_address_));
     if (bytes_sent < 0) {
         helper::check_error(true, "Send failed on client socket.");
     }
@@ -34,22 +35,26 @@ sockaddr_in client::Client::create_server_address(
     return address;
 }
 
-void client::Client::connect_to_server(
-    int sock, sockaddr_in &server_address) {
-    auto err_code =
-        connect(sock, (sockaddr *)&server_address, sizeof(server_address));
-    helper::check_error(err_code < 0, "Connection Failed.\n");
-}
+// void client::Client::connect_to_server(
+//     int sock, sockaddr_in &server_address) {
+//     auto err_code =
+//         connect(sock, (sockaddr *)&server_address, sizeof(server_address));
+//     helper::check_error(err_code < 0, "Connection Failed.\n");
+// }
 
 std::vector<Result> client::Client::read_min_max() {
   int count;
-  ssize_t n = recv(socket_, &count, sizeof(count), 0);
+  socklen_t addr_len = sizeof(server_address_);
+
+  ssize_t n = recvfrom(socket_, &count, sizeof(count), 0,
+                         reinterpret_cast<sockaddr *>(&server_address_), &addr_len);
 
   helper::check_error(n < 0, "Failed reading the size.\n");
 
   std::vector<Result> output(count);
   for(int i=0; i<count; i++) {
-    n = recv(socket_, &(output[i]), sizeof(output[i]), 0);
+    n = recvfrom(socket_, &output[i], sizeof(output[i]), 0,
+                     reinterpret_cast<sockaddr *>(&server_address_), &addr_len);
     helper::check_error(n < 0, "Failed reading a Result struct.\n");
   }
 

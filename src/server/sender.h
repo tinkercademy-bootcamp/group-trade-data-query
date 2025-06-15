@@ -30,5 +30,8 @@ class OffloadQueue {
 
 std::string serialise(const std::string& final_result);
 void send_data(int sockfd, const std::string& data);
-void send_without_serialisation(int sockfd, Result& result);
-void send_without_serialisation(int sockfd, TradeData& data);
+// For sending TradeData over UDP
+void send_without_serialisation(int sock, const TradeData& data, const sockaddr_in& client_addr);
+
+// For sending Result over UDP
+void send_without_serialisation(int sock, const Result& result, const sockaddr_in& client_addr);

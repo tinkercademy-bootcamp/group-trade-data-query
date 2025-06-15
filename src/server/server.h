@@ -23,6 +23,9 @@ class EpollServer {
   void accept_connection();
   void add_to_epoll(int sock);
   void bind_server();
-  int handle_trade_data_query(int sock, TradeDataQuery query);
+  // UDP handler: receives a query and sends the result
+  int handle_trade_data_query(int sock, TradeDataQuery query, sockaddr_in client_addr);
+
+  // Task queue not strictly needed in UDP (no persistent connections), but kept if needed for batching
   std::queue<std::pair<int, TradeDataQuery>> task_queue_;
 };
