@@ -1,16 +1,73 @@
-.PHONY: server client clean libs
+CXX := g++
+CXXFLAGS := -std=c++20 -Wall -Wextra -pedantic -fsanitize=address
+CXX_DEBUG_FLAGS := -g3 -ggdb3
+CXX_RELEASE_FLAGS := -O3
 
-all: libs server client test
+LDFLAGS := -lspdlog -lfmt
 
-server:
-	cd src/server && make && cd ../..
+CSVS := $(wildcard data/raw/*.csv)
 
-client:
-	cd src/client && make && cd ../..
+SRC_DIR := src
+SRC_CLIENT := $(SRC_DIR)/client
+SRC_SERVER := $(SRC_DIR)/server
+SRC_EXECUTOR := $(SRC_DIR)/executor
 
-test: 
-	echo "NOT IMPLEMENTED BECAUSE CENTRAL TEST MAKEFILE ISN'T IMPLEMENTED YET"
+CLIENT_SRC := $(shell find src/client -type f -name '*.cc')
+CLIENT_OBJS := $(patsubst src/client/%.cc,build/client/%.o,$(CLIENT_SRC))
+CLIENT_HEADERS := $(shell find src/client -type f -name '*.h') $(shell find src/utils -type f -name '*.h')
 
+SERVER_SRC := $(shell find src/server -type f -name '*.cc') $(shell find src/executor -type f -name '*.cc')
+SERVER_OBJS := $(patsubst src/server/%.cc,build/server/%.o,$(SERVER_SRC))
+SERVER_HEADERS := $(shell find src/server -type f -name '*.h') $(shell find src/utils -type f -name '*.h')
+
+PROCESS_DATA := $(SRC_DIR)/process_data/process_data_main.cc
+
+all: build build/server-bin build/client-bin
+
+build:
+	mkdir -p build
+
+build/server-bin: src/server_main.cc $(SERVER_OBJS)
+	mkdir -p build
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -o $@ $^ $(LDFLAGS)
+
+build/client-bin: src/client_main.cc $(CLIENT_OBJS)
+	mkdir -p build
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -o $@ $^ $(LDFLAGS)
+
+build/client/%.o: $(SRC_CLIENT)/%.cc $(CLIENT_HEADERS)
+	mkdir -p build build/client
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -c $< -o $@ $(LDFLAGS)
+
+build/server/%.o: $(SRC_SERVER)/%.cc $(SERVER_HEADERS)
+	mkdir -p build build/server
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -c $< -o $@ $(LDFLAGS)
+
+build/executor/%.o: $(SRC_EXECUTOR)/%.cc $(SERVER_HEADERS)
+	mkdir -p build build/executor
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -c $< -o $@ $(LDFLAGS)
+
+build/processor: process_data/process_data_main.cc
+	mkdir -p build
+	$(CXX) $(CXXFLAGS) $(CXX_RELEASE_FLAGS) $^ -o $@
+
+.PHONY: all clean libs data remove_spaces processed_data
+
+# Don't add data to all as data is a PHONY target
+data:
+	mkdir -p data
+	mkdir -p data/raw
+
+remove_spaces:
+	@for file in $(CSVS); do \
+		sed -i 's/ //g' $$file; \
+	done
+
+processed_data: build/processor $(CSVS)
+	mkdir -p data/processed
+	@for file in $(CSVS); do \
+		$< $$file; \
+	done
 clean:
 	rm -rf build
 
