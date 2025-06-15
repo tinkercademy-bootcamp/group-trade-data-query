@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-client::Client::Client(int32_t port, const std::string &server_address)
+client::Client::Client(int port, const std::string &server_address)
     : socket_{net::create_socket()} {
     sockaddr_in address = create_server_address(server_address, port);
     connect_to_server(socket_, address);
@@ -20,13 +20,13 @@ void client::Client::send_message(const TradeDataQuery &message) {
     }
 }
 
-int32_t client::Client::get_socket_fd() const {
+int client::Client::get_socket_fd() const {
     return socket_;
 }
 client::Client::~Client() { close(socket_); }
 
 sockaddr_in client::Client::create_server_address(
-    const std::string &server_ip, int32_t port) {
+    const std::string &server_ip, int port) {
     sockaddr_in address = net::create_address(port);
     // Convert the server IP address to a binary format
     auto err_code = inet_pton(AF_INET, server_ip.c_str(), &address.sin_addr);
@@ -35,19 +35,20 @@ sockaddr_in client::Client::create_server_address(
 }
 
 void client::Client::connect_to_server(
-    int32_t sock, sockaddr_in &server_address) {
-    int32_t err_code =connect(sock, (sockaddr *)&server_address, sizeof(server_address));
+    int sock, sockaddr_in &server_address) {
+    auto err_code =
+        connect(sock, (sockaddr *)&server_address, sizeof(server_address));
     helper::check_error(err_code < 0, "Connection Failed.\n");
 }
 
 std::vector<Result> client::Client::read_min_max() {
-  int32_t count;
+  int count;
   ssize_t n = recv(socket_, &count, sizeof(count), 0);
 
   helper::check_error(n < 0, "Failed reading the size.\n");
 
   std::vector<Result> output(count);
-  for(int32_t i=0; i<count; i++) {
+  for(int i=0; i<count; i++) {
     n = recv(socket_, &(output[i]), sizeof(output[i]), 0);
     helper::check_error(n < 0, "Failed reading a Result struct.\n");
   }

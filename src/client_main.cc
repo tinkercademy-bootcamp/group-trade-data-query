@@ -18,10 +18,10 @@
 #include <cmath> // for std::pow
 std::atomic<bool> g_client_running{true};
 
-int32_t main(int32_t argc, char* argv[]) {
+int main(int argc, char* argv[]) {
   // Basic command line argument parsing
   std::string server_ip = "127.0.0.1";
-  int32_t port = 8080;
+  int port = 8080;
 
   if (argc > 1) {
       server_ip = argv[1];
@@ -51,7 +51,7 @@ int32_t main(int32_t argc, char* argv[]) {
       return EXIT_FAILURE;
   }
 
-  int32_t client_socket_fd = chat_client->get_socket_fd();
+  int client_socket_fd = chat_client->get_socket_fd();
   // std::thread reader_thread(read_loop, client_socket_fd);
 
   while (g_client_running) {
