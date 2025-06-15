@@ -1,100 +1,96 @@
-#include "executor.h"
-#include "../../processed_data/preproc.h"
-#include "../utils/query.h"
-#include <cmath>
+#include <vector>
+#include <string>
+#include <cstdint>
+#include <fstream>
+#include <sstream>
 #include <iostream>
-#include <cassert>
-#include <algorithm>
-#include <ranges>
+#include "../src/utils/query.h"
 
-std::vector<Result> Executor::lowest_and_highest_prices(
-    const TradeDataQuery& query) {
+/**
+ * @brief Parse a CSV file and return a vector of TradeData structs.
+ * @param filename Path to the CSV file
+ * @return Vector of parsed TradeData records
+ */
 
-    std::vector<Result> result;
+// void print_trade(const TradeData& t) {
+//     std::cout
+//         << t.symbol_id << ','
+//         << t.created_at << ','
+//         << t.trade_id << ','
+//         << t.price.price << ','
+//         << t.quantity.quantity << ','
+//         << static_cast<int>(t.price.price_exponent) << ','
+//         << static_cast<int>(t.quantity.quantity_exponent) << ',';
 
-    // Early exit if no trades available
-    if (trades.empty()) {
-        std::cout << "[Executor] No trades available.\n";
-        return result;
+//     // Convert taker_side back to string
+//     if (t.taker_side == 1) std::cout << "Ask";
+//     else if (t.taker_side == 2) std::cout << "Bid";
+//     else std::cout << static_cast<int>(t.taker_side);  // fallback
+
+//     std::cout << '\n';
+// }
+
+std::vector<TradeData> parse_csv(const std::string& filename) {
+    std::vector<TradeData> trades;
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error: could not open file " << filename << std::endl;
+        return trades;
     }
 
-    // Check if bit flag for min/max is enabled (bit 0)
-    if ((query.metrics & (1 << 0)) == 0) {
-        std::cout << "[Executor] Bit 0 (min/max) not set. Skipping computation.\n";
-        return result;
+    std::string line;
+    // Skip header
+    if (!std::getline(file, line))
+        return trades;
+
+    // Read lines
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+        std::istringstream ss(line);
+        std::string token;
+        TradeData t;
+
+        // symbol_id
+        std::getline(ss, token, ',');
+        t.symbol_id = static_cast<uint32_t>(std::stoul(token));
+
+        // created_at
+        std::getline(ss, token, ',');
+        t.created_at = static_cast<uint64_t>(std::stoull(token));
+
+        // trade_id
+        std::getline(ss, token, ',');
+        t.trade_id = static_cast<uint64_t>(std::stoull(token));
+
+        // price (raw)
+        std::getline(ss, token, ',');
+        t.price.price = static_cast<uint32_t>(std::stoul(token));
+
+        // quantity (raw)
+        std::getline(ss, token, ',');
+        t.quantity.quantity = static_cast<uint32_t>(std::stoul(token));
+
+        // price_exponent
+        std::getline(ss, token, ',');
+        t.price.price_exponent = static_cast<int8_t>(std::stoi(token));
+
+        // quantity_exponent
+        std::getline(ss, token, ',');
+        t.quantity.quantity_exponent = static_cast<int8_t>(std::stoi(token));
+
+        // taker_side
+        std::getline(ss, token, ',');
+        if (token == "Ask" || token == "ask" || token == "1")        t.taker_side = 1;
+        else if (token == "Bid" || token == "bid" || token == "2")   t.taker_side = 2;
+        else                                                             t.taker_side = static_cast<uint8_t>(std::stoul(token));
+
+        trades.push_back(t);
     }
 
-    assert(query.resolution > 0);
-
-    // Calculate size of each time bucket based on resolution // Assuming resolution > 0
-    uint64_t num_buckets = (query.end_time_point - query.start_time_point + (query.resolution - 1)) / query.resolution;
-
-
-    // result = std::vector<Result>(num_buckets);
-
-    double min_price_value = __DBL_MAX__, max_price_value = __DBL_MIN__;
-    uint64_t bucket_start_time = query.start_time_point;
-    uint64_t ind = 0;
-
-    for (uint64_t offset = query.start_time_point; offset < query.end_time_point; offset += query.resolution) {
-        Price min_price = {0, 0};  // Reset min price
-        Price max_price = {0, 0};  // Reset max price
-        min_price_value = __DBL_MAX__;
-        max_price_value = __DBL_MIN__;
-
-        while (trades[ind].created_at < query.start_time_point) ind++;
-
-        while (trades[ind].created_at < query.end_time_point && trades[ind].created_at < offset + query.resolution) {
-            double price_value = trades[ind].price.price * std::pow(10, trades[ind].price.price_exponent);
-
-            if (price_value < min_price_value) {
-                min_price_value = price_value;
-                min_price = trades[ind].price;
-            } 
-            if (price_value > max_price_value) {
-                max_price_value = price_value;
-                max_price = trades[ind].price;
-            }
-            ind++;  // Move to the next trade
-            if (ind >= trades.size()) {
-                break;  // No more trades to process
-            }
-        }
-
-        result.push_back({
-            bucket_start_time,
-            min_price,
-            max_price
-        });
-        bucket_start_time += query.resolution;
-        ind++;  // Move to the next trade
-        if (ind >= trades.size()) {
-            break;  // No more trades to process
-        }
-    }
-
-    return result;
+    return trades;
 }
 
-
-namespace ranges = std::ranges;
-
-std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
-{
-  std::sort(trades.begin(), trades.end(), [](const TradeData& a, const TradeData& b) {
-        return a.created_at < b.created_at;
-    });
-  auto it_start = std::ranges::lower_bound(trades, query.start_time_point, {}, &TradeData::created_at);
-  auto it_end = std::ranges::lower_bound(trades, query.end_time_point, {}, &TradeData::created_at);
-
-  std::cout << "[Executor] Returning trades between " 
-            << query.start_time_point << " and " << query.end_time_point << ". "
-            << "Found: " << std::distance(it_start, it_end) << " trades.\n";
-
-  return std::vector<TradeData>(it_start, it_end);
-}
-
-
+// // Simple test to verify parsing
 // int main(int argc, char** argv) {
 //     if (argc < 2) {
 //         std::cerr << "Usage: " << argv[0] << " <csv-file>\n";
@@ -103,36 +99,23 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 //     std::string filename = argv[1];
 //     auto trades = parse_csv(filename);
 
-//     Executor executor(trades);
 //     std::cout << "Parsed " << trades.size() << " trades from " << filename << std::endl;
-//     TradeDataQuery query = {
-//         .symbol_id = 1,
-//         .start_time_point = 1747267200000000000,
-//         .end_time_point =   1747267200001855159, // 1 second in nanoseconds
-//         .resolution = 1000000000000000000, // 100 milliseconds
-//         .metrics = 1 // Enable min/max
-//     };
-//     auto results = executor.lowest_and_highest_prices(query);
-//     std::cout << "Computed " << results.size() << " results for lowest and highest prices.\n";
-//     for (const auto& res : results) {
-//         std::cout << "Start Time: " << res.start_time << ", "
-//                   << "Lowest Price: " << res.lowest_price.price << " * 10^" 
-//                   << static_cast<int>(res.lowest_price.price_exponent) << ", "
-//                   << "Highest Price: " << res.highest_price.price << " * 10^" 
-//                   << static_cast<int>(res.highest_price.price_exponent) << "\n";
+//     if (!trades.empty()) {
+//         for (int i = 0; i < trades.size(); ++i) {
+//             const auto& t = trades[i];
+//             std::cout << "Record " << i + 1 << ":\n"
+//                       << "  symbol_id       = " << t.symbol_id << "\n"
+//                       << "  created_at      = " << t.created_at << "\n"
+//                       << "  trade_id        = " << t.trade_id << "\n"
+//                       << "  price (raw)     = " << t.price.price << " * 10^" << int(t.price.price_exponent) << "\n"
+//                       << "  quantity (raw)  = " << t.quantity.quantity << " * 10^" << int(t.quantity.quantity_exponent) << "\n"
+//                       << "  taker_side      = " << int(t.taker_side) << "\n";
+//         }
 //     }
-//     auto raw_data = executor.send_raw_data(query);
-//     std::cout << "Retrieved " << raw_data.size() << " raw trades.\n";
-//     for (const auto& trade : raw_data) {
-//         std::cout << "Trade ID: " << trade.trade_id << ", "
-//                   << "Symbol ID: " << trade.symbol_id << ", "
-//                   << "Created At: " << trade.created_at << ", "
-//                   << "Price: " << trade.price.price << " * 10^" 
-//                   << static_cast<int>(trade.price.price_exponent) << ", "
-//                   << "Quantity: " << trade.quantity.quantity << " * 10^" 
-//                   << static_cast<int>(trade.quantity.quantity_exponent) << "\n";
+//     for (const auto& trade : trades) {
+//         print_trade(trade);
 //     }
-//     std::cout << "Executor operations completed successfully.\n";
-    
+//     std::cout << "End of trades.\n";
+
 //     return 0;
 // }
