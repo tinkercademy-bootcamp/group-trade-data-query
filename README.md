@@ -19,7 +19,11 @@ make remove_spaces
 make processed_data
 ```
 
-and then run `make all` to compile
+and then run `make all` to compile.
+
+**To run the server:** `./build/server-bin`
+
+**To run the client:** `./build/client-bin`
 
 ## Data
 Additionally, there's now a automatic data setup script. Call it as `bash setup_data.sh <team_id>` where team_id is 1,2,3 or 4. It will automatically download and extract the data, and will also call `make remove_spaces` and `make processed_data`
