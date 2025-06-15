@@ -25,7 +25,3 @@ $(OBJ_DIR)/net/net.o: ../utils/net/net.cc
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
-
-.PHONY: remake
-remake:
-	make clean && make
