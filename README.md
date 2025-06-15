@@ -74,3 +74,19 @@ The following is the current directory structure of the directory of the repo
     │   └── Makefile
     └── README.md
 ```
+
+
+For accessing data,
+
+Run
+
+```bash
+make data
+```
+then copy the tar.gz files into `data/raw` and run
+
+```bash
+tar -xvzf trades-<file>.tar.gz
+```
+
+to untar the files and then run `make` to compile
