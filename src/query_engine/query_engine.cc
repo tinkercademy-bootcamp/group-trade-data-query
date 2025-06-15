@@ -1,4 +1,4 @@
-#include "executor.h"
+#include "query_engine.h"
 // #include "../../processed_data/preproc.h"
 #include "../utils/query.h"
 #include <cmath>
@@ -116,7 +116,7 @@ std::vector<Result> Executor::lowest_and_highest_prices(
 
 namespace ranges = std::ranges;
 
-std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
+std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 {
     std::vector<TradeData> trades;
 
