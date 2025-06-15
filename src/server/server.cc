@@ -13,6 +13,7 @@ std::vector<TradeData> execute_task(TradeDataQuery& query) {
   spdlog::info("Query processed for TradeDataQuery id: {}", query.symbol_id);
   return {};
 }
+
 /////////////////
 
 constexpr int MAX_EVENTS = 10;
@@ -21,6 +22,11 @@ EpollServer::EpollServer(int port)
     : server_listen_fd_(net::create_socket()),
       server_address_(net::create_address(port)),
       epoll_fd_(epoll_fd_ = epoll_create1(0)) {
+  int opt = 1;
+  helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0,
+            "Failed to set SO_REUSEADDR");
+  helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0,
+            "Failed to set SO_REUSEPORT");
   make_non_blocking(server_listen_fd_);
   bind_server();
   add_to_epoll(server_listen_fd_);
