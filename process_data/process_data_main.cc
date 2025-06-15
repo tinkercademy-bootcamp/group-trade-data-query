@@ -77,7 +77,7 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
 }
 
 // Simple test to verify parsing
-int main(int argc, char** argv) {
+int32_t main(int32_t argc, char** argv) {
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <csv-file>\n";
         return 1;

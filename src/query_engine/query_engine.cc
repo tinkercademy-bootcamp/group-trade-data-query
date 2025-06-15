@@ -31,10 +31,10 @@ bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
                   << trade.created_at << " "
                   << trade.trade_id << " "
                   << trade.price.price << " * 10^" 
-                  << static_cast<int>(trade.price.price_exponent) << " "
+                  << static_cast<int32_t>(trade.price.price_exponent) << " "
                   << trade.quantity.quantity << " * 10^" 
-                  << static_cast<int>(trade.quantity.quantity_exponent) << " "
-                  << static_cast<int>(trade.taker_side) << "\n";
+                  << static_cast<int32_t>(trade.quantity.quantity_exponent) << " "
+                  << static_cast<int32_t>(trade.taker_side) << "\n";
         return true;
     } else {
         throw std::runtime_error("[Query_engine] Error reading trade data at index " + std::to_string(ind));
@@ -134,7 +134,7 @@ std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
 }
 
 
-// int main(int argc, char** argv) {
+// int32_t main(int32_t argc, char** argv) {
 //     if (argc < 2) {
 //         std::cerr << "Usage: " << argv[0] << " <csv-file>\n";
 //         return 1;
@@ -156,9 +156,9 @@ std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
 //     for (const auto& res : results) {
 //         std::cout << "Start Time: " << res.start_time << ", "
 //                   << "Lowest Price: " << res.lowest_price.price << " * 10^" 
-//                   << static_cast<int>(res.lowest_price.price_exponent) << ", "
+//                   << static_cast<int32_t>(res.lowest_price.price_exponent) << ", "
 //                   << "Highest Price: " << res.highest_price.price << " * 10^" 
-//                   << static_cast<int>(res.highest_price.price_exponent) << "\n";
+//                   << static_cast<int32_t>(res.highest_price.price_exponent) << "\n";
 //     }
 //     auto raw_data = Query_engine.send_raw_data(query);
 //     std::cout << "Retrieved " << raw_data.size() << " raw trades.\n";
@@ -167,9 +167,9 @@ std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
 //                   << "Symbol ID: " << trade.symbol_id << ", "
 //                   << "Created At: " << trade.created_at << ", "
 //                   << "Price: " << trade.price.price << " * 10^" 
-//                   << static_cast<int>(trade.price.price_exponent) << ", "
+//                   << static_cast<int32_t>(trade.price.price_exponent) << ", "
 //                   << "Quantity: " << trade.quantity.quantity << " * 10^" 
-//                   << static_cast<int>(trade.quantity.quantity_exponent) << "\n";
+//                   << static_cast<int32_t>(trade.quantity.quantity_exponent) << "\n";
 //     }
 //     std::cout << "Query_engine operations completed successfully.\n";
     

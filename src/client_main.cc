@@ -63,8 +63,8 @@ int32_t main(int32_t argc, char* argv[]) {
 
 
     for (const Result& data : output) {
-        int low_exp = static_cast<int>(data.lowest_price.price_exponent);
-        int high_exp = static_cast<int>(data.highest_price.price_exponent);
+        int32_t low_exp = static_cast<int32_t>(data.lowest_price.price_exponent);
+        int32_t high_exp = static_cast<int32_t>(data.highest_price.price_exponent);
 
         std::cout << "Timestamp: " << data.start_time
                 << "; Min Price: " << data.lowest_price.price << "e" << low_exp
