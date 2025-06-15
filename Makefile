@@ -1,4 +1,4 @@
-all: libs build/server-bin build/client-bin build/processor
+all: build/server-bin build/client-bin build/processor
 
 CXX := g++
 CXXFLAGS := -std=c++20 -Wall -Wextra -pedantic -fsanitize=address
