@@ -1,37 +1,42 @@
-STD_FLAG := -std=c++20
-LD_FLAGS := -lspdlog -lfmt
+CXX := g++
+CXXFLAGS := -std=c++20 -Wall -Wextra -pedantic -fsanitize=address -g3 -ggdb3
+
+LDFLAGS := -fsanitize=address
+LIBS := fmt spdlog
+LIB_FLAGS := $(addprefix -l,$(LIBS))
+LDFLAGS += $(LIB_FLAGS)
 BUILD_DIR := ../../build
-OBJ_DIR := $(BUILD_DIR)/obj
+SRC_DIR   := ../../src
 
-all: dirs $(BUILD_DIR)/server
+# find all server-related .cc under src, excluding client codeAdd commentMore actions
+SERVER_SRCS := $(shell find $(SRC_DIR) -type f -name '*.cc' -not -path '*/client/*' -not -name 'client_main.cc')
+SERVER_OBJS := $(patsubst $(SRC_DIR)/%.cc,$(BUILD_DIR)/%.o,$(SERVER_SRCS))
 
-dirs:
-	mkdir -p $(BUILD_DIR)
-	mkdir -p $(OBJ_DIR)/server
-	mkdir -p $(OBJ_DIR)/net
-	mkdir -p $(OBJ_DIR)/executor
 
-$(BUILD_DIR)/server: $(OBJ_DIR)/server/server_main.o $(OBJ_DIR)/server/server.o $(OBJ_DIR)/net/net.o $(OBJ_DIR)/server/sender.o $(OBJ_DIR)/server/receiver.o $(OBJ_DIR)/executor/executor.o
-	g++ $(STD_FLAG) $(OBJ_DIR)/server/server_main.o $(OBJ_DIR)/server/server.o $(OBJ_DIR)/net/net.o $(OBJ_DIR)/server/sender.o $(OBJ_DIR)/server/receiver.o $(OBJ_DIR)/executor/executor.o -o $(BUILD_DIR)/server $(LD_FLAGS)
+ALL_OBJS := $(sort $(SERVER_OBJS))
+DEPS := $(ALL_OBJS:.o=.d)
 
-$(OBJ_DIR)/server/server_main.o: ../server_main.cc
-	g++ $(STD_FLAG) -c ../server_main.cc -o $(OBJ_DIR)/server/server_main.o
+INC_DIRS  := $(shell find $(SRC_DIR) -type d) \
+			 server \
+			 ../utils
+INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-$(OBJ_DIR)/server/server.o: server.cc
-	g++ $(STD_FLAG) -c server.cc -o $(OBJ_DIR)/server/server.o
+CPPFLAGS := $(INC_FLAGS) -MMD -MP
 
-$(OBJ_DIR)/net/net.o: ../utils/net/net.cc
-	g++ $(STD_FLAG) -c ../utils/net/net.cc -o $(OBJ_DIR)/net/net.o
+.PHONY: all
+all: $(BUILD_DIR)/server-bin
 
-$(OBJ_DIR)/server/receiver.o: receiver.cc
-	g++ $(STD_FLAG) -c receiver.cc -o $(OBJ_DIR)/server/receiver.o
+$(BUILD_DIR)/server-bin: $(SERVER_OBJS)
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
-$(OBJ_DIR)/server/sender.o: sender.cc
-	g++ $(STD_FLAG) -c sender.cc -o $(OBJ_DIR)/server/sender.o
+# compile any .cc into build/%.o (preserving directory structure)Add commentMore actions
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc
+	mkdir -p $(dir $@)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-$(OBJ_DIR)/executor/executor.o: ../executor/executor.cc
-	g++ $(STD_FLAG) -c ../executor/executor.cc -o $(OBJ_DIR)/executor/executor.o
 
 .PHONY: clean
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf build
+
+-include $(DEPS)
