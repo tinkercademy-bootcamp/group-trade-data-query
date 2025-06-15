@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-client::Client::Client(int32_t port, const std::string &server_address)
+client::Client::Client(uint16_t port, const std::string &server_address)
     : socket_{net::create_socket()} {
     sockaddr_in address = create_server_address(server_address, port);
     connect_to_server(socket_, address);
@@ -26,7 +26,7 @@ int32_t client::Client::get_socket_fd() const {
 client::Client::~Client() { close(socket_); }
 
 sockaddr_in client::Client::create_server_address(
-    const std::string &server_ip, int32_t port) {
+    const std::string &server_ip, uint16_t port) {
     sockaddr_in address = net::create_address(port);
     // Convert the server IP address to a binary format
     auto err_code = inet_pton(AF_INET, server_ip.c_str(), &address.sin_addr);
