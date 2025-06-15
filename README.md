@@ -19,19 +19,23 @@ The following is the current directory structure of the directory of the repo
 .
 ├── .gitignore
 ├── build
-│   └── processor
+│   ├── client
+│   │   └── client.o
+│   ├── client-bin
+│   ├── processor
+│   ├── server
+│   │   ├── receiver.o
+│   │   ├── sender.o
+│   │   └── server.o
+│   └── server-bin
 ├── data
-│   ├── processed
-│   │   ├── trades-example.bin
-│   │   ├── trades-small.bin
-│   │   └── trades-tiny.bin
-│   └── raw
-│       ├── trades-example.csv
-│       ├── trades-small.csv
-│       └── trades-tiny.csv
+│   ├── processed
+│   │   └── trades-example.bin
+│   └── raw
+│       └── trades-example.csv
 ├── Makefile
 ├── process_data
-│   └── process_data_main.cc
+│   └── process_data_main.cc
 ├── README.md
 ├── requirements.txt
 ├── src
@@ -61,16 +65,38 @@ The following is the current directory structure of the directory of the repo
 │       └── query.h
 └── test
     ├── correctness
-    │   ├── basic-tests.json
-    │   ├── db-tests
-    │   │   ├── db.ipynb
-    │   │   ├── db-testcases
-    │   │   └── db_testcases.py
-    │   ├── dummy-client.cpp
-    │   ├── Makefile
-    │   └── test-client.cpp
-    ├── Makefile
+    │   ├── basic-tests.json
+    │   ├── db-tests
+    │   │   ├── db.ipynb
+    │   │   └── db_testcases.py
+    │   ├── dummy-client.cpp
+    │   ├── Makefile
+    │   └── test-client.cpp
+    ├── nlohmann
+    │   └── json.hpp
     ├── performance
-    │   └── Makefile
+    │   └── Makefile
     └── README.md
 ```
+
+For accessing data,
+
+Run
+
+```bash
+make data
+```
+then copy the tar.gz files into `data/raw` and run
+
+```bash
+tar -xvzf trades-<file>.tar.gz
+```
+
+to untar the files and run
+
+```bash
+make remove_spaces  
+make processed_data
+```
+
+and then run `make` to compile

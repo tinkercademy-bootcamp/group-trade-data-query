@@ -45,11 +45,11 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
         std::getline(ss, token, ',');
         uint32_t price_raw = static_cast<uint32_t>(std::stoul(token));
         
-        std::getline(ss, token, ',');
-        uint8_t price_exponent = static_cast<int8_t>(std::stoi(token));
-
+        
         std::getline(ss, token, ',');
         uint32_t quantity_raw = static_cast<uint32_t>(std::stoul(token));
+        std::getline(ss, token, ',');
+        uint8_t price_exponent = static_cast<int8_t>(std::stoi(token));
 
         std::getline(ss, token, ',');
         uint8_t quantity_exponent = static_cast<int8_t>(std::stoi(token));
@@ -68,8 +68,8 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
         out.write(reinterpret_cast<const char *>(&created_at), sizeof(created_at));
         out.write(reinterpret_cast<const char *>(&trade_id), sizeof(trade_id));
         out.write(reinterpret_cast<const char *>(&price_raw), sizeof(price_raw));
-        out.write(reinterpret_cast<const char *>(&price_exponent), sizeof(price_exponent));
         out.write(reinterpret_cast<const char *>(&quantity_raw), sizeof(quantity_raw));
+        out.write(reinterpret_cast<const char *>(&price_exponent), sizeof(price_exponent));
         out.write(reinterpret_cast<const char *>(&quantity_exponent), sizeof(quantity_exponent));
         out.write(reinterpret_cast<const char *>(&taker_side), sizeof(taker_side));
         out.flush();

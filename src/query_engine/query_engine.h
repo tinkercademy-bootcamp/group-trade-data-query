@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-
+#include <fstream>
 #include <iterator>
 
 #include "../utils/query.h"
@@ -17,8 +17,8 @@
 class Query_engine {
 public:
     
-    Query_engine(const std::vector<TradeData>& tradesInput) : trades(tradesInput) {};
-    ~Query_engine() = default;
+    Executor();
+    ~Executor() = default;
     /**
      * @brief Computes the lowest and highest prices within the given query window.
      *
@@ -35,8 +35,11 @@ public:
     std::vector<TradeData> send_raw_data(TradeDataQuery &query);
 
 private:
+    std::ifstream data;  // File stream for reading trade data
     // Any Internal members can be added here
-    std::vector<TradeData> trades;
+    // std::vector<TradeData> trades;
+    uint64_t trades_size;
+    bool read_trade_data(uint64_t ind, TradeData& trade);
 };
 
 #endif

@@ -1,5 +1,5 @@
 #include "server.h"
-#include "../../processed_data/preproc.cc"
+// #include "../../processed_data/preproc.cc"
 #include "../utils/helper/utils.h"
 #include "../utils/net/net.h"
 #include "../utils/query.h"
@@ -93,8 +93,8 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
     task_queue_.pop();
     std::vector<Result> rresult;
     std::vector<TradeData> tresult;
-    Query_engine exec(parse_csv("../data/trades-example.csv")); 
-    int32_t result_size;
+    Executor exec; 
+    int result_size;
     bool t_not_r;
     if (task_query.resolution > 0){
       rresult = exec.lowest_and_highest_prices(task_query);
