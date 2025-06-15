@@ -18,6 +18,8 @@
 #include <cmath> // for std::pow
 std::atomic<bool> g_client_running{true};
 
+bool one_shot = true;
+
 int32_t main(int32_t argc, char* argv[]) {
   // Basic command line argument parsing
   std::string server_ip = "127.0.0.1";
@@ -34,25 +36,25 @@ int32_t main(int32_t argc, char* argv[]) {
       }
   }
 
-  spdlog::set_level(spdlog::level::info);
-  spdlog::info("Command-line Chat Client starting to connect to {}:{}", server_ip, port);
+//   spdlog::set_level(spdlog::level::info);
+//   spdlog::info("Command-line Chat Client starting to connect to {}:{}", server_ip, port);
 
   std::optional<client::Client> chat_client;
   try {
       chat_client.emplace(port, server_ip);
-      std::cout << "Connected to server. Type messages or '/quit' to exit." << std::endl;
+    //   std::cout << "Connected to server. Type messages or '/quit' to exit." << std::endl;
   } catch (const std::runtime_error& e) {
-      spdlog::critical("Failed to create or connect client: {}", e.what());
-      std::cerr << "Error connecting to server: " << e.what() << std::endl;
+    //   spdlog::critical("Failed to create or connect client: {}", e.what());
+    //   std::cerr << "Error connecting to server: " << e.what() << std::endl;
       return EXIT_FAILURE;
   } catch (...) {
-      spdlog::critical("An unknown error occurred during client initialization.");
-      std::cerr << "An unknown error occurred during client initialization." << std::endl;
+    //   spdlog::critical("An unknown error occurred during client initialization.");
+    //   std::cerr << "An unknown error occurred during client initialization." << std::endl;
       return EXIT_FAILURE;
   }
 
   int32_t client_socket_fd = chat_client->get_socket_fd();
-  // std::thread reader_thread(read_loop, client_socket_fd);
+//   std::thread reader_thread(read_loop, client_socket_fd);
 
   while (g_client_running) {
     TradeDataQuery query;
@@ -73,6 +75,7 @@ int32_t main(int32_t argc, char* argv[]) {
 
 
     }
+    if (one_shot == true) break;
   }
 
   return EXIT_SUCCESS;
