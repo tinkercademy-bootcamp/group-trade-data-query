@@ -87,6 +87,7 @@ then copy the tar.gz files into `data/raw` and run
 
 ```bash
 tar -xvzf trades-<file>.tar.gz
+make remove_spaces
 ```
 
 to untar the files and then run `make` to compile

@@ -68,6 +68,7 @@ processed_data: build/processor $(CSVS)
 	@for file in $(CSVS); do \
 		$< $$file; \
 	done
+
 clean:
 	rm -rf build
 
