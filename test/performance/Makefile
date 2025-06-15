@@ -78,12 +78,12 @@ client: ## Build client for testing
 
 dummy-client:  ## Build the C++ multithreaded test driver
 	@echo "$(YELLOW)Building dummy client driver...$(NC)"
-	$(CXX) $(CXXFLAGS) -o $(DUMMY_CLIENT) dummy-client.cpp $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $(DUMMY_CLIENT) dummy_client.cpp $(LDFLAGS)
 
-test-client: ## Build the C++ multithreaded test driver
+perf_test: ## Build the C++ multithreaded test driver
 	@echo "$(YELLOW)Building test client driver...$(NC)"
-	$(CXX) $(CXXFLAGS) -o $(TEST_CLIENT) test-client.cpp $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $(TEST_CLIENT) perf_test.cpp $(LDFLAGS)
 
-run-tests: test-client ## Run tests using the test driver
+run_tests: test-client ## Run tests using the test driver
 	@echo "$(BLUE)Running tests...$(NC)"
 	@$(TEST_CLIENT)
