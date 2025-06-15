@@ -11,7 +11,7 @@
 
 std::vector<TradeData> execute_task(TradeDataQuery& query) {
   // Dummy implementation: return an empty vector
-  spdlog::info("Query processed for TradeDataQuery id: {}", query.symbol_id);
+  // spdlog::info("Query processed for TradeDataQuery id: {}", ()query.symbol_id);
   return {};
 }
 
@@ -23,7 +23,7 @@ EpollServer::EpollServer(uint16_t port)
     : server_listen_fd_(net::create_socket()),
       server_address_(net::create_address(port)),
       epoll_fd_(epoll_fd_ = epoll_create1(0)) {
-  int opt = 1;
+  int32_t opt = 1;
   helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0,
             "Failed to set SO_REUSEADDR");
   helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0,
@@ -94,8 +94,8 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
     task_queue_.pop();
     std::vector<Result> rresult;
     std::vector<TradeData> tresult;
-    Executor exec; 
-    int result_size;
+    Query_engine exec; 
+    int32_t result_size;
     bool t_not_r;
     if (task_query.resolution > 0){
       rresult = exec.lowest_and_highest_prices(task_query);
