@@ -1,4 +1,6 @@
-./test/nlohmann/*
+src/server/build/
+*/build/*
+/test/nlohmann/
 *.out
 .clangd
 
@@ -77,3 +79,6 @@ Thumbs.db
 
 #additions: 
 /data
+
+# Database test files
+
