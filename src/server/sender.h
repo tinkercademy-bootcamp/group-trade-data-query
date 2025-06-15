@@ -15,11 +15,11 @@
 #include "../utils/query.h"
 
 class OffloadQueue {
- public:
+public:
   void serialise_and_enqueue(int32_t id, const std::string& final_result);
   void offload_one();
 
- private:
+private:
   std::queue<std::pair<int32_t, std::string>> queue_;
 
   std::pair<int32_t, std::string> front() { return queue_.front(); }
