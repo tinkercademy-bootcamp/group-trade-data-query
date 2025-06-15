@@ -51,7 +51,7 @@ build/processor: process_data/process_data_main.cc
 	mkdir -p build
 	$(CXX) $(CXXFLAGS) $(CXX_RELEASE_FLAGS) $^ -o $@
 
-.PHONY: all clean libs data remove_spaces processed_data download-data
+.PHONY: all clean libs data remove_spaces processed_data
 
 # Don't add data to all as data is a PHONY target
 data:
