@@ -98,11 +98,12 @@ int EpollServer::handle_trade_data_query(int sock, TradeDataQuery query) {
     bool t_not_r;
     if (task_query.resolution > 0){
       rresult = exec.lowest_and_highest_prices(task_query);
+        // rresult = { {10, {10, -2}, {20, -2}} };
       result_size = static_cast<int>(rresult.size());
       t_not_r=false;
 
   } else{
-      tresult = exec.send_raw_data(task_query);
+    //   tresult = exec.send_raw_data(task_query);
       result_size = static_cast<int>(tresult.size());
       t_not_r=false;
 

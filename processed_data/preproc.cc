@@ -119,4 +119,3 @@ std::vector<TradeData> parse_csv(const std::string& filename) {
 
 //     return 0;
 // }
-
