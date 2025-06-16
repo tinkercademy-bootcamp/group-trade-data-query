@@ -28,7 +28,13 @@ private:
   int32_t server_listen_fd_;
   int32_t epoll_fd_;
 
-  std::mutex task_queue_mutex_;
+  uint64_t* outer_page_table;
+  uint64_t* inner_page_table;
+
+  uint32_t outer_page_table_size;
+  uint32_t inner_page_table_size;
+
+  // std::mutex task_queue_mutex_;
   // std::queue<TradeDataQuery> task_queue_;
   
   // std::mutex request_queue_mutex_;
