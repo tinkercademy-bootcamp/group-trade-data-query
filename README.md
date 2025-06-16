@@ -43,64 +43,82 @@ The following is the current directory structure of the directory of the repo
 
 ```
 .
-├── .gitignore
+├── Makefile
+├── README.md
 ├── build
 │   ├── client
 │   │   └── client.o
 │   ├── client-bin
-│   ├── processor
+│   ├── client-udp-bin
+│   ├── client_udp
+│   │   └── client_udp.o
+│   ├── query_engine
+│   │   └── query_engine.o
 │   ├── server
 │   │   ├── receiver.o
 │   │   ├── sender.o
 │   │   └── server.o
-│   └── server-bin
+│   ├── server-bin
+│   ├── server-udp-bin
+│   └── server_udp
+│       ├── sender_udp.o
+│       └── server_udp.o
 ├── data
 │   ├── processed
 │   │   └── trades-example.bin
 │   └── raw
 │       └── trades-example.csv
-├── Makefile
 ├── process_data
+│   ├── check.cc
 │   └── process_data_main.cc
-├── README.md
 ├── requirements.txt
+├── setup_data.sh
 ├── src
-│   ├── client
-│   │   ├── client.cc
-│   │   ├── client.h
-│   │   └── Makefile
-│   ├── query_engine
-│   │   ├── query_engine.cc
-│   │   └── query_engine.h
-│   ├── Makefile
-│   ├── server
-│   │   ├── Makefile
-│   │   ├── receiver.cc
-│   │   ├── sender.cc
-│   │   ├── sender.h
-│   │   ├── server.cc
-│   │   └── server.h
-│   ├── client_main.cc
-│   ├── server-main.cc
-│   └── utils
-│       ├── helper
-│       │   └── utils.h
-│       ├── net
-│       │   ├── net.cc
-│       │   └── net.h
-│       └── query.h
+│   ├── client
+│   │   ├── client.cc
+│   │   └── client.h
+│   ├── client_main.cc
+│   ├── client_main_udp.cc
+│   ├── client_udp
+│   │   ├── client_udp.cc
+│   │   └── client_udp.h
+│   ├── query_engine
+│   │   ├── query_engine.cc
+│   │   └── query_engine.h
+│   ├── server
+│   │   ├── receiver.cc
+│   │   ├── sender.cc
+│   │   ├── sender.h
+│   │   ├── server.cc
+│   │   └── server.h
+│   ├── server_main.cc
+│   ├── server_main_udp.cc
+│   ├── server_udp
+│   │   ├── sender_udp.cc
+│   │   ├── sender_udp.h
+│   │   ├── server_udp.cc
+│   │   └── server_udp.h
+│   └── utils
+│       ├── helper
+│       │   └── utils.h
+│       ├── net
+│       │   ├── net.cc
+│       │   ├── net.h
+│       │   └── net_udp.h
+│       ├── net_udp
+│       │   └── net_udp.h
+│       └── query.h
 └── test
+    ├── Makefile
+    ├── README.md
     ├── correctness
+    │   ├── Makefile
     │   ├── basic-tests.json
     │   ├── db-tests
     │   │   ├── db.ipynb
     │   │   └── db_testcases.py
     │   ├── dummy-client.cpp
-    │   ├── Makefile
     │   └── test-client.cpp
-    ├── nlohmann
-    │   └── json.hpp
-    ├── performance
-    │   └── Makefile
-    └── README.md
+    └── performance
+        └── Makefile
 ```
