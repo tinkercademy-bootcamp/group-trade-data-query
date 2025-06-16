@@ -20,13 +20,11 @@ int main() {
 
     int64_t ind = 0;
     TradeData trade;
-    pte_t pte;
+    std::cout << sizeof(TradeData) << " bytes per trade" << std::endl;
     while (ind < executor.trades_size) {
         executor.read_trade_data(ind, trade);
-        pte.created_at = trade.created_at;
-        pte.index = ind;
-        out.write(reinterpret_cast<const char*>(&pte), sizeof(pte_t));
-        ind += 128; // Assuming each page contains 128 trades
+        out.write(reinterpret_cast<const char*>(&trade.created_at), sizeof(uint64_t));
+        ind += (1 << 17);
     }
     out.close();
     std::cout << "Page table created successfully with " << ind / 128 << " pages." << std::endl;
