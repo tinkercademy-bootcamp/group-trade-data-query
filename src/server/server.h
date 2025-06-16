@@ -16,12 +16,14 @@ void make_non_blocking(int32_t sock);
 
 class EpollServer {
  public:
-  EpollServer(uint16_t port);
+  EpollServer(uint16_t port, const std::string& file);
   ~EpollServer();
 
   void run();
 
 private:
+  std::string file;
+
   sockaddr_in server_address_;
   int32_t server_listen_fd_;
   int32_t epoll_fd_;

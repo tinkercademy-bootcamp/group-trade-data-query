@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <ranges>
 typedef double float64_t;
-Query_engine::Query_engine() {
-  data.open("data/processed/trades-example.bin", std::ios::in | std::ios::binary);
+Query_engine::Query_engine(const std::string& file) {
+  data.open("data/processed/trades-" + file + ".bin", std::ios::in | std::ios::binary);
   if (!data.is_open()) {
     std::cerr << "[Query_engine] Error: could not open trade data file.\n";
     return;

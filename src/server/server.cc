@@ -23,8 +23,9 @@ std::vector<TradeData> execute_task(TradeDataQuery &query)
 constexpr int32_t MAX_EVENTS = 10;
 #define X_WORKER_THREADS 4 // Set the desired number of worker threads
 
-EpollServer::EpollServer(uint16_t port)
-    : server_listen_fd_(net::create_socket()),
+EpollServer::EpollServer(uint16_t port, const std::string& file)
+    : file(file),
+      server_listen_fd_(net::create_socket()),
       server_address_(net::create_address(port)),
       epoll_fd_(epoll_fd_ = epoll_create1(0)) {
   int32_t opt = 1;
@@ -130,7 +131,7 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
 
 void EpollServer::query_worker()
 {
-  Query_engine exec;
+  Query_engine exec(file);
   while(true)
   {
     // Change: get unique_ptr from queue and access the pair via pointer
