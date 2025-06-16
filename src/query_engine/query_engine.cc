@@ -1,3 +1,4 @@
+
 #include "query_engine.h"
 // #include "../../processed_data/preproc.h"
 #include "../utils/query.h"
@@ -18,7 +19,7 @@ Executor::Executor() {
 }
 
 bool Executor::read_trade_data(uint64_t ind, TradeData& trade) {
-    data.seekg(ind * sizeof(TradeData), std::ios::beg);
+    data.seekg(ind * 31, std::ios::beg);
     if (data.read(reinterpret_cast<char*>(&trade.symbol_id), sizeof(trade.symbol_id)) &&
         data.read(reinterpret_cast<char*>(&trade.created_at), sizeof(trade.created_at)) &&
         data.read(reinterpret_cast<char*>(&trade.trade_id), sizeof(trade.trade_id)) &&
@@ -40,6 +41,10 @@ bool Executor::read_trade_data(uint64_t ind, TradeData& trade) {
         throw std::runtime_error("[Executor] Error reading trade data at index " + std::to_string(ind));
     }
     return false; // If we reach here, it means reading failed
+}
+
+uint64_t int_ceil(uint64_t x, uint64_t y){
+    return (x/y) + (x%y != 0);
 }
 
 std::vector<Result> Executor::lowest_and_highest_prices(
@@ -74,15 +79,31 @@ std::vector<Result> Executor::lowest_and_highest_prices(
     TradeData trade;
 
     for (uint64_t offset = query.start_time_point; offset < query.end_time_point; offset += query.resolution) {
+        if(ind >= trades_size) break;
+        
+        read_trade_data(ind,trade);
+
+        if(offset < trade.created_at){
+            uint64_t times = int_ceil(trade.created_at-offset+1, query.resolution)-1;
+            offset += query.resolution*times;
+        }
+
         Price min_price = {0, 0};  // Reset min price
         Price max_price = {0, 0};  // Reset max price
         min_price_value = __DBL_MAX__;
         max_price_value = __DBL_MIN__;
 
-        while (read_trade_data(ind, trade) && trade.created_at < query.start_time_point) ind++;
+        while (ind < trades_size && read_trade_data(ind, trade) && trade.created_at < offset) ind++;
+        uint64_t good_cnt = 0;
 
-        while (trade.created_at < query.end_time_point && trade.created_at < offset + query.resolution) {
+        while (ind < trades_size && read_trade_data(ind, trade) && trade.created_at < query.end_time_point && trade.created_at >= offset && trade.created_at < offset + query.resolution) {
+            // std::cout << "Offset = " << offset << " " << std::endl;
+            // std::cout << "Ind = " << ind << std::endl;
+            // std::cout << "Create time = " << trade.created_at << std::endl;
+            // std::cout << std::endl;
+
             double price_value = trade.price.price * std::pow(10, trade.price.price_exponent);
+            ++good_cnt;
 
             if (price_value < min_price_value) {
                 min_price_value = price_value;
@@ -92,27 +113,24 @@ std::vector<Result> Executor::lowest_and_highest_prices(
                 max_price_value = price_value;
                 max_price = trade.price;
             }
-            ind++;  // Move to the next trade
-            if (ind >= trades_size) {
-                break;  // No more trades to process
-            }
+
+            ind++;
         }
 
-        result.push_back({
-            bucket_start_time,
-            min_price,
-            max_price
-        });
-        bucket_start_time += query.resolution;
-        ind++;  // Move to the next trade
-        if (ind >= trades_size) {
-            break;  // No more trades to process
+        // std::cout << "Offset = " << offset << std::endl;
+        // std::cout << "Good = " << good_cnt << std::endl;
+
+        if(good_cnt){
+            result.push_back({
+                offset,
+                min_price,
+                max_price
+            });
         }
     }
 
     return result;
 }
-
 
 namespace ranges = std::ranges;
 
@@ -175,4 +193,3 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
     
 //     return 0;
 // }
-
