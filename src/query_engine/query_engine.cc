@@ -132,7 +132,8 @@ std::vector<Result> Executor::lowest_and_highest_prices(
     return result;
 }
 
-namespace ranges = std::ranges;
+
+// namespace ranges = std::ranges;
 
 std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 {
