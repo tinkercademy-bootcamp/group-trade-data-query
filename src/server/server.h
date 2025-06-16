@@ -3,15 +3,19 @@
 #include <sys/epoll.h>
 
 #include <queue>
-
+#include <unordered_map>
+#include <vector>
 // #include "../utils/net/net.h"
 #include "../utils/query.h"
 #include "../query_engine/query_engine.h"
 
+
+#include "utils-server.h"
+
 void make_non_blocking(int32_t sock);
 class EpollServer {
  public:
-  EpollServer(int32_t port);
+  EpollServer(int32_t port, int32_t num_worker_threads);
   ~EpollServer();
 
   void run();
@@ -20,9 +24,14 @@ class EpollServer {
   sockaddr_in server_address_;
   int32_t server_listen_fd_;
   int32_t epoll_fd_;
-  void accept_connection();
-  void add_to_epoll(int32_t sock);
+  void add_to_epoll(int32_t sock, uint32_t events);
   void bind_server();
   int32_t handle_trade_data_query(int32_t sock, TradeDataQuery query);
   std::queue<std::pair<int32_t, TradeDataQuery>> task_queue_;
+
+  std::vector<std::thread> worker_threads_;
+
+  void handle_read(int32_t client_fd);
+  void handle_write(int32_t client_fd);
+  void process_results();
 };
