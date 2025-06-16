@@ -1,3 +1,4 @@
+
 #include "query_engine.h"
 // #include "../../processed_data/preproc.h"
 #include "../utils/query.h"
@@ -35,6 +36,10 @@ bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
   return false; // If we reach here, it means reading failed
 }
 
+uint64_t int_ceil(uint64_t x, uint64_t y){
+  return (x/y) + (x%y != 0);
+}
+
 std::vector<Result> Query_engine::lowest_and_highest_prices(
   const TradeDataQuery& query) {
 
@@ -42,7 +47,7 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
 
   // Early exit if no trades available
   // if (trades.empty()) {
-  //     std::cout << "[Query_engine] No trades available.\n";
+  //     std::cout << "[Executor] No trades available.\n";
   //     return result;
   // }
 
@@ -54,22 +59,46 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
 
   assert(query.resolution > 0);
 
-  float64_t min_price_value = __DBL_MAX__, max_price_value = __DBL_MIN__;
+  // Calculate size of each time bucket based on resolution // Assuming resolution > 0
+  uint64_t num_buckets = (query.end_time_point - query.start_time_point + (query.resolution - 1)) / query.resolution;
+
+
+  // result = std::vector<Result>(num_buckets);
+
+  double min_price_value = __DBL_MAX__, max_price_value = __DBL_MIN__;
   uint64_t bucket_start_time = query.start_time_point;
   uint64_t ind = 0;
 
   TradeData trade;
 
   for (uint64_t offset = query.start_time_point; offset < query.end_time_point; offset += query.resolution) {
+    if(ind >= trades_size) break;
+        
+    read_trade_data(ind,trade);
+
+    if(offset < trade.created_at){
+      uint64_t times = int_ceil(trade.created_at-offset+1, query.resolution)-1;
+      offset += query.resolution*times;
+    }
+
     Price min_price = {0, 0};  // Reset min price
     Price max_price = {0, 0};  // Reset max price
     min_price_value = __DBL_MAX__;
     max_price_value = __DBL_MIN__;
 
-    while (read_trade_data(ind, trade) && trade.created_at < query.start_time_point) ind++;
+    while (ind < trades_size && read_trade_data(ind, trade) && trade.created_at < offset) ind++;
+    uint64_t good_cnt = 0;
 
-    while (trade.created_at < query.end_time_point && trade.created_at < offset + query.resolution) {
-      float64_t price_value = trade.price.price * std::pow(10, trade.price.price_exponent);
+    while (ind < trades_size && read_trade_data(ind, trade) && 
+          trade.created_at < query.end_time_point && trade.created_at >= offset && 
+          trade.created_at < offset + query.resolution) {
+      // std::cout << "Offset = " << offset << " " << std::endl;
+      // std::cout << "Ind = " << ind << std::endl;
+      // std::cout << "Create time = " << trade.created_at << std::endl;
+      // std::cout << std::endl;
+
+      double price_value = trade.price.price * std::pow(10, trade.price.price_exponent);
+      ++good_cnt;
 
       if (price_value < min_price_value) {
         min_price_value = price_value;
@@ -79,27 +108,23 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
         max_price_value = price_value;
         max_price = trade.price;
       }
-      ind++;  // Move to the next trade
-      if (ind >= trades_size) {
-        break;  // No more trades to process
-      }
-      read_trade_data(ind, trade);
+
+      ind++;
     }
 
-    result.push_back({
-      bucket_start_time,
-      min_price,
-      max_price
-    });
-    bucket_start_time += query.resolution;
-    ind++;  // Move to the next trade
-    if (ind >= trades_size) {
-      break;  // No more trades to process
+    // std::cout << "Offset = " << offset << std::endl;
+    // std::cout << "Good = " << good_cnt << std::endl;
+
+    if(good_cnt){
+      result.push_back({
+        offset,
+        min_price,
+        max_price
+      });
     }
   }
   return result;
 }
-
 
 namespace ranges = std::ranges;
 
@@ -162,4 +187,3 @@ std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
     
 //     return 0;
 // }
-
