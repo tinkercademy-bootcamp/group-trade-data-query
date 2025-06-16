@@ -1,4 +1,14 @@
-#include "net.h"
+#ifndef NET_H
+#define NET_H
+
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <iostream>
+
+#include "../helper/utils.h"
 
 int32_t net::create_socket() {
     int32_t sock = socket(AF_INET, SOCK_STREAM, 0);
