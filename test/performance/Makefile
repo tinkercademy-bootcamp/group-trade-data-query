@@ -213,13 +213,6 @@ check-deps: ## Check if all dependencies are built
 	@echo -n "Test file: "; \
 	if [ -f "./performance_tests.json" ]; then echo "$(GREEN)✓ Found$(NC)"; else echo "$(RED)✗ Missing$(NC)"; fi
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-# Show performance test configuration
->>>>>>> fbab905 (Add performance testing completely)
-=======
->>>>>>> b9c6f7b (Remove redundancy)
 show-config: ## Show current test configuration
 	@echo "$(CYAN)Performance Test Configuration:$(NC)"
 	@echo "  Default Clients: $(DEFAULT_CLIENTS)"
