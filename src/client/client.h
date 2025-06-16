@@ -24,17 +24,13 @@ namespace client {
          */
         void send_message(const TradeDataQuery &message);
         /**
-         * @brief Receive the output of Min and Max price metric from server.
+         * @brief Receive any struct from the server
          * 
-         * @return std::vector<Result> 
+         * @tparam T 
+         * @return std::vector<T> 
          */
-        std::vector<Result> read_min_max();
-        /**
-         * @brief Read the raw trade data when resolution is 0
-         * 
-         * @return std::vector<TradeData> 
-         */
-        std::vector<TradeData> read_trade_data();
+        template<typename T>
+        std::vector<T> read_struct();
         /**
          * @brief Get the socket fd object
          * 
