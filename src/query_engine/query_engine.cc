@@ -247,7 +247,8 @@ Price Query_engine::mean_price_in_range(
     return Price{ mantissa, exp };
 }
 
-namespace ranges = std::ranges;
+
+// namespace ranges = std::ranges;
 
 std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
 {
