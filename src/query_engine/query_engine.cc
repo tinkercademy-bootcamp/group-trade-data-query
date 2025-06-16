@@ -64,12 +64,6 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
 
   TradeData trade;
 
-  // seg_node snn;
-
-  // std::cout << "Segtree debug info" << std::endl;
-  // std::cout << segtree.n << std::endl;
-  // segtree.read_segtree_data(2,snn);
-
   uint64_t left_index = 0;
   uint64_t right_index = trades_size - 1;
   uint64_t middle_index = 0;
@@ -101,38 +95,79 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
     min_price_value = __DBL_MAX__;
     max_price_value = __DBL_MIN__;
 
-    while (ind < trades_size && read_trade_data(ind, trade) && trade.created_at < offset) ind++;
-    uint64_t good_cnt = 0;
-    uint64_t old_ind = ind;
-  
-    while (ind < trades_size && read_trade_data(ind, trade) && 
-          trade.created_at < query.end_time_point && trade.created_at >= offset && 
-          trade.created_at < offset + query.resolution) {
-      // std::cout << "Offset = " << offset << " " << std::endl;
-      // std::cout << "Ind = " << ind << std::endl;
-      // std::cout << "Create time = " << trade.created_at << std::endl;
-      // std::cout << std::endl;
-
-      double price_value = trade.price.price * std::pow(10, trade.price.price_exponent);
-      ++good_cnt;
-
-      if (price_value < min_price_value) {
-        min_price_value = price_value;
-        min_price = trade.price;
-      } 
-      if (price_value > max_price_value) {
-        max_price_value = price_value;
-        max_price = trade.price;
+    // find min ind s.t trade.created_at >= offset
+    {
+      int64_t lo = ind, hi = trades_size-1;
+      int64_t first_pos = trades_size;
+      while(lo <= hi){
+        int64_t mid = (lo+hi) >> 1;
+        read_trade_data(mid,trade);
+        if(trade.created_at >= offset){
+          first_pos = mid;
+          hi = mid-1;
+        }
+        else{
+          lo = mid+1;
+        }
       }
 
-      ind++;
+      ind = first_pos;
     }
+
+    // while (ind < trades_size && read_trade_data(ind, trade) && trade.created_at < offset) ind++;
+    if(ind >= trades_size) break;
+
+    uint64_t good_cnt = 0;
+    uint64_t old_ind = ind;
+    
+    // find max ind s.t trade.created_at < val
+    int64_t lo = ind, hi = trades_size-1;
+    int64_t last_pos = ind;
+    uint64_t thresh = std::min(query.end_time_point, offset + query.resolution);
+
+    while(lo <= hi){
+      int64_t mid = (lo+hi) >> 1;
+      read_trade_data(mid,trade);
+      if(trade.created_at < thresh){
+        last_pos = mid;
+        lo = mid+1;
+      }
+      else{
+        hi = mid-1;
+      }
+    }
+
+    // while (ind < trades_size && read_trade_data(ind, trade) && 
+    //       trade.created_at < query.end_time_point && 
+    //       trade.created_at < offset + query.resolution) {
+    //   // std::cout << "Offset = " << offset << " " << std::endl;
+    //   // std::cout << "Ind = " << ind << std::endl;
+    //   // std::cout << "Create time = " << trade.created_at << std::endl;
+    //   // std::cout << std::endl;
+
+    //   double price_value = trade.price.price * std::pow(10, trade.price.price_exponent);
+    //   ++good_cnt;
+
+    //   if (price_value < min_price_value) {
+    //     min_price_value = price_value;
+    //     min_price = trade.price;
+    //   } 
+    //   if (price_value > max_price_value) {
+    //     max_price_value = price_value;
+    //     max_price = trade.price;
+    //   }
+
+    //   ind++;
+    // }
 
     // std::cout << "Offset = " << offset << std::endl;
     // std::cout << "Good = " << good_cnt << std::endl;
 
-    if(good_cnt){
-      seg_node res = segtree->bin_query(old_ind, ind-1);
+    read_trade_data(ind,trade);
+
+    if(trade.created_at < thresh){
+      seg_node res = segtree->bin_query(ind, last_pos);
+      ind = last_pos+1;
       result.push_back({
         offset,
         res.lowest_price,
