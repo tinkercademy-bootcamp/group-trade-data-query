@@ -24,14 +24,14 @@ int32_t main(int32_t argc, char* argv[]) {
   int32_t port = 8080;
 
   if (argc > 1) {
-      server_ip = argv[1];
+    server_ip = argv[1];
   }
   if (argc > 2) {
-      try {
-          port = std::stoi(argv[2]);
-      } catch (const std::exception& e) {
-          std::cerr << "Invalid port number: " << argv[2] << ". Using default " << port << std::endl;
-      }
+    try {
+      port = std::stoi(argv[2]);
+    } catch (const std::exception& e) {
+      std::cerr << "Invalid port number: " << argv[2] << ". Using default " << port << std::endl;
+    }
   }
   #ifdef TESTMODE
     spdlog::set_level(spdlog::level::off);
@@ -45,13 +45,13 @@ int32_t main(int32_t argc, char* argv[]) {
       chat_client.emplace(port, server_ip);
       spdlog::info("Connected to server.");
   } catch (const std::runtime_error& e) {
-      spdlog::critical("Failed to create or connect client: {}", e.what());
-      std::cerr << "Error connecting to server: " << e.what() << std::endl;
-      return EXIT_FAILURE;
+    spdlog::critical("Failed to create or connect client: {}", e.what());
+    std::cerr << "Error connecting to server: " << e.what() << std::endl;
+    return EXIT_FAILURE;
   } catch (...) {
-      spdlog::critical("An unknown error occurred during client initialization.");
-      std::cerr << "An unknown error occurred during client initialization." << std::endl;
-      return EXIT_FAILURE;
+    spdlog::critical("An unknown error occurred during client initialization.");
+    std::cerr << "An unknown error occurred during client initialization." << std::endl;
+    return EXIT_FAILURE;
   }
 
   int32_t client_socket_fd = chat_client->get_socket_fd();
@@ -77,7 +77,9 @@ int32_t main(int32_t argc, char* argv[]) {
 
         }
     }
-
+    #ifdef TESTMODE
+      break;
+    #endif
   }
 
   return EXIT_SUCCESS;
