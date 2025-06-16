@@ -25,12 +25,12 @@ class EpollServer {
   int32_t epoll_fd_;
 
   std::mutex task_queue_mutex_;
-  std::queue<TradeDataQuery> task_queue_;
+  // std::queue<TradeDataQuery> task_queue_;
   
   // std::mutex request_queue_mutex_;
   // std::queue<> request_queue_;
 
-  std::vector<std::thread> worker_threads_;
+  // std::vector<std::thread> worker_threads_;
 
   void accept_connection();
   void add_to_epoll(int32_t sock);
