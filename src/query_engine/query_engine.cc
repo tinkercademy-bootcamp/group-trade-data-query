@@ -14,7 +14,7 @@ Query_engine::Query_engine() {
     std::cerr << "[Query_engine] Error: could not open trade data file.\n";
     return;
   }
-  trades_size = data.seekg(0, std::ios::end).tellg() / 31;
+  trades_size = data.seekg(0, std::ios::end).tellg() / sizeof(TradeData);
   data.seekg(0, std::ios::beg);
 }
 
