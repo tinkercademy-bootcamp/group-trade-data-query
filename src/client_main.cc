@@ -74,15 +74,28 @@ int32_t main(int32_t argc, char* argv[]) {
         for (const char& data : output) {
             oss << data << " ";
         }
-        // for (const Result& data : output) {
-        //     int low_exp = static_cast<int>(data.lowest_price.price_exponent);
-        //     int high_exp = static_cast<int>(data.highest_price.price_exponent);
-
-        //     oss << "Timestamp: " << data.start_time
-        //         << "; Min Price: " << data.lowest_price.price << "e" << low_exp
-        //         << "; Max Price: " << data.highest_price.price << "e" << high_exp
-        //         << std::endl;
-        // }
+        // the result format is :
+        // first 5 bytes are the min price, next 5 bytes are the max price
+        // next 4 bytes are the mean price, next 4 bytes are the total quantity
+        // Note: The above assumes the data is in a specific format, adjust as needed
+        if (output.size() >= 10) {
+            uint32_t min_price = *reinterpret_cast<const uint32_t*>(&output[0]);
+            int8_t min_exp = output[4];
+            uint32_t max_price = *reinterpret_cast<const uint32_t*>(&output[5]);
+            int8_t max_exp = output[9];
+            oss << "\nMin Price: " << min_price << "e" << static_cast<int32_t>(min_exp)
+                << ", Max Price: " << max_price << "e" << static_cast<int32_t>(max_exp);
+        }
+        if (output.size() >= 14) {
+            uint32_t mean_price = *reinterpret_cast<const uint32_t*>(&output[10]);
+            int8_t mean_exp = output[14];
+            oss << "\nMean Price: " << mean_price << "e" << static_cast<int32_t>(mean_exp);
+        }
+        if (output.size() >= 18) {
+            uint32_t total_quantity = *reinterpret_cast<const uint32_t*>(&output[15]);
+            int8_t total_exp = output[19];
+            oss << "\nTotal Quantity: " << total_quantity << "e" << static_cast<int32_t>(total_exp);
+        }
     }
 
     std::cout << oss.str();  // Dump everything at once

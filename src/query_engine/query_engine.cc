@@ -247,17 +247,25 @@ Price Query_engine::mean_price_in_range(
     }
 
     // 4) Compute weighted mean
-    double mean_val = (sum_q > 0.0 ? sum_pq / sum_q : 0.0);
+  double mean_val = (sum_q > 0.0 ? sum_pq / sum_q : 0.0);
 
-    // 5) Convert the double mean back into a Price struct
-    int8_t exp = 0;
-    // Scale down mantissa if it would overflow uint32_t
-    while (mean_val > static_cast<double>(std::numeric_limits<uint32_t>::max())) {
-        mean_val /= 10.0;
-        ++exp;
-    }
-    uint32_t mantissa = static_cast<uint32_t>(std::round(mean_val));
-    return Price{ mantissa, exp };
+  // 5) Convert the double mean back into a Price struct
+  int8_t exp = 0;
+
+  // Scale UP if mean_val is very small (to preserve precision)
+  while (mean_val > 0 && mean_val < 1000000000.0 && exp > -18) {
+      mean_val *= 10.0;
+      --exp;
+  }
+
+  // Scale DOWN if mean_val is too large for uint32_t
+  while (mean_val > static_cast<double>(std::numeric_limits<uint32_t>::max())) {
+      mean_val /= 10.0;
+      ++exp;
+  }
+
+  uint32_t mantissa = static_cast<uint32_t>(std::round(mean_val));
+  return Price{ mantissa, exp };
 }
 
 
