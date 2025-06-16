@@ -8,17 +8,17 @@
 #include <algorithm>
 #include <ranges>
 typedef double float64_t;
-Query_engine::Query_engine() {
+Executor::Executor() {
   data.open("data/processed/trades-example.bin", std::ios::in | std::ios::binary);
   if (!data.is_open()) {
-    std::cerr << "[Query_engine] Error: could not open trade data file.\n";
+    std::cerr << "[Executor] Error: could not open trade data file.\n";
     return;
   }
   trades_size = data.seekg(0, std::ios::end).tellg() / 31;
   data.seekg(0, std::ios::beg);
 }
 
-bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
+bool Executor::read_trade_data(uint64_t ind, TradeData& trade) {
   data.seekg(ind * sizeof(TradeData), std::ios::beg);
   if (data.read(reinterpret_cast<char *>(&trade), sizeof(TradeData))) {
     std::cout << trade.symbol_id << " " 
@@ -40,7 +40,7 @@ uint64_t int_ceil(uint64_t x, uint64_t y){
   return (x/y) + (x%y != 0);
 }
 
-std::vector<Result> Query_engine::lowest_and_highest_prices(
+std::vector<Result> Executor::lowest_and_highest_prices(
   const TradeDataQuery& query) {
 
   std::vector<Result> result;
@@ -128,7 +128,7 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
 
 namespace ranges = std::ranges;
 
-std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
+std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 {
   std::vector<TradeData> trades;
 
