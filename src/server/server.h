@@ -10,6 +10,8 @@
 #include "../query_engine/query_engine.h"
 #include "../utils/mt_queue.h"
 
+#define MAX_THREADS 4
+
 void make_non_blocking(int32_t sock);
 
 class EpollServer {
@@ -23,6 +25,15 @@ private:
   sockaddr_in server_address_;
   int32_t server_listen_fd_;
   int32_t epoll_fd_;
+
+  std::mutex task_queue_mutex_;
+  // std::queue<TradeDataQuery> task_queue_;
+  
+  // std::mutex request_queue_mutex_;
+  // std::queue<> request_queue_;
+
+  // std::vector<std::thread> worker_threads_;
+
   void accept_connection();
   void add_to_epoll(int32_t sock);
   void bind_server();
@@ -32,3 +43,4 @@ private:
   void query_worker();
   void sender_thread();
 };
+

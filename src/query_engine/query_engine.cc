@@ -59,17 +59,25 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
 
   assert(query.resolution > 0);
 
-  // Calculate size of each time bucket based on resolution // Assuming resolution > 0
-  uint64_t num_buckets = (query.end_time_point - query.start_time_point + (query.resolution - 1)) / query.resolution;
-
-
-  // result = std::vector<Result>(num_buckets);
-
   double min_price_value = __DBL_MAX__, max_price_value = __DBL_MIN__;
-  uint64_t bucket_start_time = query.start_time_point;
-  uint64_t ind = 0;
 
   TradeData trade;
+
+  uint64_t left_index = 0;
+  uint64_t right_index = trades_size - 1;
+  uint64_t middle_index = 0;
+  while(left_index < right_index) {
+    middle_index = left_index + ((right_index - left_index) >> 1);
+    read_trade_data(middle_index, trade);
+    if(query.start_time_point <= trade.created_at) {
+        right_index = middle_index;
+    }
+    else {
+        left_index = middle_index + 1;
+    }
+  }
+
+  uint64_t ind = left_index;
 
   for (uint64_t offset = query.start_time_point; offset < query.end_time_point; offset += query.resolution) {
     if(ind >= trades_size) break;
@@ -126,7 +134,8 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
   return result;
 }
 
-namespace ranges = std::ranges;
+
+// namespace ranges = std::ranges;
 
 std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
 {
