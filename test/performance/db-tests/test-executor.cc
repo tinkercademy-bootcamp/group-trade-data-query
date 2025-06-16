@@ -15,12 +15,24 @@
 using namespace std;
 
 unsigned long long rdtsc() {
-    unsigned long long a, d;
-    asm volatile("mfence");
-    asm volatile("rdtsc" : "=a"(a), "=d"(d));
-    a = (d << 32) | a;
-    asm volatile("mfence");
-    return a;
+#if defined(__x86_64__) || defined(__i386__)
+    unsigned int lo, hi;
+    asm volatile (
+        "rdtsc"
+        : "=a"(lo), "=d"(hi)
+    );
+    return ((unsigned long long)hi << 32) | lo;
+
+#elif defined(__aarch64__)
+    uint64_t cntvct_el0;
+    asm volatile("isb; mrs %0, cntvct_el0" : "=r" (cntvct_el0));
+    return cntvct_el0;
+
+#else
+    // Fallback to chrono for unsupported architectures
+    auto now = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+#endif
 }
 
 #define PAGE_SIZE 4096ULL
