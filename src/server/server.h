@@ -9,9 +9,10 @@
 #include "../query_engine/query_engine.h"
 
 void make_non_blocking(int32_t sock);
+
 class EpollServer {
  public:
-  EpollServer(int32_t port);
+  EpollServer(uint16_t port);
   ~EpollServer();
 
   void run();

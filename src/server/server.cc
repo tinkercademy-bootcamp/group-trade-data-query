@@ -19,7 +19,7 @@ std::vector<TradeData> execute_task(TradeDataQuery& query) {
 
 constexpr int32_t MAX_EVENTS = 10;
 
-EpollServer::EpollServer(int32_t port)
+EpollServer::EpollServer(uint16_t port)
     : server_listen_fd_(net::create_socket()),
       server_address_(net::create_address(port)),
       epoll_fd_(epoll_fd_ = epoll_create1(0)) {
@@ -102,7 +102,7 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
       result_size = static_cast<int32_t>(rresult.size());
       t_not_r=false;
 
-  } else{
+    } else {
       tresult = exec.send_raw_data(task_query);
       result_size = static_cast<int32_t>(tresult.size());
       t_not_r=false;
@@ -123,11 +123,11 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
     // Then, send each TradeData struct in the result vector
     if (t_not_r) {
       for (auto& data : tresult) {
-      send_without_serialisation(client_sock, data);
+        send_without_serialisation(client_sock, data);
       }
     } else {
       for (auto& data : rresult) {
-      send_without_serialisation(client_sock, data);
+        send_without_serialisation(client_sock, data);
       }
     }
   }
