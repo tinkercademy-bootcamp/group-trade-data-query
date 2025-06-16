@@ -11,7 +11,7 @@
 
 std::vector<TradeData> execute_task(TradeDataQuery& query) {
   // Dummy implementation: return an empty vector
-  // spdlog::info("Query processed for TradeDataQuery id: {}", ()query.symbol_id);
+  spdlog::info("Query processed for TradeDataQuery id: {}", query.symbol_id);
   return {};
 }
 
