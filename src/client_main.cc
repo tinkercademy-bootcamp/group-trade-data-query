@@ -64,7 +64,9 @@ int32_t main(int32_t argc, char* argv[]) {
     chat_client->send_message(query);
     std::vector<Result> output = chat_client->read_min_max();
 
-
+    if(query.resolution == 0) {
+        std::vector<TradeData> output = chat_client->read_min_max();
+    }
     for (const Result& data : output) {
         int low_exp = static_cast<int>(data.lowest_price.price_exponent);
         int high_exp = static_cast<int>(data.highest_price.price_exponent);
