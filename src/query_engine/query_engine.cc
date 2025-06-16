@@ -16,6 +16,7 @@ Query_engine::Query_engine() {
   }
   trades_size = data.seekg(0, std::ios::end).tellg() / sizeof(TradeData);
   data.seekg(0, std::ios::beg);
+  segtree = std::make_unique<SegtreeBin>();
 }
 
 bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
@@ -63,6 +64,12 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
 
   TradeData trade;
 
+  // seg_node snn;
+
+  // std::cout << "Segtree debug info" << std::endl;
+  // std::cout << segtree.n << std::endl;
+  // segtree.read_segtree_data(2,snn);
+
   uint64_t left_index = 0;
   uint64_t right_index = trades_size - 1;
   uint64_t middle_index = 0;
@@ -78,8 +85,6 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
   }
 
   uint64_t ind = left_index;
-  Segtree segtree;
-  std::cout << sizeof(seg_node) << std::endl;
 
   for (uint64_t offset = query.start_time_point; offset < query.end_time_point; offset += query.resolution) {
     if(ind >= trades_size) break;
@@ -127,7 +132,7 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
     // std::cout << "Good = " << good_cnt << std::endl;
 
     if(good_cnt){
-      seg_node res = segtree.query(old_ind, ind-1);
+      seg_node res = segtree->bin_query(old_ind, ind-1);
       result.push_back({
         offset,
         res.lowest_price,
@@ -135,6 +140,7 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
       });
     }
   }
+
   return result;
 }
 

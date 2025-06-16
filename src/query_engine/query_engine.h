@@ -9,6 +9,7 @@
 #include <iterator>
 
 #include "../utils/query.h"
+#include "../data_structures/segment_tree.h"
 
 /**
  * @class Query_engine
@@ -35,6 +36,7 @@ public:
   std::vector<TradeData> send_raw_data(TradeDataQuery &query);
   uint64_t trades_size;
   bool read_trade_data(uint64_t ind, TradeData& trade);
+  std::unique_ptr<SegtreeBin> segtree = nullptr;
 
 private:
   std::ifstream data;  // File stream for reading trade data

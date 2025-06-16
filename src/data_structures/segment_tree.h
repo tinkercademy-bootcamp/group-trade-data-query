@@ -1,8 +1,10 @@
 #ifndef SEGMENT_TREE_H
 #define SEGMENT_TREE_H
 
-#include "../query_engine/query_engine.h"
 #include "../utils/query.h"
+#include <iostream>
+#include <vector>
+#include <fstream>
 
 struct seg_node{
   Price lowest_price;
@@ -12,13 +14,15 @@ struct seg_node{
 void merge(seg_node &curr_node, const seg_node &left_node, const seg_node &right_node);
 void merge(seg_node &curr_node, const seg_node &other_node);
 
-struct Segtree{
-  std::vector<seg_node> segtree_arr;
+struct SegtreeBin{
   uint64_t n;
-  Query_engine qe;
 
-  Segtree();
-  seg_node query(int64_t l, int64_t r);
+  SegtreeBin();
+  bool read_segtree_data(uint64_t ind, seg_node& sn);
+  seg_node bin_query(int64_t l, int64_t r);
+
+  private:
+    std::ifstream data;
 };
 
 #endif

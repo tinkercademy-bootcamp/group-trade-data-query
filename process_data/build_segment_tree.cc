@@ -13,7 +13,7 @@ void build_segtree(std::ofstream& out){
   Query_engine qe;
   uint64_t n = qe.trades_size;
   std::vector<seg_node> segtree_arr(2*n);
-  
+
   TradeData trade;
 
   for(uint64_t i = 0; i < n; ++i){
@@ -30,7 +30,7 @@ void build_segtree(std::ofstream& out){
 
 // Simple test to verify parsing
 int32_t main(int32_t argc, char** argv) {
-  std::string out_path = "../data/processed/segment-tree.bin";
+  std::string out_path = "data/processed/segment-tree.bin";
   std::ofstream out(out_path, std::ios::out | std::ios::trunc | std::ios::binary);
 
   if (!out.is_open()) {

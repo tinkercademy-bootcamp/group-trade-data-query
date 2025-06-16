@@ -11,32 +11,40 @@ void merge(seg_node &curr_node, const seg_node &other_node){
   curr_node.highest_price = curr_node.highest_price.price*std::pow(10,curr_node.highest_price.price_exponent) > other_node.highest_price.price*std::pow(10,other_node.highest_price.price_exponent) ? curr_node.highest_price : other_node.highest_price;
 }
 
-Segtree::Segtree(){
-    n = qe.trades_size;
-    segtree_arr.resize(2 * n);
-    TradeData trade;
-
-    for(uint64_t i = 0; i < n; ++i){
-        qe.read_trade_data(i,trade);
-        segtree_arr[i+n] = {trade.price, trade.price};
-    }
-
-    for(uint64_t i = n-1; i >= 1; --i){
-        merge(segtree_arr[i], segtree_arr[i<<1], segtree_arr[i<<1|1]);
-    }
+SegtreeBin::SegtreeBin() {
+  data.open("data/processed/segment-tree.bin", std::ios::in | std::ios::binary);
+  if (!data.is_open()) {
+    std::cerr << "[Segment Tree] Error: could not open segment tree binary file.\n";
+    return;
   }
+  n = (data.seekg(0, std::ios::end).tellg() / sizeof(seg_node)) >> 1;
+  data.seekg(0, std::ios::beg);
+}
 
-seg_node Segtree::query(int64_t l, int64_t r){
+bool SegtreeBin::read_segtree_data(uint64_t ind, seg_node& sn) {
+  data.seekg(ind * sizeof(seg_node), std::ios::beg);
+  if (data.read(reinterpret_cast<char *>(&sn), sizeof(seg_node))) {
+    return true;
+  } else {
+    throw std::runtime_error("[Segment Tree] Error reading segment tree data at index " + std::to_string(ind));
+  }
+  return false; // If we reach here, it means reading failed
+}
+
+seg_node SegtreeBin::bin_query(int64_t l, int64_t r){
   seg_node res = {{UINT32_MAX, 0}, {0, 0}};
+  seg_node sn;
 
   for (l += n, r += n; l <= r; l >>= 1, r >>= 1) {
     if(l & 1){
-      merge(res, segtree_arr[l++]);        
+      read_segtree_data(l++, sn);
+      merge(res, sn);        
     }
     if(!(r & 1)){
-      merge(res, segtree_arr[r--]);
+      read_segtree_data(r--, sn);
+      merge(res, sn);
     }
   }
 
   return res;
-};
+}
