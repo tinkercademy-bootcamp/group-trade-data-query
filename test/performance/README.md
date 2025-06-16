@@ -1,4 +1,4 @@
-For running the tests, just run make...
+For running the tests, just run make inside test/perfromance folder.
 Use make help for help
 All inside performance folder
 The performance folder creates an additional test-client using current

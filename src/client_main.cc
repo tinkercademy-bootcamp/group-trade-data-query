@@ -77,6 +77,9 @@ int32_t main(int32_t argc, char* argv[]) {
 
         }
     }
+    #ifdef TESTMODE
+      break;
+    #endif
   }
 
   return EXIT_SUCCESS;
