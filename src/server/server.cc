@@ -31,8 +31,6 @@ EpollServer::EpollServer(uint16_t port)
   make_non_blocking(server_listen_fd_);
   bind_server();
   add_to_epoll(server_listen_fd_);
-
-  
 }
 
 EpollServer::~EpollServer() {
