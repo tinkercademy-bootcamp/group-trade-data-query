@@ -108,20 +108,33 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
 {
   // Change: push a unique_ptr of the pair
   task_queue_.push(std::make_unique<std::pair<int32_t, TradeDataQuery>>(sock, query));
+  return 0;
+}
 
-  while (!task_queue_.empty())
+void EpollServer::query_worker()
+{
+  while(true)
   {
     // Change: get unique_ptr from queue and access the pair via pointer
     auto task_ptr = task_queue_.pop();
     auto &[client_sock, task_query] = *task_ptr;
-    std::vector<Result> result;
-    std::vector<TradeData> tresult;
+    std::unique_ptr<std::pair<int32_t, std::vector<Result>>> result = std::make_unique<std::pair<int32_t, std::vector<Result>>>();
+    result->first = client_sock;
     Executor exec;
-    int result_size;
-    bool t_not_r;
-    result = exec.lowest_and_highest_prices(task_query);
-    result_size = static_cast<int32_t>(result.size());
-    t_not_r=false;
+    
+    result->second = exec.lowest_and_highest_prices(task_query);
+    send_queue_.push(std::move(result));
+  }
+}
+
+void EpollServer::sender_thread()
+{
+  while(true)
+  {
+    auto send_ptr = send_queue_.pop();
+    int32_t result_size = static_cast<int32_t>(send_ptr->second.size());
+    int client_sock = send_ptr->first;
+    bool t_not_r=false;
     // First, send the size of the result vector
     ssize_t bytes_sent =
         send(client_sock, &result_size, sizeof(result_size), 0);
@@ -137,21 +150,11 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
                 << std::endl;
     }
 
-    // Then, send each TradeData struct in the result vector
-    if (t_not_r)
-    {
-      for (auto &data : tresult)
-      {
-        send_without_serialisation(client_sock, data);
-      }
-    } else {
-      for (auto& data : result) {
+    
+    for (auto& data : send_ptr->second) {
       send_without_serialisation(client_sock, data);
-      }
     }
   }
-
-  return 0;
 }
 
 void EpollServer::accept_connection()
