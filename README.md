@@ -1,6 +1,5 @@
 # Trading Query Project
 
-
 ## Compiling and Running
 Firstly, make sure you have the data downloaded and extracted in the `data/raw` directory. If you haven't done this yet, refer to the [Data](#data) section below.
 To compile the project, run:
@@ -40,8 +39,7 @@ make processed_data
 run `make libs` to install nlohmann (a test dependency)
 
 ## Dir Structure
-The following is the current directory structure of the directory of the repo## Directory Structure
-The following is the current directory structure of the repository.
+The following is the current directory structure of the directory of the repo
 
 ```
 .
