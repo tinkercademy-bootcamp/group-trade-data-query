@@ -18,12 +18,12 @@ int32_t create_socket() {
   return sock;
 }
 
-sockaddr_in create_address(uint16_t port) {
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  address.sin_port = htons(port);
-  return address;
-}
+  sockaddr_in create_address(uint16_t port) {
+    sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_port = htons(port);
+    return address;
+  }
 
 }  // namespace net
 
