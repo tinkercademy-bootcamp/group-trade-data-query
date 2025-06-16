@@ -172,7 +172,52 @@ void EpollServer::process_results() {
 }
  
 // New function to handle sending and buffering
-void EpollServer::send_result(ResultItem& result) { }
+void EpollServer::send_result(ResultItem& result) {
+    // 1. Serialize the result into a byte buffer
+    std::vector<char> buffer;
+    int32_t result_size;
+
+    // This serialization must match the client's expectation
+    if (result.is_trade_data) {
+        result_size = result.trade_data_results.size();
+        buffer.resize(sizeof(result_size) + result_size * sizeof(TradeData));
+        memcpy(buffer.data(), &result_size, sizeof(result_size));
+        memcpy(buffer.data() + sizeof(result_size), result.trade_data_results.data(), result_size * sizeof(TradeData));
+    } else {
+        result_size = result.resolution_results.size();
+        buffer.resize(sizeof(result_size) + result_size * sizeof(Result));
+        memcpy(buffer.data(), &result_size, sizeof(result_size));
+        memcpy(buffer.data() + sizeof(result_size), result.resolution_results.data(), result_size * sizeof(Result));
+    }
+    spdlog::info("Sending {} bytes to client {}", buffer.size(), result.client_fd);
+    // 2. Try to send the data
+    ssize_t bytes_sent = send(result.client_fd, buffer.data(), buffer.size(), 0);
+
+    if (bytes_sent < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // Kernel buffer is full, need to wait
+            bytes_sent = 0; // Treat as if nothing was sent yet
+        } else {
+            // Real error
+            perror("send");
+            close(result.client_fd);
+            return;
+        }
+    }
+
+    // 3. If not all data was sent, buffer the rest and wait for EPOLLOUT
+    if (static_cast<size_t>(bytes_sent) < buffer.size()) {
+        spdlog::warn("Partial send for client {}. Buffering remaining data.", result.client_fd);
+        write_buffers_[result.client_fd] = {std::move(buffer), static_cast<size_t>(bytes_sent)};
+
+        // Modify epoll to watch for writability
+        epoll_event event{};
+        event.data.fd = result.client_fd;
+        event.events = EPOLLIN | EPOLLOUT | EPOLLET; // Watch for read AND write
+        epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, result.client_fd, &event);
+    }
+}
+
 // This is called when the socket is ready for writing again
 void EpollServer::handle_write(int32_t client_fd) {
     spdlog::info("Handling write for client {}", client_fd);
