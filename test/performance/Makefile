@@ -8,19 +8,21 @@ BUILD_DIR := $(ROOT_DIR)/build
 SERVER_BUILD := $(BUILD_DIR)
 CLIENT_BUILD := $(BUILD_DIR)
 TEST_BUILD := $(BUILD_DIR)
+MULTI_CLIENT_BUILD := $(BUILD_DIR)
 
 # Executables
 SERVER_EXEC := $(SERVER_BUILD)/server-bin
 CLIENT_EXEC := $(CLIENT_BUILD)/client-bin
 SIMPLE_TEST := $(TEST_BUILD)/simple_test
 DUMMY_CLIENT := $(TEST_BUILD)/dummy_client
+MULTI_CLIENT := $(MULTI_CLIENT_BUILD)/multi_client
 PERF_TEST := $(TEST_BUILD)/perf_test
 
 # Compiler settings
 CC := gcc
 CXX := g++
 CFLAGS := -Wall -Wextra -std=c11 -g -DDEBUG
-CXXFLAGS := -Wall -Wextra -std=c++17 -g -DDEBUG -O2
+CXXFLAGS := -Wall -Wextra -std=c++20 -g -DDEBUG -O0 -fsanitize=address -pedantic
 LDFLAGS := -pthread
 
 # Test configuration
@@ -227,6 +229,10 @@ show-config: ## Show current test configuration
 	@echo ""
 	@echo "$(CYAN)Available Executables:$(NC)"
 	@ls -la $(BUILD_DIR)/ 2>/dev/null | grep -E '\.(exe|out)$|client$|server$' || echo "  No executables found"
+
+multi-client: 
+	@echo "$(YELLOW)Building multi-client via the Makefile...$(NC)"
+	$(CXX) $(CXXFLAGS) -o $(MULTI_CLIENT) multi_client/multi_client_main.cc multi_client/multi_client.cc $(LDFLAGS) -lfmt
 
 run-distributed-tests:
 	bash distributed_perf_test.sh

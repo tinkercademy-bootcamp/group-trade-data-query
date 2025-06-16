@@ -1,6 +1,6 @@
 #include "multi_client.h"
-#include "../../src/utils/helper/utils.h"
-#include "../../src/utils/net/net.h"
+#include "../../../src/utils/helper/utils.h"
+#include "../../../src/utils/net/net.h"
 
 #include <sys/socket.h>
 #include <unistd.h>
@@ -66,7 +66,7 @@ std::vector<std::vector<Result>> client::Client::read_min_max() {
     constexpr int MAX_EVENTS = 10;
     epoll_event events[MAX_EVENTS];
 
-    int nfds = epoll_wait(epoll_fd_, events, MAX_EVENTS, -1);
+    int nfds = epoll_wait(epoll_fd_, events, MAX_EVENTS, 50000);
     helper::check_error(nfds < 0, "epoll_wait failed");
 
     for (int i = 0; i < nfds; ++i) {
