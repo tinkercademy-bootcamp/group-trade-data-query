@@ -130,7 +130,7 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
 
 void EpollServer::query_worker()
 {
-  Executor exec;
+  Query_engine exec;
   while(true)
   {
     // Change: get unique_ptr from queue and access the pair via pointer
