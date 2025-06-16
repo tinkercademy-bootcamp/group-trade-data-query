@@ -1,4 +1,3 @@
-
 #include "query_engine.h"
 // #include "../../processed_data/preproc.h"
 #include "../utils/query.h"
@@ -53,22 +52,36 @@ std::vector<char> Query_engine::aggregator(int8_t chooser, const TradeDataQuery&
         switch (i) {
           case 0: { // min and max price
             auto [min_price, max_price] = min_max_price_in_range(start_time, end_time);
-            res.push_back(min_price.price);
-            res.push_back(min_price.price_exponent);
-            res.push_back(max_price.price);
-            res.push_back(max_price.price_exponent);
+            // append min_price price (4 bytes, little-endian)
+            {
+              const char* ptr = reinterpret_cast<const char*>(&min_price.price);
+              res.insert(res.end(), ptr, ptr + sizeof(min_price.price));
+              // append exponent (1 byte)
+              res.push_back(static_cast<char>(min_price.price_exponent));
+              // append max_price price (4 bytes)
+              ptr = reinterpret_cast<const char*>(&max_price.price);
+              res.insert(res.end(), ptr, ptr + sizeof(max_price.price));
+              // append exponent (1 byte)
+              res.push_back(static_cast<char>(max_price.price_exponent));
+            }
             break;
           }
           case 1: { // mean price
             Price mean_price = mean_price_in_range(start_time, end_time);
-            res.push_back(mean_price.price);
-            res.push_back(mean_price.price_exponent);
+            {
+              const char* ptr = reinterpret_cast<const char*>(&mean_price.price);
+              res.insert(res.end(), ptr, ptr + sizeof(mean_price.price));
+              res.push_back(static_cast<char>(mean_price.price_exponent));
+            }
             break;
           }
           case 2: { // total quantity
             Quantity total_qty = total_quantity_in_range(start_time, end_time);
-            res.push_back(total_qty.quantity);
-            res.push_back(total_qty.quantity_exponent);
+            {
+              const char* ptr = reinterpret_cast<const char*>(&total_qty.quantity);
+              res.insert(res.end(), ptr, ptr + sizeof(total_qty.quantity));
+              res.push_back(static_cast<char>(total_qty.quantity_exponent));
+            }
             break;
           }
         }
