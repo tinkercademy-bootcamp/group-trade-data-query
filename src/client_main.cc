@@ -64,21 +64,25 @@ int32_t main(int32_t argc, char* argv[]) {
     chat_client->send_message(query);
     
     if (query.metrics & (1 << 0)) {
-    std::vector<Result> output = chat_client->read_struct<Result>();
+    std::vector<char> output = chat_client->read_struct<char>();
     std::ostringstream oss;
 
     if (output.empty()) {
         oss << std::endl;  // Always at least one line
     } else {
-        for (const Result& data : output) {
-            int low_exp = static_cast<int>(data.lowest_price.price_exponent);
-            int high_exp = static_cast<int>(data.highest_price.price_exponent);
-
-            oss << "Timestamp: " << data.start_time
-                << "; Min Price: " << data.lowest_price.price << "e" << low_exp
-                << "; Max Price: " << data.highest_price.price << "e" << high_exp
-                << std::endl;
+        oss << "Received " << output.size() << " items:\n";
+        for (const char& data : output) {
+            oss << data << " ";
         }
+        // for (const Result& data : output) {
+        //     int low_exp = static_cast<int>(data.lowest_price.price_exponent);
+        //     int high_exp = static_cast<int>(data.highest_price.price_exponent);
+
+        //     oss << "Timestamp: " << data.start_time
+        //         << "; Min Price: " << data.lowest_price.price << "e" << low_exp
+        //         << "; Max Price: " << data.highest_price.price << "e" << high_exp
+        //         << std::endl;
+        // }
     }
 
     std::cout << oss.str();  // Dump everything at once
