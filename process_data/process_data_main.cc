@@ -6,6 +6,8 @@
 #include <iostream>
 #include <cstring>
 #include "../src/utils/query.h"
+#include "../src/data_structures/segment_tree.h"
+#include "../src/query_engine/query_engine.h"
 
 /**
  * @brief Parse a CSV file and return a vector of TradeData structs.
@@ -77,8 +79,26 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
     trade.taker_side = taker_side;
 
     out.write(reinterpret_cast<const char *>(&trade), sizeof(TradeData));
-    out.flush();
   }
+}
+
+void build_segtree(std::ofstream& out){
+  Query_engine qe;
+  uint64_t n = qe.trades_size;
+  std::vector<seg_node> segtree_arr(2*n);
+  
+  TradeData trade;
+
+  for(uint64_t i = 0; i < n; ++i){
+      qe.read_trade_data(i,trade);
+      segtree_arr[i+n] = {trade.price, trade.price};
+  }
+
+  for(uint64_t i = n-1; i >= 1; --i){
+      merge(segtree_arr[i], segtree_arr[i<<1], segtree_arr[i<<1|1]);
+  }
+  
+  out.write(reinterpret_cast<const char *>(segtree_arr.data()), segtree_arr.size() * sizeof(seg_node));
 }
 
 // Simple test to verify parsing
@@ -93,16 +113,30 @@ int32_t main(int32_t argc, char** argv) {
   std::string base_name = filename.substr(filename.find_last_of('/') + 1);
   std::string parent_dir = dir.substr(0, dir.find_last_of('/'));
 
-  std::string out_path = parent_dir + "/processed/" + base_name.substr(0, base_name.find_last_of('.')) + ".bin";
+  {
+    std::string out_path = parent_dir + "/processed/" + base_name.substr(0, base_name.find_last_of('.')) + ".bin";
 
-  std::ofstream out(out_path, std::ios::out | std::ios::trunc | std::ios::binary);
+    std::ofstream out(out_path, std::ios::out | std::ios::trunc | std::ios::binary);
 
-  if (!out.is_open()) {
-    std::cerr << "Error: could not open output file\n";
-    return 1;
+    if (!out.is_open()) {
+      std::cerr << "Error: could not open output file\n";
+      return 1;
+    }
+
+    parse_csv(filename, out);
   }
 
-  parse_csv(filename, out);
+  {
+    std::string out_path = parent_dir + "/processed/" + "segment-tree.bin";
+    std::ofstream out(out_path, std::ios::out | std::ios::trunc | std::ios::binary);
 
+    if (!out.is_open()) {
+      std::cerr << "Error: could not open output file\n";
+      return 1;
+    }
+
+    build_segtree(out);
+  }
+  
   return 0;
 }
