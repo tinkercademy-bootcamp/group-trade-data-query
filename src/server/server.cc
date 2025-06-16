@@ -113,6 +113,7 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
 
 void EpollServer::query_worker()
 {
+  Executor exec;
   while(true)
   {
     // Change: get unique_ptr from queue and access the pair via pointer
@@ -120,7 +121,6 @@ void EpollServer::query_worker()
     auto &[client_sock, task_query] = *task_ptr;
     std::unique_ptr<std::pair<int32_t, std::vector<Result>>> result = std::make_unique<std::pair<int32_t, std::vector<Result>>>();
     result->first = client_sock;
-    Executor exec;
     
     result->second = exec.lowest_and_highest_prices(task_query);
     send_queue_.push(std::move(result));
