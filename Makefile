@@ -12,19 +12,20 @@ SRC_DIR := src
 SRC_CLIENT := $(SRC_DIR)/client
 SRC_SERVER := $(SRC_DIR)/server
 SRC_QUERY_ENGINE := $(SRC_DIR)/query_engine
+SRC_DATA_STRUCTURES := $(SRC_DIR)/data_structures
 
 CLIENT_SRC := $(shell find src/client -type f -name '*.cc')
 CLIENT_OBJS := $(patsubst src/client/%.cc,build/client/%.o,$(CLIENT_SRC))
 CLIENT_TEST_OBJS := $(patsubst src/client/%.cc,build/client-test/%.o,$(CLIENT_SRC))
 CLIENT_HEADERS := $(shell find src/client -type f -name '*.h') $(shell find src/utils -type f -name '*.h')
 
-SERVER_SRC := $(shell find src/server -type f -name '*.cc') $(shell find src/query_engine -type f -name '*.cc')
-SERVER_OBJS := $(patsubst src/server/%.cc,build/server/%.o,$(patsubst src/query_engine/%.cc,build/query_engine/%.o,$(SERVER_SRC)))
-SERVER_HEADERS := $(shell find src/server -type f -name '*.h') $(shell find src/utils -type f -name '*.h')
+SERVER_SRC := $(shell find src/server -type f -name '*.cc') $(shell find src/query_engine -type f -name '*.cc') $(shell find src/data_structures -type f -name '*.cc') 
+SERVER_OBJS := $(patsubst src/server/%.cc,build/server/%.o,$(patsubst src/query_engine/%.cc,build/query_engine/%.o,$(patsubst src/data_structures/%.cc,build/data_structures/%.o,$(SERVER_SRC))))
+SERVER_HEADERS := $(shell find src/server -type f -name '*.h') $(shell find src/utils -type f -name '*.h') $(shell find src/data_structures -type f -name '*.h')
 
 PROCESS_DATA := $(SRC_DIR)/process_data/process_data_main.cc
 
-all: processed_data build build/server-bin build/client-bin
+all: build build/server-bin build/client-bin
 
 build:
 	mkdir -p build
@@ -56,6 +57,10 @@ build/server/%.o: $(SRC_SERVER)/%.cc $(SERVER_HEADERS)
 
 build/query_engine/%.o: $(SRC_QUERY_ENGINE)/%.cc $(SERVER_HEADERS)
 	mkdir -p build build/query_engine
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -c $< -o $@ $(LDFLAGS)
+
+build/data_structures/%.o: $(SRC_DATA_STRUCTURES)/%.cc $(SERVER_HEADERS)
+	mkdir -p build build/data_structures
 	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -c $< -o $@ $(LDFLAGS)
 
 build/processor: process_data/process_data_main.cc

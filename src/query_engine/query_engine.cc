@@ -1,4 +1,4 @@
-
+#include "../data_structures/segment_tree.h"
 #include "query_engine.h"
 // #include "../../processed_data/preproc.h"
 #include "../utils/query.h"
@@ -78,6 +78,8 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
   }
 
   uint64_t ind = left_index;
+  Segtree segtree;
+  std::cout << sizeof(seg_node) << std::endl;
 
   for (uint64_t offset = query.start_time_point; offset < query.end_time_point; offset += query.resolution) {
     if(ind >= trades_size) break;
@@ -96,7 +98,8 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
 
     while (ind < trades_size && read_trade_data(ind, trade) && trade.created_at < offset) ind++;
     uint64_t good_cnt = 0;
-
+    uint64_t old_ind = ind;
+  
     while (ind < trades_size && read_trade_data(ind, trade) && 
           trade.created_at < query.end_time_point && trade.created_at >= offset && 
           trade.created_at < offset + query.resolution) {
@@ -124,10 +127,11 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
     // std::cout << "Good = " << good_cnt << std::endl;
 
     if(good_cnt){
+      seg_node res = segtree.query(old_ind, ind-1);
       result.push_back({
         offset,
-        min_price,
-        max_price
+        res.lowest_price,
+        res.highest_price
       });
     }
   }
