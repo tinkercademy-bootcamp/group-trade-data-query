@@ -8,7 +8,7 @@
 #include <optional>
 
 #include <spdlog/spdlog.h>
-#include <unistd.h>     
+#include <unistd.h>
 #include <sys/socket.h> 
 #include <errno.h>      
 
@@ -43,14 +43,9 @@ int32_t main(int32_t argc, char* argv[]) {
   try {
       int32_t client_count = 5;
       chat_client.emplace(port, server_ip, client_count);
-    //   std::cout << "Connected to server. Type messages or '/quit' to exit." << std::endl;
   } catch (const std::runtime_error& e) {
-    //   spdlog::critical("Failed to create or connect client: {}", e.what());
-    //   std::cerr << "Error connecting to server: " << e.what() << std::endl;
       return EXIT_FAILURE;
   } catch (...) {
-    //   spdlog::critical("An unknown error occurred during client initialization.");
-    //   std::cerr << "An unknown error occurred during client initialization." << std::endl;
       return EXIT_FAILURE;
   }
 
