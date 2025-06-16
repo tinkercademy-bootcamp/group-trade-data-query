@@ -23,7 +23,14 @@ namespace client {
          * @throws std::runtime_error if sending fails or client is not connected.
          */
         void send_message(const TradeDataQuery &message);
-        std::vector<Result> read_min_max();
+        /**
+         * @brief Receive any struct from the server
+         * 
+         * @tparam T 
+         * @return std::vector<T> 
+         */
+        template<typename T>
+        std::vector<T> read_struct();
         /**
          * @brief Get the socket fd object
          * 
