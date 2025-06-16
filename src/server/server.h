@@ -1,6 +1,7 @@
 #pragma once
 #include <netinet/in.h>
 #include <sys/epoll.h>
+#include <memory>
 
 #include <queue>
 #include <unordered_map>
@@ -46,3 +47,4 @@ class EpollServer {
   void process_results();
   void send_result(ResultItem& result);
 };
+

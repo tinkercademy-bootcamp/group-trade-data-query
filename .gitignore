@@ -79,6 +79,7 @@ Thumbs.db
 
 #additions: 
 /data
+test/performance/db-tests/output
 
 # Database test files
 
