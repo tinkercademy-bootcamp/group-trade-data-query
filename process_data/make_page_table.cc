@@ -11,7 +11,8 @@
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <number_of_trades>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <file-name>" << std::endl;
+        std::cerr << "Example file names: example, tiny" << std::endl;
         return 1;
     }
     std::string file = argv[1];
