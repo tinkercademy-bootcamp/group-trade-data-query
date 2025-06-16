@@ -1,0 +1,62 @@
+#include "client_udp.h"
+
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+#include "../utils/helper/utils.h"
+#include "../utils/net/net.h"
+
+client::Client::Client(int port, const std::string &server_address)
+    : socket_{net::create_socket()},
+      server_address_{create_server_address(server_address, port)} {}
+
+void client::Client::send_message(const TradeDataQuery &message) {
+  ssize_t bytes_sent =
+      sendto(socket_, &message, sizeof(message), 0,
+             reinterpret_cast<const sockaddr *>(&server_address_),
+             sizeof(server_address_));
+  if (bytes_sent < 0) {
+    helper::check_error(true, "Send failed on client socket.");
+  }
+}
+
+int client::Client::get_socket_fd() const { return socket_; }
+client::Client::~Client() { close(socket_); }
+
+sockaddr_in client::Client::create_server_address(const std::string &server_ip,
+                                                  int port) {
+  sockaddr_in address = net::create_address(port);
+  // Convert the server IP address to a binary format
+  auto err_code = inet_pton(AF_INET, server_ip.c_str(), &address.sin_addr);
+  helper::check_error(err_code <= 0,
+                      "Invalid address/ Address not supported\n");
+  return address;
+}
+
+// void client::Client::connect_to_server(int sock, sockaddr_in &server_address)
+// {
+//   auto err_code =
+//       connect(sock, (sockaddr *)&server_address, sizeof(server_address));
+//   helper::check_error(err_code < 0, "Connection Failed.\n");
+// }
+
+std::vector<Result> client::Client::read_min_max() {
+  int count;
+  socklen_t addr_len = sizeof(server_address_);
+
+  ssize_t n =
+      recvfrom(socket_, &count, sizeof(count), 0,
+               reinterpret_cast<sockaddr *>(&server_address_), &addr_len);
+
+  helper::check_error(n < 0, "Failed reading the size.\n");
+
+  std::vector<Result> output(count);
+  for (int i = 0; i < count; i++) {
+    n = recvfrom(socket_, &output[i], sizeof(output[i]), 0,
+                 reinterpret_cast<sockaddr *>(&server_address_), &addr_len);
+    helper::check_error(n < 0, "Failed reading a Result struct.\n");
+  }
+
+  return output;
+}
