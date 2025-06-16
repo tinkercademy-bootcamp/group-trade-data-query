@@ -15,19 +15,27 @@ public:
   std::unique_ptr<T> pop()
   {
     qsize.acquire();
-    qlock.acquire();
+    qlock.lock();
     std::unique_ptr<T> ptr = std::move(_queue.front());
     _queue.pop();
-    qlock.release();
+    qlock.unlock();
     return ptr;
   }
 
   void push(std::unique_ptr<T> ptr)
   {
-    qlock.acquire();
+    qlock.lock();
     _queue.push(std::move(ptr));
-    qlock.release();
+    qlock.unlock();
     qsize.release();
+  }
+
+  bool empty()
+  {
+    qlock.lock();
+    bool ret = _queue.empty();
+    qlock.unlock();
+    return ret;
   }
 
 private:
