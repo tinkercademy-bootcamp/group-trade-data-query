@@ -40,13 +40,14 @@ void client::Client::connect_to_server(
   helper::check_error(err_code < 0, "Connection Failed.\n");
 }
 
-std::vector<Result> client::Client::read_min_max() {
+template<typename T>
+std::vector<T> client::Client::read_struct() {
   int32_t count;
   ssize_t n = recv(socket_, &count, sizeof(count), 0);
 
   helper::check_error(n < 0, "Failed reading the size.\n");
 
-  std::vector<Result> output(count);
+  std::vector<T> output(count);
   for(int32_t i=0; i<count; i++) {
     n = recv(socket_, &(output[i]), sizeof(output[i]), 0);
     helper::check_error(n < 0, "Failed reading a Result struct.\n");
@@ -54,3 +55,6 @@ std::vector<Result> client::Client::read_min_max() {
 
   return output;
 }
+
+template std::vector<TradeData> client::Client::read_struct<TradeData>();
+template std::vector<Result>    client::Client::read_struct<Result>();
