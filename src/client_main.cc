@@ -63,36 +63,21 @@ int32_t main(int32_t argc, char* argv[]) {
 
     chat_client->send_message(query);
     
+    if(query.metrics & (1<<0)) {
+        std::vector<Result> output = chat_client->read_struct<Result>();
+        for (const Result& data : output) {
+            int low_exp = static_cast<int>(data.lowest_price.price_exponent);
+            int high_exp = static_cast<int>(data.highest_price.price_exponent);
 
-    if(query.resolution == 0) {
-        spdlog::info("Querying trade data for symbol_id: {}, start_time: {}, end_time: {}, resolution: {}, metrics: {}",
-                     query.symbol_id, query.start_time_point, query.end_time_point, query.resolution, query.metrics);
-        std::vector<TradeData> output = chat_client->read_struct<TradeData>();
-        for (const TradeData& data : output) {
-            std::cout << data.symbol_id << " " << data.created_at << " " << data.trade_id
-                << " " << data.price.price << "e" << data.price.price_exponent << " " 
-                << data.quantity.quantity << "e" << data.quantity.quantity_exponent << " "
-                << data.taker_side << std::endl;
+            std::cout << "Timestamp: " << data.start_time
+                    << "; Min Price: " << data.lowest_price.price << "e" << low_exp
+                    << "; Max Price: " << data.highest_price.price << "e" << high_exp
+                    << std::endl;
+
+
         }
     }
-    else {
-        if(query.metrics & (1<<0)) {
-            spdlog::info("Querying lowest and highest prices for symbol_id: {}, start_time: {}, end_time: {}, resolution: {}, metrics: {}",
-                         query.symbol_id, query.start_time_point, query.end_time_point, query.resolution, query.metrics);
-            
-            std::vector<Result> output = chat_client->read_struct<Result>();
-            for (const Result& data : output) {
-                int low_exp = static_cast<int>(data.lowest_price.price_exponent);
-                int high_exp = static_cast<int>(data.highest_price.price_exponent);
 
-                std::cout << "Timestamp: " << data.start_time
-                        << "; Min Price: " << data.lowest_price.price << "e" << low_exp
-                        << "; Max Price: " << data.highest_price.price << "e" << high_exp
-                        << std::endl;
-            }
-        }
-    }
-    
   }
 
   return EXIT_SUCCESS;
