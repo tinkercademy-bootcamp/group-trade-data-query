@@ -16,7 +16,7 @@ unsigned long long rdtsc() {
 int main(int argc, char** argv) {
   std::cout << getpid() << std::endl;
   try {
-    Executor executor;
+    Query_engine executor;
     uint64_t index = 0;
     uint64_t start_time, end_time;
     TradeData currentTrade;
