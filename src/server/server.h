@@ -10,10 +10,10 @@
 #include "../utils/mt_queue.h"
 
 void make_non_blocking(int32_t sock);
-class EpollServer
-{
-public:
-  EpollServer(int32_t port);
+
+class EpollServer {
+ public:
+  EpollServer(uint16_t port);
   ~EpollServer();
 
   void run();
