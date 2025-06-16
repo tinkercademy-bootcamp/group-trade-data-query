@@ -28,7 +28,7 @@ DUMMY_CLIENT := dummy_client
 CC := gcc
 CXX := g++
 CFLAGS := -Wall -Wextra -std=c11 -g -DDEBUG
-CXXFLAGS := -Wall -Wextra -std=c++17 -g -DDEBUG
+CXXFLAGS := -Wall -Wextra -std=c++20 -g -DDEBUG
 LDFLAGS := -pthread
 
 # Test configuration
