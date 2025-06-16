@@ -11,7 +11,7 @@
 
 
 #include "utils-server.h"
-
+#include "TS-queue.h"
 void make_non_blocking(int32_t sock);
 class EpollServer {
  public:
@@ -30,6 +30,8 @@ class EpollServer {
   std::queue<std::pair<int32_t, TradeDataQuery>> task_queue_;
 
   std::vector<std::thread> worker_threads_;
+  TSQueue<WorkItem> work_queue_;
+  TSQueue<ResultItem> results_queue_;
 
   void handle_read(int32_t client_fd);
   void handle_write(int32_t client_fd);
