@@ -33,14 +33,17 @@ int32_t main(int32_t argc, char* argv[]) {
           std::cerr << "Invalid port number: " << argv[2] << ". Using default " << port << std::endl;
       }
   }
-
-  spdlog::set_level(spdlog::level::info);
+  #ifdef TESTMODE
+    spdlog::set_level(spdlog::level::off);
+  #else
+    spdlog::set_level(spdlog::level::info);
+  #endif
   spdlog::info("Command-line Chat Client starting to connect to {}:{}", server_ip, port);
 
   std::optional<client::Client> chat_client;
   try {
       chat_client.emplace(port, server_ip);
-      std::cout << "Connected to server. Type messages or '/quit' to exit." << std::endl;
+      spdlog::info("Connected to server. Type messages or '/quit' to exit.");
   } catch (const std::runtime_error& e) {
       spdlog::critical("Failed to create or connect client: {}", e.what());
       std::cerr << "Error connecting to server: " << e.what() << std::endl;
