@@ -43,7 +43,7 @@ int32_t main(int32_t argc, char* argv[]) {
   std::optional<client::Client> chat_client;
   try {
       chat_client.emplace(port, server_ip);
-      spdlog::info("Connected to server. Type messages or '/quit' to exit.");
+      spdlog::info("Connected to server.");
   } catch (const std::runtime_error& e) {
       spdlog::critical("Failed to create or connect client: {}", e.what());
       std::cerr << "Error connecting to server: " << e.what() << std::endl;
