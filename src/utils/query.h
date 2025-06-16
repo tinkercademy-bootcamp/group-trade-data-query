@@ -47,7 +47,7 @@ struct __attribute__((packed)) Quantity {
  * @struct trade_data
  * @brief struct as defined in the presentation
  */
-#pragma pack(4)
+#pragma pack(2)
 struct TradeData {
   uint32_t symbol_id;
   uint64_t created_at;  // std::chrono::time_point in nanoseconds
@@ -57,9 +57,7 @@ struct TradeData {
   Quantity quantity;
 
   uint8_t taker_side;  // 1 = ask, 2 = bid
-  uint8_t padding_;//just extra padding to make it 32 bytes
 };
-// #pragma pack(pop)
 
 /**
  * @struct Result
