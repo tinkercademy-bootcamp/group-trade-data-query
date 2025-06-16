@@ -23,6 +23,7 @@ void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& resu
 
 void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& results_queue) {
     Query_engine exec; // Each thread has its own Executor instance
+    int8_t metric_list = 7; // Assuming we want to compute all metrics (00000111)
 
     while (true) {
         WorkItem work = work_queue.pop();
@@ -30,13 +31,15 @@ void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& resu
         ResultItem result_item;
         result_item.client_fd = work.client_fd;
 
-        if (work.query.resolution > 0) {
-            result_item.is_trade_data = false;
-            result_item.resolution_results = exec.lowest_and_highest_prices(work.query);
-        } else {
-            result_item.is_trade_data = true;
-            result_item.trade_data_results = exec.send_raw_data(work.query);
-        }
+        result_item.res = exec.aggregator(metric_list, work.query);
+
+        // if (work.query.resolution > 0) {
+        //     result_item.is_trade_data = false;
+        //     result_item.resolution_results = exec.lowest_and_highest_prices(work.query);
+        // } else {
+        //     result_item.is_trade_data = true;
+        //     result_item.trade_data_results = exec.send_raw_data(work.query);
+        // }
 
         results_queue.push(std::move(result_item));
     }
@@ -156,17 +159,21 @@ void EpollServer::process_results() {
     ResultItem result;
     // spdlog::info("Processing results from results_queue_");
     while (results_queue_.try_pop(result)) {
+
         spdlog::info("Processing result for client {}", result.client_fd);
-        // print the result
+      
+
+        // spdlog::info("Processing result for client {}", result.client_fd);
+        // // print the result
         
-        spdlog::info("Resolution Results for client {}: {} items", result.client_fd, result.resolution_results.size());
-        for (const auto& res : result.resolution_results) {
-            spdlog::info("Start Time: {}, Lowest Price: {}e{}, Highest Price: {}e{}",
-                          res.start_time, res.lowest_price.price, res.lowest_price.price_exponent,
-                          res.highest_price.price, res.highest_price.price_exponent);
-        }
+        // spdlog::info("Resolution Results for client {}: {} items", result.client_fd, result.resolution_results.size());
+        // for (const auto& res : result.resolution_results) {
+        //     spdlog::info("Start Time: {}, Lowest Price: {}e{}, Highest Price: {}e{}",
+        //                   res.start_time, res.lowest_price.price, res.lowest_price.price_exponent,
+        //                   res.highest_price.price, res.highest_price.price_exponent);
+        // }
         
-        // Now we have a result. We need to send it back.
+        // // Now we have a result. We need to send it back.
         send_result(result);
     }
 }
@@ -175,24 +182,37 @@ void EpollServer::process_results() {
 void EpollServer::send_result(ResultItem& result) {
     // 1. Serialize the result into a byte buffer
     std::vector<char> buffer;
-    int32_t result_size;
+    buffer = std::move(result.res); // Move the serialized data into the buffer
+    
+    // int32_t result_size;
 
-    // This serialization must match the client's expectation
-    if (result.is_trade_data) {
-        result_size = result.trade_data_results.size();
-        buffer.resize(sizeof(result_size) + result_size * sizeof(TradeData));
-        memcpy(buffer.data(), &result_size, sizeof(result_size));
-        memcpy(buffer.data() + sizeof(result_size), result.trade_data_results.data(), result_size * sizeof(TradeData));
-    } else {
-        result_size = result.resolution_results.size();
-        buffer.resize(sizeof(result_size) + result_size * sizeof(Result));
-        memcpy(buffer.data(), &result_size, sizeof(result_size));
-        memcpy(buffer.data() + sizeof(result_size), result.resolution_results.data(), result_size * sizeof(Result));
-    }
-    spdlog::info("Sending {} bytes to client {}", buffer.size(), result.client_fd);
-    // 2. Try to send the data
-    ssize_t bytes_sent = send(result.client_fd, buffer.data(), buffer.size(), 0);
+    // // This serialization must match the client's expectation
+    // if (result.is_trade_data) {
+    //     result_size = result.trade_data_results.size();
+    //     buffer.resize(sizeof(result_size) + result_size * sizeof(TradeData));
+    //     memcpy(buffer.data(), &result_size, sizeof(result_size));
+    //     memcpy(buffer.data() + sizeof(result_size), result.trade_data_results.data(), result_size * sizeof(TradeData));
+    // } else {
+    //     result_size = result.resolution_results.size();
+    //     buffer.resize(sizeof(result_size) + result_size * sizeof(Result));
+    //     memcpy(buffer.data(), &result_size, sizeof(result_size));
+    //     memcpy(buffer.data() + sizeof(result_size), result.resolution_results.data(), result_size * sizeof(Result));
+    // }
+  int32_t count = static_cast<int32_t>(buffer.size());
+  ssize_t bytes_sent = send(result.client_fd, &count, sizeof(count), 0);
+  if (bytes_sent < 0) {
+      perror("send (count)");
+      close(result.client_fd);
+      return;
+  }
 
+  // 2. Then send the actual buffer
+  bytes_sent = send(result.client_fd, buffer.data(), buffer.size(), 0);
+  if (bytes_sent < 0) {
+      perror("send (buffer)");
+      close(result.client_fd);
+      return;
+  }
     if (bytes_sent < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             // Kernel buffer is full, need to wait
