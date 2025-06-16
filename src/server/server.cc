@@ -23,12 +23,11 @@ std::vector<TradeData> execute_task(TradeDataQuery &query)
 constexpr int32_t MAX_EVENTS = 10;
 #define X_WORKER_THREADS 4 // Set the desired number of worker threads
 
-EpollServer::EpollServer(int32_t port)
+EpollServer::EpollServer(uint16_t port)
     : server_listen_fd_(net::create_socket()),
       server_address_(net::create_address(port)),
-      epoll_fd_(epoll_fd_ = epoll_create1(0))
-{
-  int opt = 1;
+      epoll_fd_(epoll_fd_ = epoll_create1(0)) {
+  int32_t opt = 1;
   helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0,
                       "Failed to set SO_REUSEADDR");
   helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0,
