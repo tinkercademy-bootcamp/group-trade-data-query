@@ -12,7 +12,7 @@ MULTI_CLIENT_BUILD := $(BUILD_DIR)
 
 # Executables
 SERVER_EXEC := $(SERVER_BUILD)/server-bin
-CLIENT_EXEC := $(CLIENT_BUILD)/client-bin
+CLIENT_EXEC := $(CLIENT_BUILD)/client-test-bin
 SIMPLE_TEST := $(TEST_BUILD)/simple_test
 DUMMY_CLIENT := $(TEST_BUILD)/dummy_client
 MULTI_CLIENT := $(MULTI_CLIENT_BUILD)/multi_client
@@ -128,7 +128,7 @@ server: ## Build server for testing
 
 client: ## Build client for testing
 	@echo "$(YELLOW)Building client via client's Makefile...$(NC)"
-	@$(MAKE) -C $(ROOT_DIR) build/client-bin
+	@$(MAKE) -C $(ROOT_DIR) -B build/client-test-bin
 
 dummy-client: ## Build the dummy client for testing
 	@echo "$(YELLOW)Building dummy client...$(NC)"

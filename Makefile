@@ -2,6 +2,7 @@ CXX := g++
 CXXFLAGS := -std=c++20 -Wall -Wextra -pedantic -fsanitize=address
 CXX_DEBUG_FLAGS := -g3 -ggdb3
 CXX_RELEASE_FLAGS := -O3
+TEST_FLAGS := -DTESTMODE
 
 LDFLAGS := -lspdlog -lfmt
 
@@ -14,6 +15,7 @@ SRC_QUERY_ENGINE := $(SRC_DIR)/query_engine
 
 CLIENT_SRC := $(shell find src/client -type f -name '*.cc')
 CLIENT_OBJS := $(patsubst src/client/%.cc,build/client/%.o,$(CLIENT_SRC))
+CLIENT_TEST_OBJS := $(patsubst src/client/%.cc,build/client-test/%.o,$(CLIENT_SRC))
 CLIENT_HEADERS := $(shell find src/client -type f -name '*.h') $(shell find src/utils -type f -name '*.h')
 
 SERVER_SRC := $(shell find src/server -type f -name '*.cc') $(shell find src/query_engine -type f -name '*.cc')
@@ -35,6 +37,14 @@ build/server-bin: src/server_main.cc $(SERVER_OBJS)
 build/client-bin: src/client_main.cc $(CLIENT_OBJS)
 	mkdir -p build
 	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -o $@ $^ $(LDFLAGS)
+
+build/client-test/%.o: $(SRC_CLIENT)/%.cc $(CLIENT_HEADERS)
+	mkdir -p build build/client-test
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) $(TEST_FLAGS) -c $< -o $@ $(LDFLAGS)
+
+build/client-test-bin: src/client_main.cc $(CLIENT_TEST_OBJS)
+	mkdir -p build
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) $(TEST_FLAGS) -o $@ $^ $(LDFLAGS)
 
 build/client/%.o: $(SRC_CLIENT)/%.cc $(CLIENT_HEADERS)
 	mkdir -p build build/client
