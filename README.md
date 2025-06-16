@@ -1,13 +1,9 @@
 # Trading Query Project
 
-## Makefiles
-Each component has its own makefile and can be compiled by running `make` in the respective directory. To make the whole program, call `make` from the project root.
+## Data
+There's now a automatic data setup script. Call it as `bash setup_data.sh <team_id>` where team_id is 1,2,3 or 4. It will automatically download and extract the data, and will also call `make remove_spaces and `make processed_data`
 
-### Extending the Makefiles
-If your making a new main process, make a seperate Makefile.
-If you're adding components to an executable, make a new rule for the component's object file and add it as a pre-req for the target executable. Make sure to add any required directories in the `make dirs` target.
-
-In general, just read the Makefile and you'll immediately know what to do.
+It will download the files from your team's aws instance.
 
 ## External Tools
 run `make libs` to install nlohmann (a test dependency)
@@ -39,26 +35,30 @@ The following is the current directory structure of the directory of the repo
 ├── README.md
 ├── requirements.txt
 ├── src
-│   ├── client
-│   │   ├── client.cc
-│   │   └── client.h
-│   ├── client_main.cc
-│   ├── executor
-│   │   ├── executor.cc
-│   │   └── executor.h
-│   ├── server
-│   │   ├── receiver.cc
-│   │   ├── sender.cc
-│   │   ├── sender.h
-│   │   ├── server.cc
-│   │   └── server.h
-│   ├── server_main.cc
-│   └── utils
-│       ├── helper
-│       │   └── utils.h
-│       ├── net
-│       │   └── net.h
-│       └── query.h
+│   ├── client
+│   │   ├── client.cc
+│   │   ├── client.h
+│   │   └── Makefile
+│   ├── query_engine
+│   │   ├── query_engine.cc
+│   │   └── query_engine.h
+│   ├── Makefile
+│   ├── server
+│   │   ├── Makefile
+│   │   ├── receiver.cc
+│   │   ├── sender.cc
+│   │   ├── sender.h
+│   │   ├── server.cc
+│   │   └── server.h
+│   ├── client_main.cc
+│   ├── server-main.cc
+│   └── utils
+│       ├── helper
+│       │   └── utils.h
+│       ├── net
+│       │   ├── net.cc
+│       │   └── net.h
+│       └── query.h
 └── test
     ├── correctness
     │   ├── basic-tests.json

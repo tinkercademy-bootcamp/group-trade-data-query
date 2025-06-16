@@ -2,8 +2,8 @@
 // #include "server_udp/server.h"
 #include <spdlog/spdlog.h>
 
-int main() {
-  int kPort;
+int32_t main(){
+  int32_t kPort;
   kPort = 8080;
   EpollServer server(kPort);
   spdlog::info("Server started on port {}", kPort);

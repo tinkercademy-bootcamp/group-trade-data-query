@@ -1,4 +1,4 @@
-#include "executor.h"
+#include "query_engine.h"
 // #include "../../processed_data/preproc.h"
 #include "../utils/query.h"
 #include <cmath>
@@ -55,7 +55,7 @@ std::vector<Result> Executor::lowest_and_highest_prices(
 
     // Check if bit flag for min/max is enabled (bit 0)
     if ((query.metrics & (1 << 0)) == 0) {
-        std::cout << "[Executor] Bit 0 (min/max) not set. Skipping computation.\n";
+        std::cout << "[Query_engine] Bit 0 (min/max) not set. Skipping computation.\n";
         return result;
     }
 
@@ -151,7 +151,7 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 //         .resolution = 1000000000000000000, // 100 milliseconds
 //         .metrics = 1 // Enable min/max
 //     };
-//     auto results = executor.lowest_and_highest_prices(query);
+//     auto results = Query_engine.lowest_and_highest_prices(query);
 //     std::cout << "Computed " << results.size() << " results for lowest and highest prices.\n";
 //     for (const auto& res : results) {
 //         std::cout << "Start Time: " << res.start_time << ", "
@@ -160,7 +160,7 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 //                   << "Highest Price: " << res.highest_price.price << " * 10^" 
 //                   << static_cast<int>(res.highest_price.price_exponent) << "\n";
 //     }
-//     auto raw_data = executor.send_raw_data(query);
+//     auto raw_data = Query_engine.send_raw_data(query);
 //     std::cout << "Retrieved " << raw_data.size() << " raw trades.\n";
 //     for (const auto& trade : raw_data) {
 //         std::cout << "Trade ID: " << trade.trade_id << ", "
@@ -171,7 +171,7 @@ std::vector<TradeData> Executor::send_raw_data(TradeDataQuery &query)
 //                   << "Quantity: " << trade.quantity.quantity << " * 10^" 
 //                   << static_cast<int>(trade.quantity.quantity_exponent) << "\n";
 //     }
-//     std::cout << "Executor operations completed successfully.\n";
+//     std::cout << "Query_engine operations completed successfully.\n";
     
 //     return 0;
 // }

@@ -16,19 +16,19 @@
 
 class OffloadQueue {
  public:
-  void serialise_and_enqueue(int id, const std::string& final_result);
+  void serialise_and_enqueue(int32_t id, const std::string& final_result);
   void offload_one();
 
  private:
   std::queue<std::pair<int, std::string>> queue_;
 
-  std::pair<int, std::string> front() { return queue_.front(); }
-  void push(const std::pair<int, std::string>& data) { queue_.push(data); }
+  std::pair<int32_t, std::string> front() { return queue_.front(); }
+  void push(const std::pair<int32_t, std::string>& data) { queue_.push(data); }
   void pop() { queue_.pop(); }
   bool empty() const { return queue_.empty(); }
 };
 
 std::string serialise(const std::string& final_result);
-void send_data(int sockfd, const std::string& data);
-void send_without_serialisation(int sockfd, Result& result);
-void send_without_serialisation(int sockfd, TradeData& data);
+void send_data(int32_t sockfd, const std::string& data);
+void send_without_serialisation(int32_t sockfd, Result& result);
+void send_without_serialisation(int32_t sockfd, TradeData& data);
