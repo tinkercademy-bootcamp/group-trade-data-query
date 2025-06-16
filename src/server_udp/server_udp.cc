@@ -17,13 +17,13 @@ std::vector<TradeData> execute_task(TradeDataQuery& query) {
 
 /////////////////
 
-constexpr int MAX_EVENTS = 10;
+constexpr int32_t MAX_EVENTS = 10;
 
-EpollServer::EpollServer(int port)
+EpollServer::EpollServer(int32_t port)
     : server_listen_fd_(net::create_socket()),
       server_address_(net::create_address(port)),
-      epoll_fd_(epoll_fd_ = epoll_create1(0)) {
-  int opt = 1;
+      epoll_fd_(epoll_create1(0)) {
+  int32_t opt = 1;
   helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEADDR,
                                  &opt, sizeof(opt)) < 0,
                       "Failed to set SO_REUSEADDR");
@@ -44,10 +44,10 @@ EpollServer::~EpollServer() {
 void EpollServer::run() {
   epoll_event events[MAX_EVENTS];
   while (true) {
-    int n = epoll_wait(epoll_fd_, events, MAX_EVENTS, -1);
+    int32_t n = epoll_wait(epoll_fd_, events, MAX_EVENTS, -1);
     helper::check_error(n == -1, "epoll_wait failed");
 
-    for (int i = 0; i < n; ++i) {
+    for (int32_t i = 0; i < n; ++i) {
       if (events[i].data.fd == server_listen_fd_) {
         sockaddr_in client_addr{};
         socklen_t client_len = sizeof(client_addr);
@@ -62,10 +62,10 @@ void EpollServer::run() {
           char client_ip[INET_ADDRSTRLEN];
           inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip,
                     INET_ADDRSTRLEN);
-          int client_port = ntohs(client_addr.sin_port);
+          int32_t client_port = ntohs(client_addr.sin_port);
 
           spdlog::info("Processing query from client fd {}",
-                       static_cast<int>(events[i].data.fd));
+                       static_cast<int32_t>(events[i].data.fd));
           helper::check_error(handle_trade_data_query(events[i].data.fd, query,
                                                       client_addr) < 0,
                               "Failed to handle the query");
@@ -75,21 +75,21 @@ void EpollServer::run() {
   }
 }
 
-int EpollServer::handle_trade_data_query(int client_sock, TradeDataQuery query,
-                                         sockaddr_in client_addr) {
+int32_t EpollServer::handle_trade_data_query(int32_t client_sock, TradeDataQuery query,
+                                             sockaddr_in client_addr) {
   std::vector<Result> rresult;
   std::vector<TradeData> tresult;
   Executor exec;
-  int result_size;
+  int32_t result_size;
   bool t_not_r;
   if (query.resolution > 0) {
     rresult = exec.lowest_and_highest_prices(query);
-    result_size = static_cast<int>(rresult.size());
+    result_size = static_cast<int32_t>(rresult.size());
     t_not_r = false;
   } else {
     tresult = exec.send_raw_data(query);
-    result_size = static_cast<int>(tresult.size());
-    t_not_r = false;
+    result_size = static_cast<int32_t>(tresult.size());
+    t_not_r = true;
   }
   // First, send the size of the result vector
   ssize_t bytes_sent =
@@ -104,7 +104,6 @@ int EpollServer::handle_trade_data_query(int client_sock, TradeDataQuery query,
               << std::endl;
   }
 
-  // Then, send each TradeData struct in the result vector
   if (t_not_r) {
     for (auto& data : tresult) {
       send_without_serialisation(client_sock, data, client_addr);
@@ -117,24 +116,7 @@ int EpollServer::handle_trade_data_query(int client_sock, TradeDataQuery query,
   return 0;
 }
 
-// void EpollServer::accept_connection() {
-//   sockaddr_in client_addr;
-//   socklen_t client_len = sizeof(client_addr);
-//   int client_fd =
-//       accept(server_listen_fd_, reinterpret_cast<sockaddr*>(&client_addr),
-//              &client_len);
-//   helper::check_error(client_fd < 0, "Failed to accept connection");
-//   make_non_blocking(client_fd);
-//   add_to_epoll(client_fd);
-
-//   char client_ip[INET_ADDRSTRLEN];
-//   inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip, INET_ADDRSTRLEN);
-//   int client_port = ntohs(client_addr.sin_port);
-//   spdlog::info("Accepted connection from {}:{}. Assigned fd: {}", client_ip,
-//                client_port, client_fd);
-// }
-
-void EpollServer::add_to_epoll(int sock) {
+void EpollServer::add_to_epoll(int32_t sock) {
   epoll_event event{};
   event.data.fd = sock;
   event.events = EPOLLIN | EPOLLET;  // Edge-triggered, read events
@@ -144,8 +126,8 @@ void EpollServer::add_to_epoll(int sock) {
   spdlog::info("Socket {} added to epoll.", sock);
 }
 
-void make_non_blocking(int sock) {
-  int flags = fcntl(sock, F_GETFL, 0);
+void make_non_blocking(int32_t sock) {
+  int32_t flags = fcntl(sock, F_GETFL, 0);
   helper::check_error(flags == -1, "Failed to get socket flags");
   helper::check_error(fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1,
                       "Failed to set socket to non-blocking");
