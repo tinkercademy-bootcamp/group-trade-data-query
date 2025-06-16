@@ -22,7 +22,7 @@ SERVER_HEADERS := $(shell find src/server -type f -name '*.h') $(shell find src/
 
 PROCESS_DATA := $(SRC_DIR)/process_data/process_data_main.cc
 
-all: build build/server-bin build/client-bin udp-bins
+all: build build/server-bin build/client-bin
 
 build:
 	mkdir -p build
@@ -61,8 +61,8 @@ CLIENT_SRC_UDP := $(shell find src/client_udp -type f -name '*.cc')
 CLIENT_OBJS_UDP := $(patsubst src/client_udp/%.cc,build/client_udp/%.o,$(CLIENT_SRC_UDP))
 CLIENT_HEADERS_UDP := $(shell find src/client_udp -type f -name '*.h') $(shell find src/utils -type f -name '*.h')
 
-SERVER_SRC_UDP := $(shell find src/server_udp -type f -name '*.cc') $(shell find src/executor -type f -name '*.cc')
-SERVER_OBJS_UDP := $(patsubst src/server_udp/%.cc,build/server_udp/%.o,$(SERVER_SRC_UDP))
+SERVER_SRC_UDP := $(shell find src/server_udp -type f -name '*.cc') $(shell find src/query_engine -type f -name '*.cc')
+SERVER_OBJS_UDP := $(patsubst src/server_udp/%.cc,build/server_udp/%.o,$(patsubst src/query_engine/%.cc,build/query_engine/%.o,$(SERVER_SRC_UDP)))
 SERVER_HEADERS_UDP := $(shell find src/server_udp -type f -name '*.h') $(shell find src/utils -type f -name '*.h')
 
 udp-bins: build build/server-udp-bin build/client-udp-bin
