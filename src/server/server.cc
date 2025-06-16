@@ -6,6 +6,8 @@
 #include "../utils/query.h"
 #include "sender.h"
 #include <spdlog/spdlog.h>
+#include <thread>
+#include <vector>
 
 /////////////////
 
@@ -19,6 +21,7 @@ std::vector<TradeData> execute_task(TradeDataQuery &query)
 /////////////////
 
 constexpr int32_t MAX_EVENTS = 10;
+#define X_WORKER_THREADS 4 // Set the desired number of worker threads
 
 EpollServer::EpollServer(int32_t port)
     : server_listen_fd_(net::create_socket()),
@@ -47,6 +50,15 @@ void EpollServer::run()
   helper::check_error(listen(server_listen_fd_, SOMAXCONN) < 0,
                       "Failed to listen on server socket");
   epoll_event events[MAX_EVENTS];
+
+  // Start worker threads
+  std::vector<std::thread> worker_threads;
+  for (int i = 0; i < X_WORKER_THREADS; ++i) {
+    worker_threads.emplace_back(&EpollServer::query_worker, this);
+  }
+  // Start sender thread
+  std::thread sender_thread(&EpollServer::sender_thread, this);
+
   while (true)
   {
     int32_t n = epoll_wait(epoll_fd_, events, MAX_EVENTS, -1);
@@ -102,6 +114,12 @@ void EpollServer::run()
       }
     }
   }
+
+  // Join worker threads and sender thread (unreachable unless loop exits)
+  for (auto& t : worker_threads) {
+    if (t.joinable()) t.join();
+  }
+  if (sender_thread.joinable()) sender_thread.join();
 }
 
 int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
