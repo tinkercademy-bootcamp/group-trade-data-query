@@ -17,29 +17,29 @@
 class Query_engine {
 public:
     
-    Query_engine();
-    ~Query_engine() = default;
-    /**
-     * @brief Computes the lowest and highest prices within the given query window.
-     *
-     * @param query  A TradeDataQuery specifying the symbol, time window, resolution, and metrics.
-     * @return A vector of pairs of price structs representing the lowest and highest prices found.
-     */
-    std::vector<Result> lowest_and_highest_prices(const TradeDataQuery &query);
-    /**
-     * @brief Retrieves raw trade data corresponding to the query parameters.
-     *
-     * @param query  A TradeDataQuery defining the criteria for raw data selection.
-     * @return A vector of TradeData objects matching the query range and filters.
-     */
-    std::vector<TradeData> send_raw_data(TradeDataQuery &query);
+  Query_engine();
+  ~Query_engine() = default;
+  /**
+    * @brief Computes the lowest and highest prices within the given query window.
+    *
+    * @param query  A TradeDataQuery specifying the symbol, time window, resolution, and metrics.
+    * @return A vector of pairs of price structs representing the lowest and highest prices found.
+    */
+  std::vector<Result> lowest_and_highest_prices(const TradeDataQuery &query);
+  /**
+    * @brief Retrieves raw trade data corresponding to the query parameters.
+    *
+    * @param query  A TradeDataQuery defining the criteria for raw data selection.
+    * @return A vector of TradeData objects matching the query range and filters.
+    */
+  std::vector<TradeData> send_raw_data(TradeDataQuery &query);
 
 private:
-    std::ifstream data;  // File stream for reading trade data
-    // Any Internal members can be added here
-    // std::vector<TradeData> trades;
-    uint64_t trades_size;
-    bool read_trade_data(uint64_t ind, TradeData& trade);
+  std::ifstream data;  // File stream for reading trade data
+  // Any Internal members can be added here
+  // std::vector<TradeData> trades;
+  uint64_t trades_size;
+  bool read_trade_data(uint64_t ind, TradeData& trade);
 };
 
 #endif
