@@ -69,6 +69,13 @@ processed_data: build/processor $(CSVS)
 	@for file in $(CSVS); do \
 		$< $$file; \
 	done
+flamegraph_setup: all
+	mkdir -p external-tools/
+	if [ ! -d external-tools/FlameGraph ]; then git clone https://github.com/brendangregg/FlameGraph.git external-tools/FlameGraph; fi
+	chmod +x flamegraph.sh
+
+stress: all flamegraph_setup
+	./flamegraph.sh
 
 clean:
 	rm -rf build
