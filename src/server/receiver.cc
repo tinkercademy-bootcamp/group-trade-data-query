@@ -11,10 +11,10 @@
 #include "../utils/query.h"
 
 void receive_data(int32_t sockfd, TradeDataQuery& query) {
-    ssize_t bytes_received = recv(sockfd, &query, sizeof(query), 0);
-    if (bytes_received < 0) {
-        throw std::runtime_error("Failed to receive data: " + std::string(strerror(errno)));
-    } else if (bytes_received < static_cast<ssize_t>(sizeof(query))) {
-        std::cerr << "Warning: Only " << bytes_received << " out of " << sizeof(query) << " bytes received." << std::endl;
-    }
+  ssize_t bytes_received = recv(sockfd, &query, sizeof(query), 0);
+  if (bytes_received < 0) {
+    throw std::runtime_error("Failed to receive data: " + std::string(strerror(errno)));
+  } else if (bytes_received < static_cast<ssize_t>(sizeof(query))) {
+    std::cerr << "Warning: Only " << bytes_received << " out of " << sizeof(query) << " bytes received." << std::endl;
+  }
 }

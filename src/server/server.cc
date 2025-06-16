@@ -20,12 +20,11 @@ std::vector<TradeData> execute_task(TradeDataQuery &query)
 
 constexpr int32_t MAX_EVENTS = 10;
 
-EpollServer::EpollServer(int32_t port)
+EpollServer::EpollServer(uint16_t port)
     : server_listen_fd_(net::create_socket()),
       server_address_(net::create_address(port)),
-      epoll_fd_(epoll_fd_ = epoll_create1(0))
-{
-  int opt = 1;
+      epoll_fd_(epoll_fd_ = epoll_create1(0)) {
+  int32_t opt = 1;
   helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0,
                       "Failed to set SO_REUSEADDR");
   helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0,
@@ -116,8 +115,8 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
     auto &[client_sock, task_query] = *task_ptr;
     std::vector<Result> result;
     std::vector<TradeData> tresult;
-    Executor exec;
-    int result_size;
+    Query_engine exec; 
+    int32_t result_size;
     bool t_not_r;
     result = exec.lowest_and_highest_prices(task_query);
     result_size = static_cast<int32_t>(result.size());
@@ -138,15 +137,13 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
     }
 
     // Then, send each TradeData struct in the result vector
-    if (t_not_r)
-    {
-      for (auto &data : tresult)
-      {
+    if (t_not_r) {
+      for (auto& data : tresult) {
         send_without_serialisation(client_sock, data);
       }
     } else {
       for (auto& data : result) {
-      send_without_serialisation(client_sock, data);
+        send_without_serialisation(client_sock, data);
       }
     }
   }
