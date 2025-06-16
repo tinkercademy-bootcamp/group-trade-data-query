@@ -13,7 +13,7 @@
 #include <errno.h>      
 
 #include "multi_client.h"
-#include "../../src/utils/query.h"
+#include "../../../src/utils/query.h"
 
 #include <cmath> // for std::pow
 std::atomic<bool> g_client_running{true};
@@ -54,9 +54,6 @@ int32_t main(int32_t argc, char* argv[]) {
       return EXIT_FAILURE;
   }
 
-  int32_t client_socket_fd = chat_client->get_socket_fd();
-//   std::thread reader_thread(read_loop, client_socket_fd);
-
   while (g_client_running) {
     TradeDataQuery query;
     std::cin >> query.symbol_id >> query.start_time_point >> query.end_time_point >> query.resolution >> query.metrics;
@@ -76,7 +73,7 @@ int32_t main(int32_t argc, char* argv[]) {
                       << "\n";
         }
     }
-    if (one_shot == true) break;
+    // if (one_shot == true) break;
   }
 
   return EXIT_SUCCESS;

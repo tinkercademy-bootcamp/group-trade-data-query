@@ -3,7 +3,7 @@
 
 #include <netinet/in.h>
 #include <string>
-#include "../../src/utils/query.h"
+#include "../../../src/utils/query.h"
 #include <vector>
 #include <sys/epoll.h>
 #include <fcntl.h>
