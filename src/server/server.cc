@@ -22,7 +22,7 @@ std::vector<TradeData> execute_task(TradeDataQuery& query) {
 void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& results_queue);
 
 void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& results_queue) {
-    Executor exec; // Each thread has its own Executor instance
+    Query_engine exec; // Each thread has its own Executor instance
 
     while (true) {
         WorkItem work = work_queue.pop();
