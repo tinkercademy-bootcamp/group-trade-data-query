@@ -92,13 +92,13 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
     auto [client_sock, task_query] = task_queue_.front();
 
     task_queue_.pop();
-    std::vector<Result> rresult;
+    std::vector<Result> result;
     std::vector<TradeData> tresult;
     Executor exec; 
     int result_size;
     bool t_not_r;
-    rresult = exec.lowest_and_highest_prices(task_query);
-    result_size = static_cast<int32_t>(rresult.size());
+    result = exec.lowest_and_highest_prices(task_query);
+    result_size = static_cast<int32_t>(result.size());
     t_not_r=false;
     // First, send the size of the result vector
     ssize_t bytes_sent =
@@ -118,7 +118,7 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
       send_without_serialisation(client_sock, data);
       }
     } else {
-      for (auto& data : rresult) {
+      for (auto& data : result) {
       send_without_serialisation(client_sock, data);
       }
     }
