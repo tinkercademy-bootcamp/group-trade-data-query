@@ -188,12 +188,20 @@ Quantity Query_engine::total_quantity_in_range(
     }
 
     // 4) Convert the accumulated double back into a Quantity struct
-    //    scaling down if the mantissa would overflow uint32_t
     int8_t exp = 0;
+
+    // Scale UP if total_val is very small (to preserve precision)
+    while (total_val > 0 && total_val < 1000000000.0 && exp > -18) {
+        total_val *= 10.0;
+        --exp;
+    }
+
+    // Scale DOWN if total_val is too large for uint32_t
     while (total_val > static_cast<double>(std::numeric_limits<uint32_t>::max())) {
         total_val /= 10.0;
         ++exp;
     }
+
     uint32_t mantissa = static_cast<uint32_t>(std::round(total_val));
     return Quantity{ mantissa, exp };
 }
