@@ -23,7 +23,18 @@ namespace client {
          * @throws std::runtime_error if sending fails or client is not connected.
          */
         void send_message(const TradeDataQuery &message);
+        /**
+         * @brief Receive the output of Min and Max price metric from server.
+         * 
+         * @return std::vector<Result> 
+         */
         std::vector<Result> read_min_max();
+        /**
+         * @brief Read the raw trade data when resolution is 0
+         * 
+         * @return std::vector<TradeData> 
+         */
+        std::vector<TradeData> read_trade_data();
         /**
          * @brief Get the socket fd object
          * 
