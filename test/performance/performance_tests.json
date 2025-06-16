@@ -1,34 +1,142 @@
-{
-  "tests": [
-    {
-      "test_id": "test1",
-      "input": "1 1 1747267200000000001 1000000 1",
-      "expected_output": "Timestamp: 1; Min Price: 29913e-2; Max Price: 29913e-2",
-      "error_msg": "Test 1 failed."
-    },
-    {
-      "test_id": "test2",
-      "input": "1 1747267200000000000 1747267200000000001 1 1",
-      "expected_output": "Timestamp: 1747267200000000000; Min Price: 29913e-2; Max Price: 29913e-2",
-      "error_msg": "Test 2 failed."
-    },
-    {
-      "test_id": "test3",
-      "input": "1 1747267200002556231 1747267200004097915 1000 1",
-      "expected_output": "",
-      "error_msg": "Test 3 failed."
-    },
-    {
-      "test_id": "test4",
-      "input": "1 1747267200000000000 1747267200017109815 10000000 1",
-      "expected_output": "Timestamp: 1747267200000000000; Min Price: 29510e-2; Max Price: 29913e-2\nTimestamp: 1747267200010000000; Min Price: 29489e-2; Max Price: 29633e-2",
-      "error_msg": "Test 4 failed."
-    },
-    {
-      "test_id": "test5",
-      "input": "1 1747267200000000000 1747267200054743936 54743936 1",
-      "expected_output": "Timestamp: 1747267200000000000; Min Price: 29489e-2; Max Price: 30980e-2",
-      "error_msg": "Test 5 failed."
-    }
-  ]
-}
+{ "tests": [
+  {
+    "test_id": "test1",
+    "input": "1 0 1747267199999999999 1000 1",
+    "expected_output": "",
+    "error_msg": "test 1 failed"
+  }
+,
+  {
+    "test_id": "test2",
+    "input": "1 1747267200000000000 1747267200000000001 1 1",
+    "expected_output": "Timestamp: 1747267200000000000; Min Price: 29913e-2; Max Price: 29913e-2",
+    "error_msg": "test 2 failed"
+  }
+,
+  {
+    "test_id": "test3",
+    "input": "1 1747267200057006294 1747267200057006295 1 1",
+    "expected_output": "Timestamp: 1747267200057006294; Min Price: 30829e-2; Max Price: 30829e-2",
+    "error_msg": "test 3 failed"
+  }
+,
+  {
+    "test_id": "test4",
+    "input": "1 1747267200010000000 1747267200015000000 100 1",
+    "expected_output": "Timestamp: 1747267200013377300; Min Price: 29489e-2; Max Price: 29489e-2\nTimestamp: 1747267200014721700; Min Price: 29633e-2; Max Price: 29633e-2",
+    "error_msg": "test 4 failed"
+  }
+,
+  {
+    "test_id": "test5",
+    "input": "1 1747267200000000000 1747267200057006294 1000000000000000000 1",
+    "expected_output": "Timestamp: 1747267200000000000; Min Price: 29489e-2; Max Price: 30980e-2",
+    "error_msg": "test 5 failed"
+  }
+,
+  {
+    "test_id": "test6",
+    "input": "1 1747267200004246350 1747267200006885487 1000 1",
+    "expected_output": "Timestamp: 1747267200004246350; Min Price: 29759e-2; Max Price: 29759e-2",
+    "error_msg": "test 6 failed"
+  }
+,
+  {
+    "test_id": "test7",
+    "input": "1 1747267200001855157 1747267200008605610 500000000 1",
+    "expected_output": "Timestamp: 1747267200001855157; Min Price: 29510e-2; Max Price: 29759e-2",
+    "error_msg": "test 7 failed"
+  }
+,
+  {
+    "test_id": "test8",
+    "input": "1 1747267200036227566 1747267200045014785 1000000 1",
+    "expected_output": "Timestamp: 1747267200036227566; Min Price: 30610e-2; Max Price: 30610e-2\nTimestamp: 1747267200040227566; Min Price: 30473e-2; Max Price: 30473e-2",
+    "error_msg": "test 8 failed"
+  }
+,
+  {
+    "test_id": "test9",
+    "input": "1 1747267200020079986 1747267200027620000 2000000 1",
+    "expected_output": "Timestamp: 1747267200020079986; Min Price: 29917e-2; Max Price: 29917e-2\nTimestamp: 1747267200022079986; Min Price: 30183e-2; Max Price: 30183e-2",
+    "error_msg": "test 9 failed"
+  }
+,
+  {
+    "test_id": "test10",
+    "input": "1 1747267200000000000 1747267200057006294 1 1",
+    "expected_output": "Timestamp: 1747267200000000000; Min Price: 29913e-2; Max Price: 29913e-2\nTimestamp: 1747267200001855157; Min Price: 29644e-2; Max Price: 29644e-2\nTimestamp: 1747267200004246350; Min Price: 29759e-2; Max Price: 29759e-2\nTimestamp: 1747267200006885487; Min Price: 29510e-2; Max Price: 29510e-2\nTimestamp: 1747267200008605610; Min Price: 29604e-2; Max Price: 29604e-2\nTimestamp: 1747267200013377314; Min Price: 29489e-2; Max Price: 29489e-2\nTimestamp: 1747267200014721797; Min Price: 29633e-2; Max Price: 29633e-2\nTimestamp: 1747267200017806376; Min Price: 29724e-2; Max Price: 29724e-2\nTimestamp: 1747267200020079986; Min Price: 29917e-2; Max Price: 29917e-2\nTimestamp: 1747267200023629748; Min Price: 30183e-2; Max Price: 30183e-2\nTimestamp: 1747267200027640524; Min Price: 30117e-2; Max Price: 30117e-2\nTimestamp: 1747267200031806639; Min Price: 29994e-2; Max Price: 29994e-2\nTimestamp: 1747267200035176731; Min Price: 30182e-2; Max Price: 30182e-2\nTimestamp: 1747267200036227566; Min Price: 30610e-2; Max Price: 30610e-2\nTimestamp: 1747267200041133519; Min Price: 30473e-2; Max Price: 30473e-2\nTimestamp: 1747267200045014785; Min Price: 30224e-2; Max Price: 30224e-2\nTimestamp: 1747267200049348217; Min Price: 30396e-2; Max Price: 30396e-2\nTimestamp: 1747267200051701452; Min Price: 30946e-2; Max Price: 30946e-2\nTimestamp: 1747267200053256916; Min Price: 30980e-2; Max Price: 30980e-2",
+    "error_msg": "test 10 failed"
+  }
+,
+  {
+    "test_id": "test11",
+    "input": "1 1747267200000000000 1747267200057006295 54743936 1",
+    "expected_output": "Timestamp: 1747267200000000000; Min Price: 29489e-2; Max Price: 30980e-2\nTimestamp: 1747267200054743936; Min Price: 30829e-2; Max Price: 30829e-2",
+    "error_msg": "test 11 failed"
+  }
+,
+  {
+    "test_id": "test12",
+    "input": "1 1747267200050000000 1747267200060000000 1000000 1",
+    "expected_output": "Timestamp: 1747267200051000000; Min Price: 30946e-2; Max Price: 30946e-2\nTimestamp: 1747267200053000000; Min Price: 30980e-2; Max Price: 30980e-2\nTimestamp: 1747267200057000000; Min Price: 30829e-2; Max Price: 30829e-2",
+    "error_msg": "test 12 failed"
+  }
+,
+  {
+    "test_id": "test13",
+    "input": "1 1747267200030000000 1747267200036000000 100 1",
+    "expected_output": "Timestamp: 1747267200031806600; Min Price: 29994e-2; Max Price: 29994e-2\nTimestamp: 1747267200035176700; Min Price: 30182e-2; Max Price: 30182e-2",
+    "error_msg": "test 13 failed"
+  }
+,
+  {
+    "test_id": "test14",
+    "input": "1 1747267200049348217 1747267200049348218 1 1",
+    "expected_output": "Timestamp: 1747267200049348217; Min Price: 30396e-2; Max Price: 30396e-2",
+    "error_msg": "test 14 failed"
+  }
+,
+  {
+    "test_id": "test15",
+    "input": "1 1747267200004097915 1747267200004097916 1 1",
+    "expected_output": "",
+    "error_msg": "test 15 failed"
+  }
+,
+  {
+    "test_id": "test16",
+    "input": "1 1747267200008605610 1747267200023629748 10000000 1",
+    "expected_output": "Timestamp: 1747267200008605610; Min Price: 29489e-2; Max Price: 29724e-2\nTimestamp: 1747267200018605610; Min Price: 29917e-2; Max Price: 29917e-2",
+    "error_msg": "test 16 failed"
+  }
+,
+  {
+    "test_id": "test17",
+    "input": "1 1747267200017806376 1747267200035176731 1000000 1",
+    "expected_output": "Timestamp: 1747267200017806376; Min Price: 29724e-2; Max Price: 29724e-2\nTimestamp: 1747267200019806376; Min Price: 29917e-2; Max Price: 29917e-2\nTimestamp: 1747267200022806376; Min Price: 30183e-2; Max Price: 30183e-2\nTimestamp: 1747267200026806376; Min Price: 30117e-2; Max Price: 30117e-2\nTimestamp: 1747267200031806376; Min Price: 29994e-2; Max Price: 29994e-2",
+    "error_msg": "test 17 failed"
+  }
+,
+  {
+    "test_id": "test18",
+    "input": "1 1747267200000000000 1747267200004097915 2556231 1",
+    "expected_output": "Timestamp: 1747267200000000000; Min Price: 29644e-2; Max Price: 29913e-2",
+    "error_msg": "test 18 failed"
+  }
+,
+  {
+    "test_id": "test19",
+    "input": "1 1747267200013377314 1747267200053256916 27371967 1",
+    "expected_output": "Timestamp: 1747267200013377314; Min Price: 29489e-2; Max Price: 30610e-2\nTimestamp: 1747267200040749281; Min Price: 30224e-2; Max Price: 30946e-2",
+    "error_msg": "test 19 failed"
+  }
+,
+  {
+    "test_id": "test20",
+    "input": "1 1747267200051701452 1747267200057006294 10000 1",
+    "expected_output": "Timestamp: 1747267200051701452; Min Price: 30946e-2; Max Price: 30946e-2\nTimestamp: 1747267200053251452; Min Price: 30980e-2; Max Price: 30980e-2",
+    "error_msg": "test 20 failed"
+  }
+
+] }
