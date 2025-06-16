@@ -6,7 +6,7 @@
 #include <cassert>
 #include <algorithm>
 #include <ranges>
-
+typedef double float64_t;
 Query_engine::Query_engine() {
   data.open("data/processed/trades-example.bin", std::ios::in | std::ios::binary);
   if (!data.is_open()) {
@@ -54,7 +54,7 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
 
   assert(query.resolution > 0);
 
-  double min_price_value = __DBL_MAX__, max_price_value = __DBL_MIN__;
+  float64_t min_price_value = __DBL_MAX__, max_price_value = __DBL_MIN__;
   uint64_t bucket_start_time = query.start_time_point;
   uint64_t ind = 0;
 
@@ -69,7 +69,7 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
     while (read_trade_data(ind, trade) && trade.created_at < query.start_time_point) ind++;
 
     while (trade.created_at < query.end_time_point && trade.created_at < offset + query.resolution) {
-      double price_value = trade.price.price * std::pow(10, trade.price.price_exponent);
+      float64_t price_value = trade.price.price * std::pow(10, trade.price.price_exponent);
 
       if (price_value < min_price_value) {
         min_price_value = price_value;
