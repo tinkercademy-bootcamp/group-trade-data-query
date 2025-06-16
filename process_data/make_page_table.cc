@@ -9,8 +9,12 @@
 #include "../src/query_engine/query_engine.h"
 #include "../src/query_engine/page_table.h"
 
-int main() {
-    std::string file = "tiny";
+int main(int argc, char** argv) {
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <number_of_trades>" << std::endl;
+        return 1;
+    }
+    std::string file = argv[1];
     Query_engine query_engine(file);
     std::ofstream out("data/processed/page-table-" + file + "-outer.bin", std::ios::binary);
     
