@@ -1,6 +1,7 @@
 #pragma once
 #include <netinet/in.h>
 #include <sys/epoll.h>
+#include <memory>
 
 #include <queue>
 
@@ -26,6 +27,8 @@ private:
   void add_to_epoll(int32_t sock);
   void bind_server();
   int32_t handle_trade_data_query(int32_t sock, TradeDataQuery query);
-  // std::queue<std::pair<int32_t, TradeDataQuery>> task_queue_;
   Mt_Queue<std::pair<int32_t, TradeDataQuery>> task_queue_;
+  Mt_Queue<std::pair<int32_t, std::vector<Result>>> send_queue_;
+  void query_worker();
+  void sender_thread();
 };
