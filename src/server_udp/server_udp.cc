@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include "../utils/helper/utils.h"
-#include "../utils/net/net.h"
+#include "../utils/net_udp/net_udp.h"
 #include "../utils/query.h"
 #include "sender_udp.h"
 
@@ -42,8 +42,6 @@ EpollServer::~EpollServer() {
 }
 
 void EpollServer::run() {
-  helper::check_error(listen(server_listen_fd_, SOMAXCONN) < 0,
-                      "Failed to listen on server socket");
   epoll_event events[MAX_EVENTS];
   while (true) {
     int n = epoll_wait(epoll_fd_, events, MAX_EVENTS, -1);
