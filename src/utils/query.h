@@ -32,7 +32,7 @@ struct __attribute__((packed)) Price {
   uint32_t price;
   int8_t price_exponent;
 };
-
+#pragma pack(pop)
 /**
  * @struct Quantity
  * @brief Represents a quantity with its associated exponent for decimal
@@ -42,7 +42,7 @@ struct __attribute__((packed)) Quantity {
   uint32_t quantity;
   int8_t quantity_exponent;
 };
-
+#pragma pack(pop)
 /**
  * @struct trade_data
  * @brief struct as defined in the presentation
@@ -57,7 +57,9 @@ struct TradeData {
   Quantity quantity;
 
   uint8_t taker_side;  // 1 = ask, 2 = bid
+  uint8_t padding_;//just extra padding to make it 32 bytes
 };
+// #pragma pack(pop)
 
 /**
  * @struct Result
