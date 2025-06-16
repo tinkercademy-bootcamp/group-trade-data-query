@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #include "../utils/helper/utils.h"
-#include "../utils/net/net.h"
+#include "../utils/net_udp/net_udp.h"
 
 client::Client::Client(int port, const std::string &server_address)
     : socket_{net::create_socket()},
