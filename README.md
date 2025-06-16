@@ -82,5 +82,13 @@ The following is the current directory structure of the repository.
     │       ├── db.ipynb
     │       └── db_testcases.py
     └── performance
+        └── multi_client
+            └── multi_client_main.cc
+            └── multi_client.cc
+            └── multi_client.h
         └── Makefile
+        └── dummy_client.cpp
+        └── perf_test.cpp
+        └── performance_tests.json
+        └── README.md
 ```
