@@ -71,9 +71,9 @@ int32_t main(int32_t argc, char* argv[]) {
         oss << std::endl;  // Always at least one line
     } else {
         oss << "Received " << output.size() << " items:\n";
-        for (const char& data : output) {
-            oss << data << " ";
-        }
+        // for (const char& data : output) {
+        //     oss << data << " ";
+        // }
         // the result format is :
         // first 5 bytes are the min price, next 5 bytes are the max price
         // next 4 bytes are the mean price, next 4 bytes are the total quantity
