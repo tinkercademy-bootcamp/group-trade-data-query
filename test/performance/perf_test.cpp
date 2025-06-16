@@ -111,32 +111,30 @@ public:
             result.end_time = high_resolution_clock::now();
             result.response_time_ms = duration_cast<microseconds>(result.end_time - result.start_time).count() / 1000.0;
             result.error_message = "Could not start client (popen failed)";
-            return result;
         }
-        
-        char buffer[1024] = {0};
-        if (!fgets(buffer, sizeof(buffer), client)) {
-            result.end_time = high_resolution_clock::now();
-            result.response_time_ms = duration_cast<microseconds>(result.end_time - result.start_time).count() / 1000.0;
-            result.error_message = "No response from client";
-            pclose(client);
-            return result;
+
+        std::ostringstream output_stream;
+        char buffer[1024];
+        while (fgets(buffer, sizeof(buffer), client)) {
+            output_stream << buffer;
         }
-        
+        std::string full_output = output_stream.str();
+
         result.end_time = high_resolution_clock::now();
         result.response_time_ms = duration_cast<microseconds>(result.end_time - result.start_time).count() / 1000.0;
-        
-        std::string response = trim(std::string(buffer));
+
+        std::string response = trim(full_output);
+        std::string expected = trim(test.expected_output);
         result.actual_output = response;
-        
-        if (response == test.expected_output) {
+
+        if ((response.empty() && expected.empty()) || response == expected) {
             result.passed = true;
         } else {
             result.error_message = test.error_msg;
-            std::cout<<"response: "<<response<<std::endl;
-            std::cout<<"expected: "<<test.expected_output<<std::endl;
+            std::cout << "response: " << response << std::endl;
+            std::cout << "expected: " << expected << std::endl;
         }
-        
+
         pclose(client);
         return result;
     }
