@@ -58,6 +58,8 @@ struct TradeData {
 
   uint8_t taker_side;  // 1 = ask, 2 = bid
 
+
+
 };
 
 /**
