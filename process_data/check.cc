@@ -21,14 +21,7 @@ int main() {
 
     TradeData trade;
     std::cout << file.tellg() << std::endl;
-    file.read(reinterpret_cast<char*>(&trade.symbol_id), sizeof(trade.symbol_id));
-    file.read(reinterpret_cast<char*>(&trade.created_at), sizeof(trade.created_at));
-    file.read(reinterpret_cast<char*>(&trade.trade_id), sizeof(trade.trade_id));
-    file.read(reinterpret_cast<char*>(&trade.price.price), sizeof(trade.price.price));
-    file.read(reinterpret_cast<char*>(&trade.quantity.quantity), sizeof(trade.quantity.quantity));
-    file.read(reinterpret_cast<char*>(&trade.price.price_exponent), sizeof(trade.price.price_exponent));
-    file.read(reinterpret_cast<char*>(&trade.quantity.quantity_exponent), sizeof(trade.quantity.quantity_exponent));
-    file.read(reinterpret_cast<char*>(&trade.taker_side), sizeof(trade.taker_side));
+    file.read(reinterpret_cast<char*>(&trade), sizeof(TradeData));
     std::cout << "Trade Data:" << std::endl;
     std::cout << "Symbol ID: " << trade.symbol_id << std::endl;
     std::cout << "Created At: " << trade.created_at << std::endl;
