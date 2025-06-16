@@ -36,12 +36,13 @@ int32_t main(int32_t argc, char** argv) {
     while (ind < query_engine.trades_size) {
         query_engine.read_trade_data(ind, trade);
         outer_page_table_bin.write(reinterpret_cast<const char*>(&trade.created_at), sizeof(uint64_t));
-        ind += (1 << 17);
         if (ind % (1 << 26) == 0) {
-            inner_page_table_bin.write(reinterpret_cast<const char*>(&trade), sizeof(TradeData));
+            inner_page_table_bin.write(reinterpret_cast<const char*>(&trade.created_at), sizeof(uint64_t));
         }
+        ind += (1 << 17);
     }
     outer_page_table_bin.close();
     inner_page_table_bin.close();
+
     std::cout << "Page table created successfully with " << ind / 128 << " pages." << std::endl;
 }

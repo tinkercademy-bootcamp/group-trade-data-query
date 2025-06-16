@@ -18,7 +18,7 @@ class Query_engine {
 public:
     
   Query_engine(const std::string& file);
-  ~Query_engine() = default;
+  ~Query_engine();
   /**
     * @brief Computes the lowest and highest prices within the given query window.
     *
@@ -34,9 +34,21 @@ public:
     */
   std::vector<TradeData> send_raw_data(TradeDataQuery &query);
   uint64_t trades_size;
+  uint32_t outer_page_table_size;
+  uint32_t inner_page_table_size;
   bool read_trade_data(uint64_t ind, TradeData& trade);
 
+  /**
+    * @brief Retrieves outer page table data (trade.created_at) for a particular index
+    *
+    * @param index The index for which the outer page table data needs to be retrieved
+    * @return trade.created_at for the corresponding index 
+    */
+  uint64_t read_outer_page_table_data(uint64_t index);
+
 private:
+  uint64_t* outer_page_table;
+  uint64_t* inner_page_table;
   std::ifstream data;  // File stream for reading trade data
   // Any Internal members can be added here
   // std::vector<TradeData> trades;
