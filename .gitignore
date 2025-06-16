@@ -3,7 +3,7 @@ src/server/build/
 /test/nlohmann/
 *.out
 .clangd
-
+profiling-data/
 # =====================
 # General 
 # =====================

@@ -1,0 +1,11 @@
+client_id,test_id,passed,response_time_ms,actual_output,error_message
+Client_5,test3,false,28.351,"[2025-06-16 09:12:38.194] [error] [utils.h:15] Connection Failed.","Test 1 failed."
+Client_3,test3,false,29.986,"[2025-06-16 09:12:38.194] [error] [utils.h:15] Connection Failed.","Test 1 failed."
+Client_2,test3,false,29.288,"[2025-06-16 09:12:38.191] [error] [utils.h:15] Connection Failed.","Test 1 failed."
+Client_1,test3,false,30.251,"[2025-06-16 09:12:38.190] [error] [utils.h:15] Connection Failed.","Test 1 failed."
+Client_4,test3,false,28.624,"[2025-06-16 09:12:38.193] [error] [utils.h:15] Connection Failed.","Test 1 failed."
+Client_5,test2,false,10.799,"[2025-06-16 09:12:38.226] [error] [utils.h:15] Connection Failed.","Test 2 failed."
+Client_1,test2,false,13.846,"[2025-06-16 09:12:38.232] [error] [utils.h:15] Connection Failed.","Test 2 failed."
+Client_3,test2,false,23.234,"[2025-06-16 09:12:38.238] [error] [utils.h:15] Connection Failed.","Test 2 failed."
+Client_2,test2,false,24.095,"[2025-06-16 09:12:38.243] [error] [utils.h:15] Connection Failed.","Test 2 failed."
+Client_4,test2,false,26.701,"[2025-06-16 09:12:38.247] [error] [utils.h:15] Connection Failed.","Test 2 failed."
