@@ -14,8 +14,32 @@ Query_engine::Query_engine(const std::string& file) {
     std::cerr << "[Query_engine] Error: could not open trade data file.\n";
     return;
   }
-  trades_size = data.seekg(0, std::ios::end).tellg() / 31;
+  trades_size = data.seekg(0, std::ios::end).tellg() / sizeof(TradeData);
   data.seekg(0, std::ios::beg);
+
+  std::ifstream outer_page_table_file("data/processed/page-table-" + file + "-outer.bin", std::ios::in | std::ios::binary);
+  std::ifstream inner_page_table_file("data/processed/page-table-" + file + "-inner.bin", std::ios::in | std::ios::binary);
+
+  outer_page_table_size = outer_page_table_file.seekg(0, std::ios::end).tellg() / sizeof(uint64_t);
+  outer_page_table_file.seekg(0, std::ios::beg);
+
+  outer_page_table = new uint64_t[outer_page_table_size];
+
+  inner_page_table_size = inner_page_table_file.seekg(0, std::ios::end).tellg() / sizeof(uint64_t);
+  inner_page_table_file.seekg(0, std::ios::beg);
+
+  inner_page_table = new uint64_t[inner_page_table_size];
+
+  outer_page_table_file.read(reinterpret_cast<char*>(outer_page_table), outer_page_table_size * sizeof(uint64_t));
+  inner_page_table_file.read(reinterpret_cast<char*>(inner_page_table), inner_page_table_size * sizeof(uint64_t));
+
+  outer_page_table_file.close();
+  inner_page_table_file.close();
+}
+
+Query_engine::~Query_engine() {
+  delete[] outer_page_table;
+  delete[] inner_page_table;
 }
 
 bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
