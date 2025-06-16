@@ -8,10 +8,13 @@
 #include "../utils/query.h"
 #include "sender.h"
 #include <spdlog/spdlog.h>
+#include <thread>
+#include <vector>
 
 /////////////////
 
-std::vector<TradeData> execute_task(TradeDataQuery& query) {
+std::vector<TradeData> execute_task(TradeDataQuery &query)
+{
   // Dummy implementation: return an empty vector
   spdlog::info("Query processed for TradeDataQuery id: {}", query.symbol_id);
   return {};
@@ -44,6 +47,7 @@ void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& resu
 
 
 constexpr int32_t MAX_EVENTS = 10;
+#define X_WORKER_THREADS 4 // Set the desired number of worker threads
 
 EpollServer::EpollServer(int32_t port, int32_t num_worker_threads)
     : server_listen_fd_(net::create_socket()),
@@ -51,9 +55,9 @@ EpollServer::EpollServer(int32_t port, int32_t num_worker_threads)
       epoll_fd_(epoll_fd_ = epoll_create1(0)) {
   int32_t opt = 1;
   helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0,
-            "Failed to set SO_REUSEADDR");
+                      "Failed to set SO_REUSEADDR");
   helper::check_error(setsockopt(server_listen_fd_, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0,
-            "Failed to set SO_REUSEPORT");
+                      "Failed to set SO_REUSEPORT");
   make_non_blocking(server_listen_fd_);
   bind_server();
   add_to_epoll(server_listen_fd_, EPOLLIN);
@@ -63,13 +67,15 @@ EpollServer::EpollServer(int32_t port, int32_t num_worker_threads)
   }
 }
 
-EpollServer::~EpollServer() {
+EpollServer::~EpollServer()
+{
   close(server_listen_fd_);
   close(epoll_fd_);
   spdlog::info("Server ended");
 }
 
-void EpollServer::run() {
+void EpollServer::run()
+{
   helper::check_error(listen(server_listen_fd_, SOMAXCONN) < 0,
                       "Failed to listen on server socket");
   epoll_event events[MAX_EVENTS];
@@ -77,13 +83,18 @@ void EpollServer::run() {
     int32_t n = epoll_wait(epoll_fd_, events, MAX_EVENTS, 100);
     helper::check_error(n == -1, "epoll_wait failed");
 
-    for (int32_t i = 0; i < n; ++i) {
-      if (events[i].data.fd == server_listen_fd_) {
+    for (int32_t i = 0; i < n; ++i)
+    {
+      if (events[i].data.fd == server_listen_fd_)
+      {
         // Accept all incoming connections
-        while (true) {
+        while (true)
+        {
           int32_t client_fd = accept(server_listen_fd_, nullptr, nullptr);
-          if (client_fd == -1) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) break;
+          if (client_fd == -1)
+          {
+            if (errno == EAGAIN || errno == EWOULDBLOCK)
+              break;
             helper::check_error(true, "Failed to accept connection");
           }
           make_non_blocking(client_fd);
@@ -117,7 +128,8 @@ void EpollServer::add_to_epoll(int32_t sock, uint32_t events) {
   spdlog::info("Socket {} added to epoll.", sock);
 }
 
-void make_non_blocking(int32_t sock) {
+void make_non_blocking(int32_t sock)
+{
   int32_t flags = fcntl(sock, F_GETFL, 0);
   helper::check_error(flags == -1, "Failed to get socket flags");
   helper::check_error(fcntl(sock, F_SETFL, flags | O_NONBLOCK) == -1,
@@ -125,9 +137,10 @@ void make_non_blocking(int32_t sock) {
   spdlog::info("Server switched socket {} to non-blocking mode.", sock);
 }
 
-void EpollServer::bind_server() {
+void EpollServer::bind_server()
+{
   helper::check_error(
-      bind(server_listen_fd_, reinterpret_cast<sockaddr*>(&server_address_),
+      bind(server_listen_fd_, reinterpret_cast<sockaddr *>(&server_address_),
            sizeof(server_address_)) < 0,
       "Failed to bind server socket");
   spdlog::info("Server bound to port {}", ntohs(server_address_.sin_port));

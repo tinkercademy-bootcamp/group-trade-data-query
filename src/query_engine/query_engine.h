@@ -33,13 +33,13 @@ public:
     * @return A vector of TradeData objects matching the query range and filters.
     */
   std::vector<TradeData> send_raw_data(TradeDataQuery &query);
+  uint64_t trades_size;
+  bool read_trade_data(uint64_t ind, TradeData& trade);
 
 private:
   std::ifstream data;  // File stream for reading trade data
   // Any Internal members can be added here
   // std::vector<TradeData> trades;
-  uint64_t trades_size;
-  bool read_trade_data(uint64_t ind, TradeData& trade);
 };
 
 #endif
