@@ -55,3 +55,6 @@ std::vector<T> client::Client::read_struct() {
 
   return output;
 }
+
+template std::vector<TradeData> client::Client::read_struct<TradeData>();
+template std::vector<Result>    client::Client::read_struct<Result>();
