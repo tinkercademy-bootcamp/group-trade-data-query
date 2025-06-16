@@ -98,6 +98,8 @@ int main(int argc, char** argv) {
     vector<uint64_t> differences;
     vector<uint64_t> times;
 
+    std::string dir = "test/performance/db-tests/output/";
+
     // std::cout << "Human test: input the integer you see on your screen" << std::endl;
     // uint16_t pid;
     // cin >> pid;
@@ -134,7 +136,7 @@ int main(int argc, char** argv) {
     
     cout << "Successfully processed " << differences.size() << " trades" << endl;
     
-    FILE* f = fopen("differences.txt", "w");
+    FILE* f = fopen((dir + "differences.txt").c_str(), "w");
     if (f != NULL) {
       for(int64_t i = 0; i < differences.size(); i++) {
         fprintf(f, "%ld %lu\n", i, (differences[i] - differences[0])/1024);
@@ -144,7 +146,7 @@ int main(int argc, char** argv) {
     } else {
       cerr << "Failed to open differences.txt for writing" << endl;
     }
-    f = fopen("times.txt", "w");
+    f = fopen((dir + "times.txt").c_str(), "w");
     if (f != NULL) {
       for(int64_t i = 0; i < times.size(); i++) {
         fprintf(f, "%ld %lu\n", i, times[i]);
