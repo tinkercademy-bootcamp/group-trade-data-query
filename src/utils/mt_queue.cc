@@ -9,3 +9,11 @@ std::unique_ptr<T> Mt_Queue::pop()
   qlock.release();
   return ptr;
 }
+
+void Mt_Queue::push(std::unique_ptr<T> ptr)
+{
+  qlock.acquire();
+  _queue.push(std::move(ptr));
+  qlock.release();
+  qsize.release();
+}
