@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 .PHONY: all test clean run-tests perf-test help
-=======
-.PHONY: all test clean server client run-tests perf-test help
->>>>>>> fbab905 (Add performance testing completely)
 .DEFAULT_GOAL := all
 
 # Directories
@@ -14,13 +10,8 @@ CLIENT_BUILD := $(BUILD_DIR)
 TEST_BUILD := $(BUILD_DIR)
 
 # Executables
-<<<<<<< HEAD
 SERVER_EXEC := $(SERVER_BUILD)/server-bin
 CLIENT_EXEC := $(CLIENT_BUILD)/client-bin
-=======
-SERVER_EXEC := $(SERVER_BUILD)/server
-CLIENT_EXEC := $(CLIENT_BUILD)/client
->>>>>>> fbab905 (Add performance testing completely)
 SIMPLE_TEST := $(TEST_BUILD)/simple_test
 DUMMY_CLIENT := $(TEST_BUILD)/dummy_client
 PERF_TEST := $(TEST_BUILD)/perf_test
@@ -69,7 +60,6 @@ help: ## Show available targets
 	@echo "$(CYAN)Examples:$(NC)"
 	@echo "  make run-perf-tests                     # Run test with default client and 5 clients"
 	@echo "  make run-perf-tests CLIENTS=20          # Run test with 20 clients"
-<<<<<<< HEAD
 
 
 all:
@@ -114,52 +104,6 @@ run-incremental-tests: setup dummy-client perf-test ## Run perf tests incrementa
 
 
 setup: server client
-=======
-
-
-all:
-	$(MAKE) run-perf-tests USE_DUMMY=1
-
-run-perf-tests: setup dummy-client perf-test ## Run performance tests with configurable number of clients
-	@$(eval CLIENTS := $(or $(CLIENTS),$(DEFAULT_CLIENTS)))
-	@$(eval EXEC := $(or $(EXEC),$(if $(USE_DUMMY),$(DUMMY_CLIENT),$(CLIENT_EXEC))))
-	@echo "$(BLUE)Running performance tests with $(CLIENTS) concurrent clients...$(NC)"
-	@echo "$(BLUE)Using executable: $(EXEC)$(NC)"
-	@if [ ! -f "$(EXEC)" ]; then \
-		echo "$(RED)✗ Executable not found: $(EXEC)$(NC)"; \
-		echo "$(YELLOW)Available executables:$(NC)"; \
-		ls -la $(BUILD_DIR)/ 2>/dev/null || echo "No executables found"; \
-		exit 1; \
-	fi
-	@echo "$(CYAN)Starting performance test...$(NC)"
-	@$(PERF_TEST) --clients $(CLIENTS) --exec $(EXEC) --tests ./performance_tests.json
-	@echo "$(GREEN)✓ Performance test completed$(NC)"
-
-run-incremental-tests: setup dummy-client perf-test ## Run perf tests incrementally until failure
-	@$(eval EXEC := $(or $(EXEC),$(if $(USE_DUMMY),$(DUMMY_CLIENT),$(CLIENT_EXEC))))
-	@$(eval MAX_CLIENTS := $(or $(MAX_CLIENTS),100))
-	@$(eval INCREMENT := $(or $(INCREMENT),5))
-	@echo "$(CYAN)Starting incremental load test...$(NC)"
-	@CLIENTS=1; \
-	while [ $$CLIENTS -le $(MAX_CLIENTS) ]; do \
-		echo "$(BLUE)Testing with $$CLIENTS clients...$(NC)"; \
-		$(PERF_TEST) --clients $$CLIENTS --exec $(EXEC) --tests ./performance_tests.json > perf_tmp.csv 2>&1; \
-		if tail -n +2 perf_tmp.csv | grep -E '^Client_.*false'; then \
-			echo "$(RED)✗ Test failed with $$CLIENTS clients. Stopping.$(NC)"; \
-			break; \
-		else \
-			echo "$(GREEN)✓ Passed with $$CLIENTS clients$(NC)"; \
-		fi; \
-		tail -n +2 perf_tmp.csv | grep -E '^Client_' >> performance_results.csv; \
-		CLIENTS=$$((CLIENTS + $(INCREMENT))); \
-	done; \
-	rm -f perf_tmp.csv; \
-	echo "$(CYAN)✓ Incremental testing completed.$(NC)"
-
-
-
-setup: ## Create test directories and files
->>>>>>> fbab905 (Add performance testing completely)
 	@echo "$(YELLOW)Setting up performance test environment...$(NC)"
 	@mkdir -p $(SERVER_BUILD) $(CLIENT_BUILD) $(TEST_BUILD)
 	@if [ ! -f $(SERVER_EXEC) ]; then \
@@ -268,9 +212,12 @@ check-deps: ## Check if all dependencies are built
 	if [ -f "./performance_tests.json" ]; then echo "$(GREEN)✓ Found$(NC)"; else echo "$(RED)✗ Missing$(NC)"; fi
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 # Show performance test configuration
 >>>>>>> fbab905 (Add performance testing completely)
+=======
+>>>>>>> b9c6f7b (Remove redundancy)
 show-config: ## Show current test configuration
 	@echo "$(CYAN)Performance Test Configuration:$(NC)"
 	@echo "  Default Clients: $(DEFAULT_CLIENTS)"
