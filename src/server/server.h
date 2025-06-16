@@ -32,7 +32,16 @@ class EpollServer {
   TSQueue<WorkItem> work_queue_;
   TSQueue<ResultItem> results_queue_;
 
+  // New members for handling asynchronous writes
+  struct OutgoingBuffer {
+      std::vector<char> buffer;
+      size_t sent_bytes = 0;
+  };
+  std::unordered_map<int32_t, OutgoingBuffer> write_buffers_;
+
+
   void handle_read(int32_t client_fd);
   void handle_write(int32_t client_fd);
   void process_results();
+  void send_result(ResultItem& result);
 };

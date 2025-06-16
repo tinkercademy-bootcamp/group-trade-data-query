@@ -49,6 +49,17 @@ public:
         // return item
         return item;
     }
+
+
+    bool try_pop(T& value) {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (m_queue.empty()) {
+            return false;
+        }
+        value = std::move(m_queue.front());
+        m_queue.pop();
+        return true;
+    }
 };
 
 
