@@ -18,10 +18,10 @@ namespace client {
          * @param server_address The IP address or hostname of the server.
          * @throws std::runtime_error if socket creation or connection fails.
          */
-        Client(int port, const std::string &server_address);
+        Client(int32_t port, const std::string &server_address);
         /**
          * @brief Sends a message to the connected server.
-         * @param message The message string to send.
+         * @param message The message struct to send.
          * @throws std::runtime_error if sending fails or client is not connected.
          */
         void send_message(const TradeDataQuery &message);
@@ -29,14 +29,14 @@ namespace client {
         /**
          * @brief Get the socket fd object
          * 
-         * @return int 
+         * @return int32_t 
          */
-        int get_socket_fd() const; // Getter for the socket
+        int32_t get_socket_fd() const; // Getter for the socket
         // Destroys the Client object, ensuring the socket is closed.
         ~Client();
 
     private:
-        int socket_;
+        int32_t socket_;
         sockaddr_in server_address_;
         /**
          * Creates a server address structure (sockaddr_in).
@@ -45,13 +45,13 @@ namespace client {
          * @return A configured sockaddr_in structure.
          * @throws std::runtime_error on invalid address.
          */
-        sockaddr_in create_server_address(const std::string &server_ip, int port);
+        sockaddr_in create_server_address(const std::string &server_ip, int32_t port);
         /**
          * @brief Connects the client's socket to the specified server address.
          * @param server_address The sockaddr_in structure representing the server.
          * @throws std::runtime_error if connection fails.
          */
-        static constexpr int kBufferSize = 1024;
+        static constexpr int32_t kBufferSize = 1024;
     };
 } // namespace client
 
