@@ -17,7 +17,7 @@
 class Query_engine {
 public:
     
-  Query_engine();
+  Query_engine(const std::string& file);
   ~Query_engine() = default;
   /**
     * @brief Computes the lowest and highest prices within the given query window.
