@@ -123,7 +123,6 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
       }
     }
   }
-
   return 0;
 }
 

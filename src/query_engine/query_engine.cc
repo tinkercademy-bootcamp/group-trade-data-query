@@ -134,7 +134,8 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
   return result;
 }
 
-namespace ranges = std::ranges;
+
+// namespace ranges = std::ranges;
 
 std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
 {
