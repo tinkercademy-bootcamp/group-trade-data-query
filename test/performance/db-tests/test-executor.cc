@@ -91,11 +91,12 @@ uint64_t get_resident_memory(pid_t pid) {
 int main(int argc, char** argv) {
   std::cout << getpid() << std::endl;
   try {
-    Que executor;
+    Query_engine executor;
     uint64_t index = 0;
     uint64_t start_time, end_time;
     TradeData currentTrade;
     vector<uint64_t> differences;
+    vector<uint64_t> times;
 
     // std::cout << "Human test: input the integer you see on your screen" << std::endl;
     // uint16_t pid;
@@ -113,18 +114,21 @@ int main(int argc, char** argv) {
     
     cout << "Total trades: " << executor.trades_size << endl;
     cout << sizeof(TradeData) << " bytes per trade" << endl;
+
+    differences.push_back(get_resident_memory(getpid()));
     
     while(index < num) {
       try {
-        // start_time = rdtsc();
-        executor.read_trade_data(index, currentTrade);
-        // end_time = rdtsc();
+        start_time = rdtsc();
+        executor.read_trade_data(index*128, currentTrade);
+        end_time = rdtsc();
+        times.push_back(end_time - start_time);
         // differences.push_back(end_time - start_time);
       } catch (const exception& e) {
         cerr << "Error at index " << index << ": " << e.what() << endl;
         break;
       }
-      index += 128;
+      index++;
       differences.push_back(get_resident_memory(getpid()));
     }
     
@@ -133,13 +137,24 @@ int main(int argc, char** argv) {
     FILE* f = fopen("differences.txt", "w");
     if (f != NULL) {
       for(int64_t i = 0; i < differences.size(); i++) {
-        fprintf(f, "%ld %lu\n", i, differences[i]);
+        fprintf(f, "%ld %lu\n", i, (differences[i] - differences[0])/1024);
       }
       fclose(f);
       cout << "Results written to differences.txt" << endl;
     } else {
       cerr << "Failed to open differences.txt for writing" << endl;
     }
+    f = fopen("times.txt", "w");
+    if (f != NULL) {
+      for(int64_t i = 0; i < times.size(); i++) {
+        fprintf(f, "%ld %lu\n", i, times[i]);
+      }
+      fclose(f);
+      cout << "Times written to times.txt" << endl;
+    } else {
+      cerr << "Failed to open times.txt for writing" << endl;
+    }
+    cout << "Total trades processed: " << index << endl;
   } catch (const exception& e) {
     cerr << "Fatal error: " << e.what() << endl;
     return 1;
