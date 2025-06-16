@@ -10,7 +10,7 @@ class Mt_Queue
 {
 public:
   std::unique_ptr<T> pop();
-  void push(std::unique_ptr<T>);
+  void push(std::unique_ptr<T> ptr);
 
 private:
   std::mutex qlock;
