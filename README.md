@@ -1,12 +1,28 @@
 # Trading Query Project
 
-## Compiling the Project
-For accessing data, run the following command:
+## Compiling and Running
+Firstly, make sure you have the data downloaded and extracted in the `data/raw` directory. If you haven't done this yet, refer to the [Data](#data) section below.
+To compile the project, run:
+
+```bash
+make # for the default build (TCP)
+make udp-bins # for the UDP build
+```
+The TCP binaries are named `server-bin` and `client-bin`, while the UDP binaries are named `server-udp-bin` and `client-udp-bin`. All of these are in the build/ folder.
+
+## Data
+There's now a automatic data setup script. Call it as `bash setup_data.sh <team_id>` where team_id is 1,2,3 or 4. It will automatically download and extract the data, and will also call `make remove_spaces and `make processed_data`
+
+It will download the files from your team's aws instance.
+
+Or, to it manually:
+
+Run
 
 ```bash
 make data
 ```
-Then copy the tar.gz files into `data/raw` and run
+then copy the tar.gz files into `data/raw` and run
 
 ```bash
 tar -xvzf trades-<file>.tar.gz
@@ -19,76 +35,77 @@ make remove_spaces
 make processed_data
 ```
 
-and then run `make all` to compile.
-
-**To run the server:** `./build/server-bin`
-
-**To run the client:** `./build/client-bin`
-
-## Data
-Additionally, there's now an automatic data setup script. Call it as `bash setup_data.sh <team_id>` where team_id is 1,2,3 or 4. It will automatically download and extract the data, and will also call `make remove_spaces` and `make processed_data`
-
-It will download the files from your team's aws instance.
-
 ## External Tools
-Run `make libs` to install nlohmann, used as a test dependency.
+run `make libs` to install nlohmann (a test dependency)
 
-## Directory Structure
-The following is the current directory structure of the repository.
+## Dir Structure
+The following is the current directory structure of the repository:
 
 ```
+ > tree       
 .
-├── .gitignore
+├── build (GITIGNORE)
+├── data (GITIGNORE)
 ├── Makefile
+├── process_data
+│   ├── check.cc
+│   └── process_data_main.cc
 ├── README.md
 ├── requirements.txt
 ├── setup_data.sh
-├── build (not included in the repository)
-├── data (not included in the repository)
-├── process_data
-│   ├── check.cc
-│   └── process_data_main.cc
 ├── src
-│   ├── client_main.cc
-│   ├── server_main.cc
-│   ├── client
-│   │   ├── client.cc
-│   │   └── client.h
-│   ├── query_engine
-│   │   ├── query_engine.cc
-│   │   └── query_engine.h
-│   ├── server
-│   │   ├── receiver.cc
-│   │   ├── sender.cc
-│   │   ├── sender.h
-│   │   ├── server.cc
-│   │   └── server.h
-│   └── utils
-│       ├── query.h
-│       ├── helper
-│       │   └── utils.h
-│       └── net
-│           ├── net.cc
-│           └── net.h
+│   ├── client
+│   │   ├── client.cc
+│   │   └── client.h
+│   ├── client_main.cc
+│   ├── client_main_udp.cc
+│   ├── client_udp
+│   │   ├── client_udp.cc
+│   │   └── client_udp.h
+│   ├── query_engine
+│   │   ├── query_engine.cc
+│   │   └── query_engine.h
+│   ├── server
+│   │   ├── receiver.cc
+│   │   ├── sender.cc
+│   │   ├── sender.h
+│   │   ├── server.cc
+│   │   └── server.h
+│   ├── server_main.cc
+│   ├── server_main_udp.cc
+│   ├── server_udp
+│   │   ├── sender_udp.cc
+│   │   ├── sender_udp.h
+│   │   ├── server_udp.cc
+│   │   └── server_udp.h
+│   └── utils
+│       ├── helper
+│       │   └── utils.h
+│       ├── net
+│       │   └── net.h
+│       ├── net_udp
+│       │   └── net_udp.h
+│       └── query.h
 └── test
-    ├── Makefile
-    ├── README.md
     ├── correctness
-    │   ├── Makefile
-    │   ├── basic-tests.json
-    │   ├── dummy-client.cpp
-    │   ├── test-client.cpp
-    │   └── db-tests
-    │       ├── db.ipynb
-    │       └── db_testcases.py
-    └── performance
-        └── multi_client
-            └── multi_client_main.cc
-            └── multi_client.cc
-            └── multi_client.h
-        └── Makefile
-        └── dummy_client.cpp
-        └── perf_test.cpp
-        └── performance_tests.json
-        └── README.md
+    │   ├── basic-tests.json
+    │   ├── db-tests
+    │   │   ├── db.ipynb
+    │   │   └── db_testcases.py
+    │   ├── dummy-client.cpp
+    │   ├── Makefile
+    │   └── test-client.cpp
+    ├── Makefile
+    ├── performance
+    │   ├── dummy_client.cpp
+    │   ├── Makefile
+    │   ├── multi_client
+    │   │   ├── multi_client.cc
+    │   │   ├── multi_client.h
+    │   │   └── multi_client_main.cc
+    │   ├── performance_results.csv
+    │   ├── performance_tests.json
+    │   ├── perf_test.cpp
+    │   └── README.md
+    └── README.md
 ```
