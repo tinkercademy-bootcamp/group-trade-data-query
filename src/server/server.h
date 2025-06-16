@@ -26,7 +26,6 @@ class EpollServer {
   int32_t epoll_fd_;
   void add_to_epoll(int32_t sock, uint32_t events);
   void bind_server();
-  int32_t handle_trade_data_query(int32_t sock, TradeDataQuery query);
   std::queue<std::pair<int32_t, TradeDataQuery>> task_queue_;
 
   std::vector<std::thread> worker_threads_;
