@@ -71,7 +71,9 @@ int32_t main(int32_t argc, char* argv[]) {
         oss << std::endl;  // Always at least one line
     } else {
         size_t set_size = 20; // Each result set is 20 bytes (10 + 5 + 5)
-        size_t num_sets = output.size() / set_size;
+        size_t num_sets = (output.size() + set_size - 1) / set_size;
+
+        std::cout << "num_sets = " << num_sets << std::endl;
 
 
         int8_t metric_list = 0;
@@ -89,6 +91,9 @@ int32_t main(int32_t argc, char* argv[]) {
             size_t base = set * set_size;
             int32_t index = 0;
             oss << "\nSet " << set + 1 << ":";
+
+            uint64_t time_stamp = *reinterpret_cast<const uint64_t*>(&output[base + index]);
+            index += 8;
             for (int i=0 ; i<8 ; i++){
               if (metric_list & (1 << i)) {
                 switch (i) {
@@ -99,6 +104,7 @@ int32_t main(int32_t argc, char* argv[]) {
                     uint32_t max_price = *reinterpret_cast<const uint32_t*>(&output[base + index]);
                     int8_t max_exp = output[base + index + 4];
                     index += 5;
+                    oss << "\n Time Stamp: " << time_stamp;
                     oss << "\n  Min Price: " << min_price << "e" << static_cast<int32_t>(min_exp)
                         << ", Max Price: " << max_price << "e" << static_cast<int32_t>(max_exp);
                     break;

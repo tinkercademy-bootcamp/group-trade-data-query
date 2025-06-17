@@ -27,28 +27,28 @@ std::vector<TradeData> execute_task(TradeDataQuery &query)
 void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& results_queue, const std::string& file, 
                         std::shared_ptr<std::vector<uint64_t>>& outer_page_table,
                         std::shared_ptr<std::vector<uint64_t>>& inner_page_table) {
-    Query_engine exec(file, outer_page_table, inner_page_table); // Each thread has its own Executor instance
+  Query_engine exec(file, outer_page_table, inner_page_table); // Each thread has its own Executor instance
 
-    while (true) {
-        WorkItem work = work_queue.pop();
+  while (true) {
+    WorkItem work = work_queue.pop();
 
-        ResultItem result_item;
-        result_item.client_fd = work.client_fd;
-        // more metrics can be added here
-        // metric_list = 7; // Assuming we want to compute all metrics (00000111), comment this line out later
+    ResultItem result_item;
+    result_item.client_fd = work.client_fd;
+    // more metrics can be added here
+    // metric_list = 7; // Assuming we want to compute all metrics (00000111), comment this line out later
 
-        result_item.res = exec.aggregator(work.query);
+    result_item.res = exec.aggregator(work.query);
 
-        // if (work.query.resolution > 0) {
-        //     result_item.is_trade_data = false;
-        //     result_item.resolution_results = exec.lowest_and_highest_prices(work.query);
-        // } else {
-        //     result_item.is_trade_data = true;
-        //     result_item.trade_data_results = exec.send_raw_data(work.query);
-        // }
+    // if (work.query.resolution > 0) {
+    //     result_item.is_trade_data = false;
+    //     result_item.resolution_results = exec.lowest_and_highest_prices(work.query);
+    // } else {
+    //     result_item.is_trade_data = true;
+    //     result_item.trade_data_results = exec.send_raw_data(work.query);
+    // }
 
-        results_queue.push(std::move(result_item));
-    }
+    results_queue.push(std::move(result_item));
+  }
 }
 
 
@@ -85,8 +85,8 @@ EpollServer::EpollServer(int32_t port, int32_t num_worker_threads, const std::st
   outer_page_table_file.close();
   inner_page_table_file.close();
   spdlog::info("Starting {} worker threads.", num_worker_threads);
-    for (int i = 0; i < num_worker_threads; ++i) {
-        worker_threads_.emplace_back(worker_thread_loop, std::ref(work_queue_), std::ref(results_queue_), std::ref(file), std::ref(outer_page_table), std::ref(inner_page_table));
+  for (int i = 0; i < num_worker_threads; ++i) {
+    worker_threads_.emplace_back(worker_thread_loop, std::ref(work_queue_), std::ref(results_queue_), std::ref(file), std::ref(outer_page_table), std::ref(inner_page_table));
   }
 }
 
