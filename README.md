@@ -34,9 +34,15 @@ to untar the files and run
 make remove_spaces  
 make processed_data
 ```
+After flamegraph setup, run
+```bash
+make stress
+```
 
 ## External Tools
 run `make libs` to install nlohmann (a test dependency)
+
+run `make flamegraph_setup` to install flamegraph.
 
 ## Dir Structure
 The following is the current directory structure of the repository:
@@ -46,6 +52,7 @@ The following is the current directory structure of the repository:
 .
 ├── build (GITIGNORE)
 ├── data (GITIGNORE)
+├── flamegraph.sh
 ├── Makefile
 ├── process_data
 │   ├── check.cc
