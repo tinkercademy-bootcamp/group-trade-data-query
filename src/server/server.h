@@ -46,5 +46,6 @@ class EpollServer {
   void handle_write(int32_t client_fd);
   void process_results();
   void send_result(ResultItem& result);
+  void send_next_pipelined(int32_t client_fd);
 };
 
