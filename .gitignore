@@ -4,6 +4,7 @@ src/server/build/
 *.out
 .clangd
 profiling-data/
+external-tools/
 # =====================
 # General 
 # =====================
