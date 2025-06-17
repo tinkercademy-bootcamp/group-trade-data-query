@@ -15,9 +15,9 @@ client::Client::Client(uint16_t port, const std::string &server_address)
 void client::Client::send_message(const TradeDataQuery &message) {
     
   ssize_t bytes_sent = send(socket_, &message, sizeof(message), 0);
-  if (bytes_sent < 0) {
-    helper::check_error(true, "Send failed on client socket.");
-  }
+  
+  helper::check_error(bytes_sent < 0, "Send failed on client socket.");
+  
 }
 
 int32_t client::Client::get_socket_fd() const {
