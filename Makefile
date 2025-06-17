@@ -126,7 +126,7 @@ libs:
 
 ################## MULTI CLIENT TEST ##################
 
-./build/test/performance/multi_client/multi_client.o:
+./build/test/performance/multi_client/multi_client.o: test/performance/multi_client/multi_client.cc
 	mkdir -p build/test/performance/multi_client
 	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -c test/performance/multi_client/multi_client.cc  -o build/test/performance/multi_client/multi_client.o -lfmt -lspdlog
 

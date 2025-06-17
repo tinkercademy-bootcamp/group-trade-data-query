@@ -22,7 +22,7 @@ int32_t main(int32_t argc, char *argv[]) {
   // Basic command line argument parsing
   std::string server_ip = "127.0.0.1";
   int32_t port = 8080;
-  int32_t client_count = 1;
+  int32_t client_count = 10;
 
   if (argc > 1) {
     server_ip = argv[1];
@@ -58,7 +58,7 @@ int32_t main(int32_t argc, char *argv[]) {
 
   int passed_tests = 0;
   int total_tests = 0;
-  // ...existing code...
+  
   for (const auto &test : data["tests"]) {
     total_tests++;
     std::string test_id = test["test_id"];
