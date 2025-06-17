@@ -95,6 +95,7 @@ int32_t main(int32_t argc, char* argv[]) {
     
     // Receive and parse the response as a vector of bytes
     std::vector<char> output = chat_client->read_struct<char>();
+    spdlog::info("Received {} bytes of data from server.", output.size());
     std::ostringstream oss;
 
     if (output.empty()) {
