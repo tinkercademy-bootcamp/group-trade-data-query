@@ -118,7 +118,7 @@ flamegraph_setup: all
 	chmod +x flamegraph.sh
 
 sim_test: all flamegraph_setup
-	./flamegraph.sh $(CLIENTS) $(DURATION)
+	./flamegraph.sh $(CLIENTS)
 
 clean:
 	rm -rf build
