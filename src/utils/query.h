@@ -28,25 +28,26 @@ struct TradeDataQuery {
  * @struct Price
  * @brief Represents a price with its associated exponent for decimal scaling.
  */
-struct Price {
+struct __attribute__((packed)) Price {
   uint32_t price;
   int8_t price_exponent;
 };
-
+// #pragma pack(pop)
 /**
  * @struct Quantity
  * @brief Represents a quantity with its associated exponent for decimal
  * scaling.
  */
-struct Quantity {
+struct __attribute__((packed)) Quantity {
   uint32_t quantity;
   int8_t quantity_exponent;
 };
-
+// #pragma pack(pop)
 /**
  * @struct trade_data
  * @brief struct as defined in the presentation
  */
+#pragma pack(2)
 struct TradeData {
   uint32_t symbol_id;
   uint64_t created_at;  // std::chrono::time_point in nanoseconds
@@ -56,6 +57,9 @@ struct TradeData {
   Quantity quantity;
 
   uint8_t taker_side;  // 1 = ask, 2 = bid
+
+
+
 };
 
 /**
