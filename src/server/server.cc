@@ -1,34 +1,22 @@
 #include "server.h"
 #include "../query_engine/query_engine.h"
-// #include "utils-server.h"
-// #include "TS-queue.h"
-// #include "../../processed_data/preproc.cc"
 #include "../utils/helper/utils.h"
 #include "../utils/net/net.h"
 #include "../utils/query.h"
 #include "sender.h"
+
 #include <spdlog/spdlog.h>
 #include <thread>
 #include <vector>
 
-/////////////////
-
-std::vector<TradeData> execute_task(TradeDataQuery &query)
-{
-  // Dummy implementation: return an empty vector
-  spdlog::info("Query processed for TradeDataQuery id: {}", query.symbol_id);
-  return {};
-}
-
-/////////////////
 
 void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& results_queue);
 
 void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& results_queue) {
-    Query_engine exec; // Each thread has its own Executor instance
+  Query_engine exec; // Each thread has its own Executor instance
 
-    while (true) {
-        WorkItem work = work_queue.pop();
+  while (true) {
+    WorkItem work = work_queue.pop();
 
         ResultItem result_item;
         result_item.client_fd = work.client_fd;
@@ -45,23 +33,38 @@ void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& resu
         // more metrics can be added here
         // metric_list = 7; // Assuming we want to compute all metrics (00000111), comment this line out later
 
-        result_item.res = exec.aggregator(metric_list, work.query);
+    spdlog::info("Worker thread processing query for client {} with metrics: {}", work.client_fd, metric_list);
 
-        // if (work.query.resolution > 0) {
-        //     result_item.is_trade_data = false;
-        //     result_item.resolution_results = exec.lowest_and_highest_prices(work.query);
-        // } else {
-        //     result_item.is_trade_data = true;
-        //     result_item.trade_data_results = exec.send_raw_data(work.query);
-        // }
+    std::vector<char> accumulated_buffer;
 
-        results_queue.push(std::move(result_item));
+    for (uint64_t start_time = work.query.start_time_point; start_time < work.query.end_time_point; start_time += work.query.resolution) {
+        uint64_t end_time = start_time + work.query.resolution;
+        if (end_time > work.query.end_time_point) {
+            end_time = work.query.end_time_point;
+        }
+
+    // Create a temporary query for this single interval
+    TradeDataQuery interval_query = work.query;
+    interval_query.start_time_point = start_time;
+    interval_query.end_time_point = end_time;
+
+    // Calculate results for this interval only
+    std::vector<char> interval_result = exec.aggregator(metric_list, interval_query);
+    
+    // Append to accumulated buffer
+    accumulated_buffer.insert(accumulated_buffer.end(), interval_result.begin(), interval_result.end());
     }
-}
 
+    // Send all intervals as one result
+    // ResultItem result_item;
+    result_item.client_fd = work.client_fd;
+    result_item.res = std::move(accumulated_buffer);
+    results_queue.push(std::move(result_item));
+    }
+
+  }
 
 constexpr int32_t MAX_EVENTS = 10;
-#define X_WORKER_THREADS 4 // Set the desired number of worker threads
 
 EpollServer::EpollServer(int32_t port, int32_t num_worker_threads)
     : server_listen_fd_(net::create_socket()),
@@ -195,47 +198,22 @@ void EpollServer::handle_read(int32_t client_fd) {
 // This is called in every loop to check for finished work
 void EpollServer::process_results() {
     ResultItem result;
-    // spdlog::info("Processing results from results_queue_");
     while (results_queue_.try_pop(result)) {
 
-        spdlog::info("Processing result for client {}", result.client_fd);
-      
+    spdlog::info("Processing result for client {}", result.client_fd);
+  
 
-        // spdlog::info("Processing result for client {}", result.client_fd);
-        // // print the result
-        
-        // spdlog::info("Resolution Results for client {}: {} items", result.client_fd, result.resolution_results.size());
-        // for (const auto& res : result.resolution_results) {
-        //     spdlog::info("Start Time: {}, Lowest Price: {}e{}, Highest Price: {}e{}",
-        //                   res.start_time, res.lowest_price.price, res.lowest_price.price_exponent,
-        //                   res.highest_price.price, res.highest_price.price_exponent);
-        // }
-        
-        // // Now we have a result. We need to send it back.
-        send_result(result);
+    // Now we have a result. We need to send it back.
+    send_result(result);
     }
 }
  
 // New function to handle sending and buffering
 void EpollServer::send_result(ResultItem& result) {
-    // 1. Serialize the result into a byte buffer
-    std::vector<char> buffer;
-    buffer = std::move(result.res); // Move the serialized data into the buffer
-    
-    // int32_t result_size;
+  // 1. Serialize the result into a byte buffer
+  std::vector<char> buffer;
+  buffer = std::move(result.res); // Move the serialized data into the buffer
 
-    // // This serialization must match the client's expectation
-    // if (result.is_trade_data) {
-    //     result_size = result.trade_data_results.size();
-    //     buffer.resize(sizeof(result_size) + result_size * sizeof(TradeData));
-    //     memcpy(buffer.data(), &result_size, sizeof(result_size));
-    //     memcpy(buffer.data() + sizeof(result_size), result.trade_data_results.data(), result_size * sizeof(TradeData));
-    // } else {
-    //     result_size = result.resolution_results.size();
-    //     buffer.resize(sizeof(result_size) + result_size * sizeof(Result));
-    //     memcpy(buffer.data(), &result_size, sizeof(result_size));
-    //     memcpy(buffer.data() + sizeof(result_size), result.resolution_results.data(), result_size * sizeof(Result));
-    // }
   int32_t count = static_cast<int32_t>(buffer.size());
   ssize_t bytes_sent = send(result.client_fd, &count, sizeof(count), 0);
   if (bytes_sent < 0) {
@@ -309,3 +287,4 @@ void EpollServer::handle_write(int32_t client_fd) {
         write_buffers_.erase(it);
     }
 }
+
