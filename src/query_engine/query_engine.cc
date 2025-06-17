@@ -9,27 +9,33 @@
 #include <ranges>
 typedef double float64_t;
 Query_engine::Query_engine() {
-  data.open("data/processed/trades-example.bin", std::ios::in | std::ios::binary);
+  data.open("data/processed/trades-tiny.bin", std::ios::in | std::ios::binary);
   if (!data.is_open()) {
     std::cerr << "[Query_engine] Error: could not open trade data file.\n";
     return;
   }
   trades_size = data.seekg(0, std::ios::end).tellg() / sizeof(TradeData);
+  data.clear();
   data.seekg(0, std::ios::beg);
   segtree = std::make_unique<SegtreeBin>();
 }
 
+Query_engine::~Query_engine() {
+  segtree = nullptr;
+}
+
 bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
+  std::lock_guard<std::mutex> lock(mtx);
   data.seekg(ind * sizeof(TradeData), std::ios::beg);
   if (data.read(reinterpret_cast<char *>(&trade), sizeof(TradeData))) {
-    std::cout << trade.symbol_id << " " 
-              << trade.created_at << " "
-              << trade.trade_id << " "
-              << trade.price.price << " * 10^" 
-              << static_cast<int32_t>(trade.price.price_exponent) << " "
-              << trade.quantity.quantity << " * 10^" 
-              << static_cast<int32_t>(trade.quantity.quantity_exponent) << " "
-              << static_cast<int32_t>(trade.taker_side) << "\n";
+    // std::cout << trade.symbol_id << " " 
+    //           << trade.created_at << " "
+    //           << trade.trade_id << " "
+    //           << trade.price.price << " * 10^" 
+    //           << static_cast<int32_t>(trade.price.price_exponent) << " "
+    //           << trade.quantity.quantity << " * 10^" 
+    //           << static_cast<int32_t>(trade.quantity.quantity_exponent) << " "
+    //           << static_cast<int32_t>(trade.taker_side) << "\n";
     return true;
   } else {
     throw std::runtime_error("[Query_engine] Error reading trade data at index " + std::to_string(ind));

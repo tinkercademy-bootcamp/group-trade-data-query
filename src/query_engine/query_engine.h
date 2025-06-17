@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iterator>
+#include <mutex>
 
 #include "../utils/query.h"
 #include "../data_structures/segment_tree.h"
@@ -19,7 +20,7 @@ class Query_engine {
 public:
     
   Query_engine();
-  ~Query_engine() = default;
+  ~Query_engine();
   /**
     * @brief Computes the lowest and highest prices within the given query window.
     *
@@ -37,6 +38,7 @@ public:
   uint64_t trades_size;
   bool read_trade_data(uint64_t ind, TradeData& trade);
   std::unique_ptr<SegtreeBin> segtree = nullptr;
+  std::mutex mtx;
 
 private:
   std::ifstream data;  // File stream for reading trade data

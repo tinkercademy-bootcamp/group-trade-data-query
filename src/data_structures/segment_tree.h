@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <mutex>
 
 struct seg_node{
   Price lowest_price;
@@ -16,6 +17,7 @@ void merge(seg_node &curr_node, const seg_node &other_node);
 
 struct SegtreeBin{
   uint64_t n;
+  std::mutex mtx;
 
   SegtreeBin();
   bool read_segtree_data(uint64_t ind, seg_node& sn);

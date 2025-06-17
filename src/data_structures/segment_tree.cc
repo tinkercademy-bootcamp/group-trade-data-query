@@ -22,6 +22,7 @@ SegtreeBin::SegtreeBin() {
 }
 
 bool SegtreeBin::read_segtree_data(uint64_t ind, seg_node& sn) {
+  std::lock_guard<std::mutex> lock(mtx);
   data.seekg(ind * sizeof(seg_node), std::ios::beg);
   if (data.read(reinterpret_cast<char *>(&sn), sizeof(seg_node))) {
     return true;
