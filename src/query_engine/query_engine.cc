@@ -24,8 +24,8 @@ Query_engine::Query_engine(const std::string& file,
   std::cout << "initial size = " << open_page_data.size() << std::endl;
   open_page = -1;
 	SIZE[0] = 2*sizeof(Price); // Lowest and highest prices
-	SIZE[26] = 2*sizeof(Price); // Mean price
-	SIZE[33] = 2*sizeof(Quantity); // Total quantity
+	SIZE[26] = sizeof(Price); // Mean price
+	SIZE[33] = sizeof(Quantity); // Total quantity
 }
 
 Query_engine::~Query_engine() {
@@ -40,9 +40,9 @@ bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
   return true; // If we reach here, it means reading failed
 }
 
-uint64_t int_ceil(uint64_t x, uint64_t y){
-  return (x/y) + (x%y != 0);
-}
+// uint64_t int_ceil(uint64_t x, uint64_t y){
+//   return (x/y) + (x%y != 0);
+// }
 
 Price double_to_price(float64_t value) {
     Price price;
