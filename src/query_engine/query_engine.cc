@@ -172,8 +172,9 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
             std::cout << "resolution ended" << std::endl;
 			buffer_offset = 0;
 			*reinterpret_cast<uint64_t*>(buffer + buffer_offset) = resolution_start;
+            buffer_offset += sizeof(uint64_t);
 
-			if (query.metrics & (1 << 0)) buffer_offset += sizeof(uint64_t) + 2 * sizeof(Price);
+			if (query.metrics & (1 << 0)) buffer_offset +=  2 * sizeof(Price);
             
 			if (query.metrics & (1ULL << 26)) {
                 *reinterpret_cast<Price*>(buffer + buffer_offset) = double_to_price(price_mean);
@@ -247,8 +248,9 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
 	}
     buffer_offset = 0;
     *reinterpret_cast<uint64_t*>(buffer + buffer_offset) = resolution_start;
+    buffer_offset += sizeof(uint64_t);
 
-    if (query.metrics & (1 << 0)) buffer_offset += sizeof(uint64_t) + 2 * sizeof(Price);
+    if (query.metrics & (1 << 0)) buffer_offset +=  2 * sizeof(Price);
 
     if (query.metrics & (1ULL << 26)) {
         *reinterpret_cast<Price*>(buffer + buffer_offset) = double_to_price(price_mean);
