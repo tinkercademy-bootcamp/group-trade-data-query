@@ -3,7 +3,8 @@ src/server/build/
 /test/nlohmann/
 *.out
 .clangd
-
+profiling-data/
+external-tools/
 # =====================
 # General 
 # =====================
@@ -79,6 +80,7 @@ Thumbs.db
 
 #additions: 
 /data
+test/performance/db-tests/output
 
 # Database test files
 
