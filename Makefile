@@ -95,7 +95,7 @@ build/server_udp/%.o: $(SRC_SERVER_UDP)/%.cc $(SERVER_HEADERS_UDP)
 
 #################################################################################
 
-.PHONY: all clean libs data remove_spaces processed_data
+.PHONY: all clean libs data remove_spaces processed_data run-perf-tests analyze-results clean-perf clean-perf-all
 
 # Don't add data to all as data is a PHONY target
 data:
@@ -129,3 +129,20 @@ libs:
 	if [ ! -f ./test/nlohmann/json.hpp ]; then \
 		curl -sL https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp -o ./test/nlohmann/json.hpp; \
 	fi
+
+
+############################### PERF TESTS ###############################
+PERF_DIR := test/performance
+PERF_MAKE := $(MAKE) -C $(PERF_DIR)
+
+run-perf-tests:
+	$(PERF_MAKE) run-perf-tests
+
+analyze-results:
+	$(PERF_MAKE) analyze-results
+
+clean-perf:
+	$(PERF_MAKE) clean
+
+clean-perf-all:
+	$(PERF_MAKE) clean-all
