@@ -2,7 +2,7 @@
 # it will automatically download, extract, clean and preprocess the data
 
 remote_data_dir="/home/trade-data"
-data_files="trades-example trades-tiny trades-small"
+data_files="trades-example trades-tiny"
 final_dir="./data/raw"
 
 mkdir -p data/raw
