@@ -15,7 +15,7 @@ sleep 4
 
 echo "Running performance tests..."
 cd test/performance || exit 1
-make 
+make run-perf-tests CLIENTS=20
 
 # Wait for remaining profiling time
 sleep "$DURATION"
@@ -23,7 +23,6 @@ sleep "$DURATION"
 # Gracefully stop the server
 echo "Stopping server (PID=$PID)..."
 sudo kill -INT "$PID"
-wait "$PID"
 
 # Generate flamegraph
 echo "Generating flamegraph..."
