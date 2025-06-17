@@ -12,10 +12,14 @@ echo "Server PID=$PID. Profiling for $DURATION seconds..."
 
 # Wait a bit to let server initialize
 sleep 4
-
 echo "Running performance tests..."
 cd test/performance || exit 1
-make run-perf-tests CLIENTS=20
+
+if [[ "$*" == *"bigtest"* ]]; then
+   make run-perf-tests CLIENTS=20
+else
+    make
+fi
 
 # Wait for remaining profiling time
 sleep "$DURATION"

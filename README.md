@@ -35,8 +35,9 @@ make remove_spaces
 make processed_data
 ```
 After flamegraph setup, run
-```bash
-make stress
+```
+make smalltest 
+make bigtest
 ```
 
 ## External Tools
