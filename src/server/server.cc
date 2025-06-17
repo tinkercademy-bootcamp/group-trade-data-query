@@ -6,7 +6,6 @@
 #include "../utils/helper/utils.h"
 #include "../utils/net/net.h"
 #include "../utils/query.h"
-#include "sender.h"
 #include <spdlog/spdlog.h>
 #include <thread>
 #include <vector>
