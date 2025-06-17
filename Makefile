@@ -112,6 +112,13 @@ processed_data: build/processor $(CSVS)
 	@for file in $(CSVS); do \
 		$< $$file; \
 	done
+flamegraph_setup: all
+	mkdir -p external-tools/
+	if [ ! -d external-tools/FlameGraph ]; then git clone https://github.com/brendangregg/FlameGraph.git external-tools/FlameGraph; fi
+	chmod +x flamegraph.sh
+
+sim_test: all flamegraph_setup
+	./flamegraph.sh $(CLIENTS)
 
 clean:
 	rm -rf build
