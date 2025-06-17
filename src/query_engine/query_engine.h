@@ -18,7 +18,7 @@ class Query_engine {
 public:
 
   Query_engine();
-  ~Query_engine() = default;
+  ~Query_engine(); // <-- declare destructor here
   /**
     * @brief Computes the lowest and highest prices within the given query window.
     *

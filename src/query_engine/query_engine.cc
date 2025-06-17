@@ -18,6 +18,12 @@ Query_engine::Query_engine() {
   data.seekg(0, std::ios::beg);
 }
 
+Query_engine::~Query_engine() {
+  if (data.is_open()) {
+    data.close();
+  }
+}
+
 bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
   data.seekg(ind * sizeof(TradeData), std::ios::beg);
   if (data.read(reinterpret_cast<char *>(&trade), sizeof(TradeData))) {
