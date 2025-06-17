@@ -23,10 +23,9 @@ typedef double float64_t;
  */
 Query_engine::Query_engine() {
   data.open("data/processed/trades-example.bin", std::ios::in | std::ios::binary);
-  price_prefix_sum_file.open("data/processed/trades-example_price_prefix_sum.bin", std::ios::in | std::ios::binary);
-  if (!data.is_open() || !price_prefix_sum_file.is_open()) {
-      std::cerr << "[Query_engine] Error: could not open trade data file.\n";
-      return;
+  if (!data.is_open()) {
+    std::cerr << "[Query_engine] Error: could not open trade data file.\n";
+    return;
   }
   // Calculate the number of trades in the file
   trades_size = data.seekg(0, std::ios::end).tellg() / 31;
@@ -39,9 +38,6 @@ Query_engine::Query_engine() {
 Query_engine::~Query_engine() {
   if (data.is_open()) {
     data.close();
-  }
-  if(price_prefix_sum_file.is_open()) {
-    price_prefix_sum_file.close();
   }
 }
 
@@ -62,41 +58,9 @@ bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
   return false; // If we reach here, it means reading failed
 }
 
-uint64_t Query_engine::file_lower_bound(uint64_t time, uint64_t l) {
-  uint64_t hi = trades_size;
-  TradeData trade;
-  while(l != hi) {
-    uint64_t mid = (l + hi)/2;
-    read_trade_data(mid,trade);
-    if(trade.created_at >= time) {
-      hi = mid;
-    }
-    else {
-      l = mid+1;
-    }
-  }
-  return l;
-}
-
-double Query_engine::read_price_prefix_sum(uint64_t ind) {
-  price_prefix_sum_file.seekg(ind * sizeof(double), std::ios::beg);
-  double val;
-  if (price_prefix_sum_file.read(reinterpret_cast<char *>(&val), sizeof(double))) {
-    return val;
-  } else {
-    throw std::runtime_error("[Query_engine] Error reading trade data at index " + std::to_string(ind));
-  }
-  return 0; // If we reach here, it means reading failed
-}
-
-double Query_engine::compute_prefix_sum(uint64_t l, uint64_t r) {
-  double out = read_price_prefix_sum(r);
-  if(l > 0) {
-    out -= read_price_prefix_sum(l-1);
-  }
-  return out;
-}
-
+/**
+ * @brief Helper function for integer ceiling division.
+ */
 uint64_t int_ceil(uint64_t x, uint64_t y){
   return (x/y) + (x%y != 0);
 }
@@ -293,17 +257,50 @@ Price Query_engine::mean_price_in_range(
     uint64_t start_time,
     uint64_t end_time)
 {
-  assert(end_time > start_time);
+    assert(end_time > start_time);
+    TradeData trade;
 
-  uint64_t left = file_lower_bound(start_time, 0);
-  uint64_t right = file_lower_bound(end_time, left) - 1;
+    // 1) Binary‐search for the first trade ≥ start_time
+    uint64_t left  = 0;
+    uint64_t right = trades_size - 1;
+    while (left < right) {
+        uint64_t mid = left + ((right - left) >> 1);
+        read_trade_data(mid, trade);
+        if (trade.created_at < start_time)
+            left = mid + 1;
+        else
+            right = mid;
+    }
+    uint64_t start_idx = left;
 
-  if(left > right) {
-    return {0, 0};
-  }
+    // 2) Binary‐search for the first trade ≥ end_time, then back up one
+    left  = start_idx;
+    right = trades_size;
+    while (left < right) {
+        uint64_t mid = left + ((right - left) >> 1);
+        read_trade_data(mid, trade);
+        if (trade.created_at < end_time)
+            left = mid + 1;
+        else
+            right = mid;
+    }
+    uint64_t end_idx = (right == 0 ? 0 : right - 1);
+
+    // 3) Scan [start_idx..end_idx] to compute weighted mean
+    double sum_pq = 0.0;  // sum of price * quantity
+    double sum_q  = 0.0;  // sum of quantity
+    for (uint64_t i = start_idx; i <= end_idx; ++i) {
+        read_trade_data(i, trade);
+        double price_val = trade.price.price *
+                           std::pow(10.0, trade.price.price_exponent);
+        double qty_val   = trade.quantity.quantity *
+                           std::pow(10.0, trade.quantity.quantity_exponent);
+        sum_pq += price_val * qty_val;
+        sum_q  += qty_val;
+    }
 
     // 4) Compute weighted mean
-  double mean_val = compute_prefix_sum(left, right) / (right - left + 1);
+    double mean_val = (sum_q > 0.0 ? sum_pq / sum_q : 0.0);
 
     // 5) Convert the double mean back into a Price struct
     int8_t exp = 0;
