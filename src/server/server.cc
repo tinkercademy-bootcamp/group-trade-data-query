@@ -133,7 +133,7 @@ void EpollServer::run()
         
       } 
       else {
-        spdlog::warn("Unexpected event on fd {}: {}", events[i].data.fd, events[i].events);
+        spdlog::warn("Unexpected event on fd");
       }
     }
     process_results();
@@ -246,15 +246,15 @@ void EpollServer::send_result(ResultItem& result) {
     //     memcpy(buffer.data() + sizeof(result_size), result.resolution_results.data(), result_size * sizeof(Result));
     // }
   int32_t count = static_cast<int32_t>(buffer.size());
-  ssize_t bytes_sent = send(result.client_fd, &count, sizeof(count), 0);
-  if (bytes_sent < 0) {
-      perror("send (count)");
-      close(result.client_fd);
-      return;
-  }
+  // ssize_t bytes_sent = send(result.client_fd, &count, sizeof(count), 0);
+  // if (bytes_sent < 0) {
+  //     perror("send (count)");
+  //     close(result.client_fd);
+  //     return;
+  // }
 
   // 2. Then send the actual buffer
-  bytes_sent = send(result.client_fd, buffer.data(), buffer.size(), 0);
+  ssize_t bytes_sent = send(result.client_fd, buffer.data(), buffer.size(), 0);
   if (bytes_sent < 0) {
       perror("send (buffer)");
       close(result.client_fd);

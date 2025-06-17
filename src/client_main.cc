@@ -17,7 +17,10 @@
 #include "utils/query.h"
 
 #include <cmath> // for std::pow
+
 std::atomic<bool> g_client_running{true};
+
+
 class CircularBuffer {
 private:
     char buffer[1024];
@@ -97,6 +100,8 @@ public:
         size_ -= size;
     }
 };
+
+
 int32_t main(int32_t argc, char* argv[]) {
   // Basic command line argument parsing
   std::string server_ip = "127.0.0.1";
@@ -136,12 +141,23 @@ int32_t main(int32_t argc, char* argv[]) {
   SIZE[0] = 2*sizeof(Price); // Lowest and highest prices
 	SIZE[26] = sizeof(Price); // Mean price
 	SIZE[33] = sizeof(Quantity); // Total quantity
+
+  if (fcntl(chat_client->get_socket_fd(), F_SETFL, O_NONBLOCK) < 0) {
+    spdlog::error("Failed to set socket to non-blocking mode: {}", strerror(errno));
+    return EXIT_FAILURE;
+  }
+
   CircularBuffer buffer;
   char buffer_data[1024];;
   int size_read;
   while (g_client_running) {
     TradeDataQuery query;
     std::cin >> query.symbol_id >> query.start_time_point >> query.end_time_point >> query.resolution >> query.metrics;
+    std::cout << "Query: Symbol ID: " << query.symbol_id
+              << ", Start Time: " << query.start_time_point
+              << ", End Time: " << query.end_time_point
+              << ", Resolution: " << query.resolution
+              << ", Metrics: " << query.metrics << std::endl;
     chat_client->send_message(query);
     uint32_t size_of_each_result = sizeof(uint64_t); // Start time
     for (int8_t i = 0; i < 64; i++) {
@@ -150,24 +166,21 @@ int32_t main(int32_t argc, char* argv[]) {
     // bool taking_data = true;
     while(true) {
       size_read = recv(chat_client->get_socket_fd(), buffer_data, buffer.get_remaining_size(), 0);
-      buffer.push(buffer_data, size_read);
+      // std::cout << "size_read = " << size_read << std::endl;
       //assume terminal char is always present
       if (size_read < 0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK) {
-          // No more data to read
-          break;
-        } else {
-          spdlog::error("recv error: {}", strerror(errno));
-          return EXIT_FAILURE;
-        }
+        continue;
       } else if (size_read == 0) {
         // Server closed the connection
         spdlog::info("Server closed the connection.");
         return EXIT_SUCCESS;
-      }
-      else{
+      } else{
+        std::cout << "Received " << size_read << " bytes from server." << std::endl;
+        buffer.push(buffer_data, size_read);
         uint64_t start_time = buffer.read_at<uint64_t>();
+        std::cout << "Received data, start time: " << start_time << std::endl;
         if (start_time == 0) {
+          std::cout << "Breaking out of loop, no more data." << std::endl;
           break;
         }
         while (buffer.get_size() >= size_of_each_result) {
@@ -179,9 +192,9 @@ int32_t main(int32_t argc, char* argv[]) {
             offset += sizeof(Price);
             Price max_price = buffer.read<Price>();
             offset += sizeof(Price);
-              std::cout << ", Min Price: " << min_price.price
+              std::cout << "Min Price: " << min_price .price
                 << "e" << static_cast<int32_t>(min_price.price_exponent)
-                << ", Max Price: " << max_price.price
+                << " Max Price: " << max_price.price
                 << "e" << static_cast<int32_t>(max_price.price_exponent) << std::endl;
           }
           if (query.metrics & (1 << 26)) {
@@ -196,7 +209,13 @@ int32_t main(int32_t argc, char* argv[]) {
             std::cout << "Total Quantity: " << total_quantity.quantity
                       << "e" << static_cast<int32_t>(total_quantity.quantity_exponent) << std::endl;
           }
-        } 
+        }
+        start_time = buffer.read_at<uint64_t>();
+        // std::cout << "Received data, start time: " << start_time << std::endl;
+        if (start_time == 0) {
+          std::cout << "Breaking out of loop, no more data." << std::endl;
+          break;
+        }
       }
     }
     #ifdef TESTMODE
