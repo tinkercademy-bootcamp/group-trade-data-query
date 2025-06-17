@@ -22,18 +22,15 @@ Query_engine::Query_engine(const std::string& file,
   data.seekg(0, std::ios::beg);
   std::vector<TradeData> open_page_data(4 * 1024 * 128);
   open_page = -1;
+	SIZE[0] = 2*sizeof(Price); // Lowest and highest prices
+	SIZE[26] = 2*sizeof(Price); // Mean price
+	SIZE[33] = 2*sizeof(Quantity); // Total quantity
 }
 
 Query_engine::~Query_engine() {
 	if (data.is_open()) {
 		data.close();
 	}
-}
-
-Query_engine::~Query_engine() {
-  if (data.is_open()) {
-    data.close();
-  }
 }
 
 bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
@@ -46,54 +43,220 @@ uint64_t int_ceil(uint64_t x, uint64_t y){
   return (x/y) + (x%y != 0);
 }
 
-std::vector<char> Query_engine::aggregator(int8_t chooser, const TradeDataQuery& query){
+Price double_to_price(float64_t value) {
+	Price price;
+	if (value == 0.0) {
+		price.price = 0;
+		price.price_exponent = 0;
+		return price;
+	}
+	
+	int8_t exponent = static_cast<int8_t>(std::floor(std::log10(std::abs(value))));
+	float64_t mantissa = value / std::pow(10, exponent);
+	
+	// Ensure mantissa is within the range of uint32_t
+	if (mantissa < 0 || mantissa > std::numeric_limits<uint32_t>::max()) {
+		throw std::overflow_error("Mantissa out of bounds for Price struct");
+	}
+	
+	price.price = static_cast<uint32_t>(std::round(mantissa));
+	price.price_exponent = exponent;
+	
+	return price;
+}
+
+Quantity double_to_quantity(float64_t value) {
+	Quantity quantity;
+	if (value == 0.0) {
+		quantity.quantity = 0;
+		quantity.quantity_exponent = 0;
+		return quantity;
+	}
+	
+	int8_t exponent = static_cast<int8_t>(std::floor(std::log10(std::abs(value))));
+	float64_t mantissa = value / std::pow(10, exponent);
+	
+	// Ensure mantissa is within the range of uint32_t
+	if (mantissa < 0 || mantissa > std::numeric_limits<uint32_t>::max()) {
+		throw std::overflow_error("Mantissa out of bounds for Quantity struct");
+	}
+	
+	quantity.quantity = static_cast<uint32_t>(std::round(mantissa));
+	quantity.quantity_exponent = exponent;
+	
+	return quantity;
+}
+
+std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
   std::vector<char> res;
-  for (uint64_t start_time = query.start_time_point ; start_time < query.end_time_point; start_time += query.resolution) {
-    uint64_t end_time = start_time + query.resolution;
-    if (end_time > query.end_time_point) {
-      end_time = query.end_time_point;
-    }
-    for (int i = 0; i < 8; i++) {
-      if (chooser & (1 << i)){
-        switch (i) {
-          case 0: { // min and max price
-            auto [min_price, max_price] = min_max_price_in_range(start_time, end_time);
-            // append min_price price (4 bytes, little-endian)
-            {
-              const char* ptr = reinterpret_cast<const char*>(&min_price.price);
-              res.insert(res.end(), ptr, ptr + sizeof(min_price.price));
-              // append exponent (1 byte)
-              res.push_back(static_cast<char>(min_price.price_exponent));
-              // append max_price price (4 bytes)
-              ptr = reinterpret_cast<const char*>(&max_price.price);
-              res.insert(res.end(), ptr, ptr + sizeof(max_price.price));
-              // append exponent (1 byte)
-              res.push_back(static_cast<char>(max_price.price_exponent));
-            }
-            break;
-          }
-          case 1: { // mean price
-            Price mean_price = mean_price_in_range(start_time, end_time);
-            {
-              const char* ptr = reinterpret_cast<const char*>(&mean_price.price);
-              res.insert(res.end(), ptr, ptr + sizeof(mean_price.price));
-              res.push_back(static_cast<char>(mean_price.price_exponent));
-            }
-            break;
-          }
-          case 2: { // total quantity
-            Quantity total_qty = total_quantity_in_range(start_time, end_time);
-            {
-              const char* ptr = reinterpret_cast<const char*>(&total_qty.quantity);
-              res.insert(res.end(), ptr, ptr + sizeof(total_qty.quantity));
-              res.push_back(static_cast<char>(total_qty.quantity_exponent));
-            }
-            break;
-          }
-        }
-      }
-    }
-  }
+
+	TradeData trade;
+
+  uint64_t outer_page_table_start_index = std::ranges::lower_bound(*outer_page_table, query.start_time_point) - outer_page_table->begin();
+  if(outer_page_table_start_index != 0) outer_page_table_start_index -= 1;
+  std::cout << "outer_page_table_start_index = " << outer_page_table_start_index << std::endl;
+
+  uint64_t outer_page_table_end_index = std::ranges::lower_bound(*outer_page_table, query.end_time_point) - outer_page_table->begin();
+  if(outer_page_table_end_index != 0) outer_page_table_end_index -= 1;
+
+  // for(uint32_t idx = outer_page_table_start_index; idx <= outer_page_table_end_index; idx++) {
+  //   read_inner_page_table(idx);
+  // }
+
+	uint64_t inner_page_table_start_index = std::lower_bound(inner_page_table->begin() + (outer_page_table_start_index << 9), inner_page_table->begin() + (outer_page_table_start_index << 9) + 1, query.start_time_point) - inner_page_table->begin();
+	if(inner_page_table_start_index != 0) inner_page_table_start_index -= 1;
+	std::cout << "inner_page_table_start_index = " << inner_page_table_start_index << std::endl;
+
+	uint64_t inner_page_table_end_index = std::lower_bound(inner_page_table->begin() + (outer_page_table_end_index << 9), inner_page_table->begin() + (outer_page_table_end_index << 9) + 1, query.end_time_point) - inner_page_table->begin();
+	if(inner_page_table_end_index != 0) inner_page_table_end_index -= 1;
+
+	data.seekg((inner_page_table_start_index << 17) * sizeof(TradeData), std::ios::beg);
+	uint64_t open_page_size = std::min((uint64_t)open_page_data.size(), trades_size - (inner_page_table_start_index << 17));
+
+	// Read the data into open_page_data
+	data.read(reinterpret_cast<char*>(open_page_data.data()), open_page_size * sizeof(TradeData));
+
+	uint64_t page_offset = std::lower_bound(open_page_data.begin(), open_page_data.begin() + open_page_size, query.start_time_point, 
+																		 [](const TradeData& trade, uint64_t time) {
+																				 return trade.created_at < time;
+																		 }) - open_page_data.begin();
+	TradeData trade;
+	uint32_t size = 0;
+	size += sizeof(uint64_t); // Start time
+	for (int8_t i = 0; i < 64; i++) {
+		size += SIZE[i];
+	}
+	char buffer[size];
+	uint32_t buffer_offset = 0;
+	uint64_t resolution_start = query.start_time_point;
+	uint64_t resolution_end = resolution_start + query.resolution;
+	uint64_t num_of_trades_in_resolution = 0;
+
+	float64_t price_mean = 0;
+	float64_t quantity_sum = 0;
+
+	while (page_offset < open_page_size && open_page_data[page_offset].created_at < query.end_time_point) {
+		trade = open_page_data[page_offset];
+
+		if (trade.created_at >= resolution_end) {
+			buffer_offset = 0;
+			*reinterpret_cast<uint64_t*>(buffer + buffer_offset) = resolution_start;
+
+			if (query.metrics & (1 << 0)) buffer_offset += sizeof(uint64_t) + 2 * sizeof(Price);
+
+			if (query.metrics & (1 << 26)) {
+				*reinterpret_cast<Price*>(buffer + buffer_offset) = double_to_price(price_mean);
+				buffer_offset += sizeof(Price);
+				*reinterpret_cast<Price*>(buffer + buffer_offset) = double_to_price(price_mean);
+				buffer_offset += sizeof(Price);
+			}
+			if (query.metrics & (1 << 33)) {
+				*reinterpret_cast<Quantity*>(buffer + buffer_offset) = double_to_quantity(quantity_sum);
+				buffer_offset += sizeof(Quantity);
+			}
+			res.insert(res.end(), buffer, buffer + buffer_offset);
+
+			if (trade.created_at >= query.end_time_point) {
+				break; // No more trades in the range
+			}
+
+			resolution_start = query.start_time_point + ((trade.created_at - query.start_time_point) / query.resolution) * query.resolution;
+			resolution_end = resolution_start + query.resolution;
+			*reinterpret_cast<uint64_t*>(buffer) = resolution_start;
+			uint32_t offset = sizeof(uint64_t);
+			if (query.metrics & (1 << 0)) {
+				*reinterpret_cast<Price*>(buffer + offset) = trade.price;
+				offset += sizeof(Price);
+				*reinterpret_cast<Price*>(buffer + offset) = trade.price;
+				offset += sizeof(Price);
+			}
+			if (query.metrics & (1 << 26)) {
+				price_mean = 0;
+			}
+			num_of_trades_in_resolution = 0;
+		}
+		
+		buffer_offset = sizeof(uint64_t);
+		if (query.metrics & (1 << 0)) {
+			if (trade.price <= *reinterpret_cast<Price*>(buffer + buffer_offset)) {
+				*reinterpret_cast<Price*>(buffer + buffer_offset) = trade.price;
+			}
+			buffer_offset += sizeof(Price);
+			if (!(trade.price <= *reinterpret_cast<Price*>(buffer + buffer_offset))) {
+				*reinterpret_cast<Price*>(buffer + buffer_offset) = trade.price;
+			}
+			buffer_offset += sizeof(Price);
+		}
+
+		if (query.metrics & (1 << 26)) {
+			price_mean *= num_of_trades_in_resolution;
+			price_mean += trade.price.price * std::pow(10.0, trade.price.price_exponent);
+			price_mean /= (num_of_trades_in_resolution + 1);
+			num_of_trades_in_resolution++;
+		}
+
+		if (query.metrics & (1 << 33)) {
+			quantity_sum += trade.quantity.quantity * std::pow(10.0, trade.quantity.quantity_exponent);
+		}
+
+		page_offset++;
+
+		if (page_offset >= open_page_size) {
+			// Read the next page of trades
+			open_page_size = std::min((uint64_t)open_page_data.size(), trades_size - (inner_page_table_start_index << 17) - page_offset);
+			data.read(reinterpret_cast<char*>(open_page_data.data()), open_page_size * sizeof(TradeData));
+			page_offset = 0;
+		}
+	}
+		
+
+
+  // for (uint64_t start_time = query.start_time_point ; start_time < query.end_time_point; start_time += query.resolution) {
+  //   uint64_t end_time = start_time + query.resolution;
+  //   if (end_time > query.end_time_point) {
+  //     end_time = query.end_time_point;
+  //   }
+  //   for (int i = 0; i < 8; i++) {
+  //     if (chooser & (1 << i)) {
+  //       switch (i) {
+  //         case 0: { // min and max price
+  //           auto [min_price, max_price] = min_max_price_in_range(start_time, end_time);
+  //           // append min_price price (4 bytes, little-endian)
+  //           {
+  //             const char* ptr = reinterpret_cast<const char*>(&min_price.price);
+  //             res.insert(res.end(), ptr, ptr + sizeof(min_price.price));
+  //             // append exponent (1 byte)
+  //             res.push_back(static_cast<char>(min_price.price_exponent));
+  //             // append max_price price (4 bytes)
+  //             ptr = reinterpret_cast<const char*>(&max_price.price);
+  //             res.insert(res.end(), ptr, ptr + sizeof(max_price.price));
+  //             // append exponent (1 byte)
+  //             res.push_back(static_cast<char>(max_price.price_exponent));
+  //           }
+  //           break;
+  //         }
+  //         case 1: { // mean price
+  //           Price mean_price = mean_price_in_range(start_time, end_time);
+  //           {
+  //             const char* ptr = reinterpret_cast<const char*>(&mean_price.price);
+  //             res.insert(res.end(), ptr, ptr + sizeof(mean_price.price));
+  //             res.push_back(static_cast<char>(mean_price.price_exponent));
+  //           }
+  //           break;
+  //         }
+  //         case 2: { // total quantity
+  //           Quantity total_qty = total_quantity_in_range(start_time, end_time);
+  //           {
+  //             const char* ptr = reinterpret_cast<const char*>(&total_qty.quantity);
+  //             res.insert(res.end(), ptr, ptr + sizeof(total_qty.quantity));
+  //             res.push_back(static_cast<char>(total_qty.quantity_exponent));
+  //           }
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
   return res;
 }
 

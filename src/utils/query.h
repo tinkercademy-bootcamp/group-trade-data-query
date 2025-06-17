@@ -31,6 +31,16 @@ struct TradeDataQuery {
 struct __attribute__((packed)) Price {
   uint32_t price;
   int8_t price_exponent;
+
+  bool operator<=(const Price& b) {
+    if(abs(price_exponent - b.price_exponent) >= 10) {
+      return price_exponent < b.price_exponent;
+    }
+    int8_t min_exp = std::min(price_exponent,b.price_exponent);
+    int64_t a_price_modified = price * std::pow(10, price_exponent - min_exp);
+    int64_t b_price_modified = b.price * std::pow(10, b.price_exponent - min_exp);
+    return a_price_modified <= b_price_modified;
+  }
 };
 // #pragma pack(pop)
 /**

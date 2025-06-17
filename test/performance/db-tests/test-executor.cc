@@ -103,7 +103,9 @@ uint64_t get_resident_memory(pid_t pid) {
 int main(int argc, char** argv) {
   std::cout << getpid() << std::endl;
   try {
-    Query_engine executor;
+    Query_engine executor("data/processed/trades-example.bin",
+      std::make_shared<std::vector<uint64_t>>("data/processed/page-table-trades-example-outer.bin"),
+      std::make_shared<std::vector<uint64_t>>("data/processed/page-table-trades-example-inner.bin"));
     uint64_t index = 0;
     uint64_t start_time, end_time;
     TradeData currentTrade;

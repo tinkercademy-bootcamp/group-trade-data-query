@@ -45,7 +45,7 @@ public:
     * @return trade.created_at for the corresponding index 
     */
   uint64_t read_outer_page_table_data(uint64_t index);
-  std::vector<char> aggregator(int8_t metric_list, const TradeDataQuery& query);
+  std::vector<char> aggregator(const TradeDataQuery& query);
 
   std::pair<Price, Price> min_max_price_in_range(
     uint64_t start_time,
@@ -64,7 +64,9 @@ public:
 
 private:
 	int64_t open_page;
-	TradeData* page;
+	std::vector<TradeData> open_page_data;
+
+	int32_t SIZE[64] = {0};
 
   std::shared_ptr<std::vector<uint64_t> > outer_page_table;
   std::shared_ptr<std::vector<uint64_t> > inner_page_table;
