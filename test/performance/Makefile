@@ -67,7 +67,7 @@ help: ## Show available targets
 all:
 	$(MAKE) run-perf-tests 
 
-run-perf-tests: setup dummy-client perf-test ## Run performance tests with configurable number of clients
+run-perf-tests: dummy-client perf-test ## Run performance tests with configurable number of clients
 	@$(eval CLIENTS := $(or $(CLIENTS),$(DEFAULT_CLIENTS)))
 	@$(eval EXEC := $(or $(EXEC),$(if $(USE_DUMMY),$(DUMMY_CLIENT),$(CLIENT_EXEC))))
 	@echo "$(BLUE)Running performance tests with $(CLIENTS) concurrent clients...$(NC)"

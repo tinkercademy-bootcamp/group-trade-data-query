@@ -21,7 +21,7 @@ Query_engine::Query_engine(const std::string& file,
   trades_size = data.seekg(0, std::ios::end).tellg() / sizeof(TradeData);
   data.seekg(0, std::ios::beg);
   open_page_data = std::vector<TradeData>(4 * 1024 * 128);
-  std::cout << "initial size = " << open_page_data.size() << std::endl;
+//   std::cout << "initial size = " << open_page_data.size() << std::endl;
   open_page = -1;
 	SIZE[0] = 2*sizeof(Price); // Lowest and highest prices
 	SIZE[26] = sizeof(Price); // Mean price
@@ -143,7 +143,7 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
     trade = open_page_data[page_offset];
 
 	if (trade.created_at > query.end_time_point) {
-		std::cout << "No trades in the specified range." << std::endl;
+		// std::cout << "No trades in the specified range." << std::endl;
 		*reinterpret_cast<uint64_t*>(buffer) = 0; // No trades, so start time is 0
 		res.insert(res.end(), buffer, buffer + size);
 		return res;
@@ -167,9 +167,9 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
     num_of_trades_in_resolution = 0;
 
 	while (page_offset < open_page_size && open_page_data[page_offset].created_at < query.end_time_point) {
-		std::cout << "page_offset = " << page_offset << std::endl;
-		std::cout << "trade.created_at = " << open_page_data[page_offset].created_at << std::endl;
-		std::cout << "query end point = " << query.end_time_point << std::endl;
+		// std::cout << "page_offset = " << page_offset << std::endl;
+		// std::cout << "trade.created_at = " << open_page_data[page_offset].created_at << std::endl;
+		// std::cout << "query end point = " << query.end_time_point << std::endl;
         // std::cout << "hello coming here!" << std::endl;
 
         // std::cout << "page_offset = " << page_offset << std::endl;
