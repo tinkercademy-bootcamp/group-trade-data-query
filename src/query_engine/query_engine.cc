@@ -8,7 +8,10 @@
 #include <algorithm>
 #include <ranges>
 typedef double float64_t;
-Query_engine::Query_engine(const std::string& file) {
+Query_engine::Query_engine(const std::string& file, 
+                           uint64_t* outer_page_table, 
+                           uint64_t* inner_page_table)
+    : outer_page_table(outer_page_table), inner_page_table(inner_page_table) {
   data.open("data/processed/trades-" + file + ".bin", std::ios::in | std::ios::binary);
   if (!data.is_open()) {
     std::cerr << "[Query_engine] Error: could not open trade data file.\n";
@@ -16,36 +19,21 @@ Query_engine::Query_engine(const std::string& file) {
   }
   trades_size = data.seekg(0, std::ios::end).tellg() / sizeof(TradeData);
   data.seekg(0, std::ios::beg);
-
-  std::ifstream outer_page_table_file("data/processed/page-table-" + file + "-outer.bin", std::ios::in | std::ios::binary);
-  std::ifstream inner_page_table_file("data/processed/page-table-" + file + "-inner.bin", std::ios::in | std::ios::binary);
-
-  outer_page_table_size = outer_page_table_file.seekg(0, std::ios::end).tellg() / sizeof(uint64_t);
-  outer_page_table_file.seekg(0, std::ios::beg);
-
-  outer_page_table = new uint64_t[outer_page_table_size];
-
-  inner_page_table_size = inner_page_table_file.seekg(0, std::ios::end).tellg() / sizeof(uint64_t);
-  inner_page_table_file.seekg(0, std::ios::beg);
-
-  inner_page_table = new uint64_t[inner_page_table_size];
-
-  outer_page_table_file.read(reinterpret_cast<char*>(outer_page_table), outer_page_table_size * sizeof(uint64_t));
-  inner_page_table_file.read(reinterpret_cast<char*>(inner_page_table), inner_page_table_size * sizeof(uint64_t));
-
-  outer_page_table_file.close();
-  inner_page_table_file.close();
+	page = new TradeData[4 * 1024 * 128];
+  open_page = -1;
 }
 
 Query_engine::~Query_engine() {
-  delete[] outer_page_table;
-  delete[] inner_page_table;
+	if (data.is_open()) {
+		data.close();
+	}
+	delete[] page;
 }
 
 bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
   data.seekg(ind * sizeof(TradeData), std::ios::beg);
   data.read(reinterpret_cast<char *>(&trade), sizeof(TradeData));
-std::cout << trade.symbol_id << " " 
+	std::cout << trade.symbol_id << " " 
     << trade.created_at << " "
     << trade.trade_id << " "
     << trade.price.price << " * 10^" 
@@ -82,6 +70,10 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
   double min_price_value = __DBL_MAX__, max_price_value = __DBL_MIN__;
 
   TradeData trade;
+
+	if (open_page != -1) {
+
+	}
 
   uint64_t left_index = 0;
   uint64_t right_index = trades_size - 1;
