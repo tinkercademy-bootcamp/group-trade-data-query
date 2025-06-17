@@ -137,7 +137,7 @@ int32_t main(int32_t argc, char* argv[]) {
     std::cerr << "An unknown error occurred during client initialization." << std::endl;
     return EXIT_FAILURE;
   }
-  char SIZE[64] = {0}; // Size of each metric in bytes
+  char SIZE[64] = {0}; // Size of each metric in byte
   SIZE[0] = 2*sizeof(Price); // Lowest and highest prices
 	SIZE[26] = sizeof(Price); // Mean price
 	SIZE[33] = sizeof(Quantity); // Total quantity
@@ -148,20 +148,20 @@ int32_t main(int32_t argc, char* argv[]) {
   }
 
   CircularBuffer buffer;
-  char buffer_data[1024];;
+  char buffer_data[1024];
   int size_read;
   while (g_client_running) {
     TradeDataQuery query;
     std::cin >> query.symbol_id >> query.start_time_point >> query.end_time_point >> query.resolution >> query.metrics;
-    std::cout << "Query: Symbol ID: " << query.symbol_id
-              << ", Start Time: " << query.start_time_point
-              << ", End Time: " << query.end_time_point
-              << ", Resolution: " << query.resolution
-              << ", Metrics: " << query.metrics << std::endl;
+    // std::cout << "Query: Symbol ID: " << query.symbol_id
+    //           << ", Start Time: " << query.start_time_point
+    //           << ", End Time: " << query.end_time_point
+    //           << ", Resolution: " << query.resolution
+    //           << ", Metrics: " << query.metrics << std::endl;
     chat_client->send_message(query);
     uint32_t size_of_each_result = sizeof(uint64_t); // Start time
     for (int8_t i = 0; i < 64; i++) {
-      size_of_each_result += SIZE[i];
+      if (query.metrics & (1ULL << i)) size_of_each_result += SIZE[i];
     }
     // bool taking_data = true;
     while(true) {
@@ -175,45 +175,51 @@ int32_t main(int32_t argc, char* argv[]) {
         spdlog::info("Server closed the connection.");
         return EXIT_SUCCESS;
       } else{
-        std::cout << "Received " << size_read << " bytes from server." << std::endl;
+        // std::cout << "Received " << size_read << " bytes from server." << std::endl;
         buffer.push(buffer_data, size_read);
         uint64_t start_time = buffer.read_at<uint64_t>();
-        std::cout << "Received data, start time: " << start_time << std::endl;
+        // std::cout << "Received data, start time: " << start_time << std::endl;
+        // std::cout << "Buffer size: " << buffer.get_size() << std::endl;
         if (start_time == 0) {
-          std::cout << "Breaking out of loop, no more data." << std::endl;
+          buffer.read<uint64_t>(); // Read the zero start time to clear it
+          // std::cout << "Breaking out of loop, no more data." << std::endl;
           break;
         }
         while (buffer.get_size() >= size_of_each_result) {
           uint64_t start_time = buffer.read<uint64_t>();
-          std::cout << "Start Time: " << start_time << std::endl;
+          std::cout << "Timestamp: " << start_time;
           int offset = sizeof(uint64_t); // Start time
           if (query.metrics & (1 << 0)) {
             Price min_price = buffer.read<Price>();
             offset += sizeof(Price);
             Price max_price = buffer.read<Price>();
             offset += sizeof(Price);
-              std::cout << "Min Price: " << min_price .price
+              std::cout << "; Min Price: " << min_price .price
                 << "e" << static_cast<int32_t>(min_price.price_exponent)
-                << " Max Price: " << max_price.price
-                << "e" << static_cast<int32_t>(max_price.price_exponent) << std::endl;
+                << "; Max Price: " << max_price.price
+                << "e" << static_cast<int32_t>(max_price.price_exponent);
           }
           if (query.metrics & (1 << 26)) {
             Price mean_price = buffer.read<Price>();
             offset += sizeof(Price);
-            std::cout << "Mean Price: " << mean_price.price
-                      << "e" << static_cast<int32_t>(mean_price.price_exponent) << std::endl;
+            std::cout << "; Mean Price: " << mean_price.price
+                      << "e" << static_cast<int32_t>(mean_price.price_exponent);
           }
           if (query.metrics & (1ULL << 33)) {
             Quantity total_quantity = buffer.read<Quantity>();
             offset += sizeof(Quantity);
-            std::cout << "Total Quantity: " << total_quantity.quantity
-                      << "e" << static_cast<int32_t>(total_quantity.quantity_exponent) << std::endl;
+            std::cout << "; Total Quantity: " << total_quantity.quantity
+                      << "e" << static_cast<int32_t>(total_quantity.quantity_exponent);
           }
+          std::cout << '\n';
         }
         start_time = buffer.read_at<uint64_t>();
+        // std::cout << "Buffer size after reading: " << buffer.get_size() << std::endl;
+        // std::cout << size_of_each_result << " bytes per result." << std::endl;
         // std::cout << "Received data, start time: " << start_time << std::endl;
         if (start_time == 0) {
-          std::cout << "Breaking out of loop, no more data." << std::endl;
+          buffer.read<uint64_t>(); // Read the zero start time to clear it
+          // std::cout << "Breaking out of loop, no more data." << std::endl;
           break;
         }
       }

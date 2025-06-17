@@ -106,26 +106,26 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
 	if(inner_page_table_end_index != 0) inner_page_table_end_index -= 1;
 
 	data.seekg((inner_page_table_start_index << 17) * sizeof(TradeData), std::ios::beg);
-    std::cout << "open_page_data.size() = " << open_page_data.size() << std::endl;
+    // std::cout << "open_page_data.size() = " << open_page_data.size() << std::endl;
 	uint64_t open_page_size = std::min((uint64_t)open_page_data.size(), trades_size - (inner_page_table_start_index << 17));
 
 	// Read the data into open_page_data
 	data.read(reinterpret_cast<char*>(open_page_data.data()), open_page_size * sizeof(TradeData));
 
-    std::cout << "size = " << open_page_data.size() << std::endl;
+    // std::cout << "size = " << open_page_data.size() << std::endl;
 
 	uint64_t page_offset = std::lower_bound(open_page_data.begin(), 
         open_page_data.begin() + open_page_size, query.start_time_point, [](const TradeData& trade, uint64_t time) {
 			return trade.created_at < time;
 		}) - open_page_data.begin();
     
-    std::cout << "outer_page_table_start_index = " << outer_page_table_start_index << std::endl;
-    std::cout << "outer_page_table_end_index = " << outer_page_table_end_index << std::endl;
+    // std::cout << "outer_page_table_start_index = " << outer_page_table_start_index << std::endl;
+    // std::cout << "outer_page_table_end_index = " << outer_page_table_end_index << std::endl;
 
-    std::cout << "inner_page_table_start_index = " << inner_page_table_start_index << std::endl;
-    std::cout << "inner_page_table_end_index = " << inner_page_table_end_index << std::endl;
+    // std::cout << "inner_page_table_start_index = " << inner_page_table_start_index << std::endl;
+    // std::cout << "inner_page_table_end_index = " << inner_page_table_end_index << std::endl;
 
-    std::cout << "open_page_size = " << open_page_size << std::endl;
+    // std::cout << "open_page_size = " << open_page_size << std::endl;
 
 	uint32_t size = 0;
 	size += sizeof(uint64_t); // Start time
@@ -142,17 +142,24 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
 	float64_t quantity_sum = 0;
     trade = open_page_data[page_offset];
 
+	if (trade.created_at > query.end_time_point) {
+		std::cout << "No trades in the specified range." << std::endl;
+		*reinterpret_cast<uint64_t*>(buffer) = 0; // No trades, so start time is 0
+		res.insert(res.end(), buffer, buffer + size);
+		return res;
+	}
+
     resolution_start = query.start_time_point + ((trade.created_at - query.start_time_point) / query.resolution) * query.resolution;
     resolution_end = resolution_start + query.resolution;
-    *reinterpret_cast<uint64_t*>(buffer) = resolution_start;
+    // *reinterpret_cast<uint64_t*>(buffer) = resolution_start;
     uint32_t offset = sizeof(uint64_t);
     if (query.metrics & (1 << 0)) {
         *reinterpret_cast<Price*>(buffer + offset) = trade.price;
         offset += sizeof(Price);
-        std::cout << reinterpret_cast<Price*>(buffer + offset)->price << std::endl;
+        // std::cout << reinterpret_cast<Price*>(buffer + offset)->price << std::endl;
         *reinterpret_cast<Price*>(buffer + offset) = trade.price;
         offset += sizeof(Price);
-        std::cout << reinterpret_cast<Price*>(buffer + offset)->price << std::endl;
+        // std::cout << reinterpret_cast<Price*>(buffer + offset)->price << std::endl;
     }
     if (query.metrics & (1 << 26)) {
         price_mean = 0;
@@ -160,16 +167,19 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
     num_of_trades_in_resolution = 0;
 
 	while (page_offset < open_page_size && open_page_data[page_offset].created_at < query.end_time_point) {
-        std::cout << "hello coming here!" << std::endl;
+		std::cout << "page_offset = " << page_offset << std::endl;
+		std::cout << "trade.created_at = " << open_page_data[page_offset].created_at << std::endl;
+		std::cout << "query end point = " << query.end_time_point << std::endl;
+        // std::cout << "hello coming here!" << std::endl;
 
-        std::cout << "page_offset = " << page_offset << std::endl;
-        std::cout << "resolution_start = " << resolution_start << ", resolution_end = " << resolution_end << std::endl;
+        // std::cout << "page_offset = " << page_offset << std::endl;
+        // std::cout << "resolution_start = " << resolution_start << ", resolution_end = " << resolution_end << std::endl;
 		trade = open_page_data[page_offset];
 
-        std::cout << "trade.created_at = " << trade.created_at << std::endl;
+        // std::cout << "trade.created_at = " << trade.created_at << std::endl;
 
 		if (trade.created_at >= resolution_end) {
-            std::cout << "resolution ended" << std::endl;
+            // std::cout << "resolution ended" << std::endl;
 			buffer_offset = 0;
 			*reinterpret_cast<uint64_t*>(buffer + buffer_offset) = resolution_start;
             buffer_offset += sizeof(uint64_t);
@@ -199,10 +209,10 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
 			if (query.metrics & (1 << 0)) {
 				*reinterpret_cast<Price*>(buffer + offset) = trade.price;
 				offset += sizeof(Price);
-                std::cout << reinterpret_cast<Price*>(buffer + offset)->price << std::endl;
+                // std::cout << reinterpret_cast<Price*>(buffer + offset)->price << std::endl;
 				*reinterpret_cast<Price*>(buffer + offset) = trade.price;
 				offset += sizeof(Price);
-                std::cout << reinterpret_cast<Price*>(buffer + offset)->price << std::endl;
+                // std::cout << reinterpret_cast<Price*>(buffer + offset)->price << std::endl;
 			}
 			if (query.metrics & (1 << 26)) {
 				price_mean = 0;
@@ -214,12 +224,12 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
 		if (query.metrics & (1 << 0)) {
 			if (trade.price <= *reinterpret_cast<Price*>(buffer + buffer_offset)) {
 				*reinterpret_cast<Price*>(buffer + buffer_offset) = trade.price;
-                std::cout << reinterpret_cast<Price*>(buffer + buffer_offset)->price << std::endl;
+                // std::cout << reinterpret_cast<Price*>(buffer + buffer_offset)->price << std::endl;
 			}
 			buffer_offset += sizeof(Price);
 			if (!(trade.price <= *reinterpret_cast<Price*>(buffer + buffer_offset))) {
                 *reinterpret_cast<Price*>(buffer + buffer_offset) = trade.price;
-                std::cout << reinterpret_cast<Price*>(buffer + buffer_offset)->price << std::endl;
+                // std::cout << reinterpret_cast<Price*>(buffer + buffer_offset)->price << std::endl;
 			}
 			buffer_offset += sizeof(Price);
 		}
@@ -229,12 +239,12 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
 			price_mean += trade.price.price * std::pow(10.0, trade.price.price_exponent);
 			price_mean /= (num_of_trades_in_resolution + 1);
 			num_of_trades_in_resolution++;
-            std::cout << "price_mean = " << price_mean << std::endl;
+            // std::cout << "price_mean = " << price_mean << std::endl;
 		}
 
 		if (query.metrics & (1LL << 33)) {
 			quantity_sum += trade.quantity.quantity * std::pow(10.0, trade.quantity.quantity_exponent);
-            std::cout << "quantity = " << quantity_sum << std::endl;
+            // std::cout << "quantity = " << quantity_sum << std::endl;
 		}
 
 		page_offset++;
@@ -254,21 +264,21 @@ std::vector<char> Query_engine::aggregator(const TradeDataQuery& query){
 
     if (query.metrics & (1ULL << 26)) {
         *reinterpret_cast<Price*>(buffer + buffer_offset) = double_to_price(price_mean);
-        std::cout << "price_mean: " << reinterpret_cast<Price*>(buffer + buffer_offset)->price << std::endl;
+        // std::cout << "price_mean: " << reinterpret_cast<Price*>(buffer + buffer_offset)->price << std::endl;
         buffer_offset += sizeof(Price);
         // *reinterpret_cast<Price*>(buffer + buffer_offset) = double_to_price(price_mean);
         // buffer_offset += sizeof(Price);
     }
     if (query.metrics & (1ULL << 33)) {
         *reinterpret_cast<Quantity*>(buffer + buffer_offset) = double_to_quantity(quantity_sum);
-        std::cout << "quantity: " << reinterpret_cast<Quantity*>(buffer + buffer_offset)->quantity << std::endl;
+        // std::cout << "quantity: " << reinterpret_cast<Quantity*>(buffer + buffer_offset)->quantity << std::endl;
         buffer_offset += sizeof(Quantity);
     }
     res.insert(res.end(), buffer, buffer + buffer_offset);
   for(int i = 0; i < 8; i++) {
     res.push_back('\0');
   }
-  std::cout << "res.size() = " << res.size() << std::endl;
+//   std::cout << "res.size() = " << res.size() << std::endl;
   return res;
 }
 
