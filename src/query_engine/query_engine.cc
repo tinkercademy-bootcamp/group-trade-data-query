@@ -50,6 +50,7 @@ uint64_t int_ceil(uint64_t x, uint64_t y){
 
 void read_inner_page_table(uint32_t outer_page_table_index) {
   // To be implemented
+
 }
 
 std::vector<Result> Query_engine::lowest_and_highest_prices(
@@ -75,16 +76,28 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
 
   TradeData trade;
 
-  uint32_t outer_page_table_start_index = std::ranges::lower_bound(*outer_page_table, query.start_time_point) - outer_page_table->begin();
+  uint64_t outer_page_table_start_index = std::ranges::lower_bound(*outer_page_table, query.start_time_point) - outer_page_table->begin();
   if(outer_page_table_start_index != 0) outer_page_table_start_index -= 1;
   std::cout << "outer_page_table_start_index = " << outer_page_table_start_index << std::endl;
 
-  uint32_t outer_page_table_end_index = std::ranges::lower_bound(*outer_page_table, query.end_time_point) - outer_page_table->begin();
+  uint64_t outer_page_table_end_index = std::ranges::lower_bound(*outer_page_table, query.end_time_point) - outer_page_table->begin();
   if(outer_page_table_end_index != 0) outer_page_table_end_index -= 1;
 
-  for(uint32_t idx = outer_page_table_start_index; idx <= outer_page_table_end_index; idx++) {
-    read_inner_page_table(idx);
-  }
+  // for(uint32_t idx = outer_page_table_start_index; idx <= outer_page_table_end_index; idx++) {
+  //   read_inner_page_table(idx);
+  // }
+
+	uint64_t inner_page_table_start_index = std::lower_bound(inner_page_table->begin() + (outer_page_table_start_index << 9), inner_page_table->begin() + (outer_page_table_start_index << 9) + 1, query.start_time_point) - inner_page_table->begin();
+	if(inner_page_table_start_index != 0) inner_page_table_start_index -= 1;
+	std::cout << "inner_page_table_start_index = " << inner_page_table_start_index << std::endl;
+
+	uint64_t inner_page_table_end_index = std::lower_bound(inner_page_table->begin() + (outer_page_table_end_index << 9), inner_page_table->begin() + (outer_page_table_end_index << 9) + 1, query.end_time_point) - inner_page_table->begin();
+	if(inner_page_table_end_index != 0) inner_page_table_end_index -= 1;
+
+	// for(uint32_t idx = inner_page_table_start_index; idx <= inner_page_table_end_index; idx++) {
+	//   read_inner_page_table(idx);
+	// }
+
 	// if(open_page != -1) {
 
 	// }
