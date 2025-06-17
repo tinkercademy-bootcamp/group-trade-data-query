@@ -42,6 +42,7 @@ namespace client {
 
   private:
     int32_t socket_;
+    sockaddr_in server_address_;
     /**
       * Creates a server address structure (sockaddr_in).
       * @param server_ip The IP address of the server.

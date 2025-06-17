@@ -15,11 +15,11 @@
 #include "../utils/query.h"
 
 class OffloadQueue {
-public:
+ public:
   void serialise_and_enqueue(int32_t id, const std::string& final_result);
   void offload_one();
 
-private:
+ private:
   std::queue<std::pair<int32_t, std::string>> queue_;
 
   std::pair<int32_t, std::string> front() { return queue_.front(); }
@@ -30,5 +30,7 @@ private:
 
 std::string serialise(const std::string& final_result);
 void send_data(int32_t sockfd, const std::string& data);
-void send_without_serialisation(int32_t sockfd, Result& result);
-void send_without_serialisation(int32_t sockfd, TradeData& data);
+void send_without_serialisation(int32_t sockfd, Result& result,
+                                const sockaddr_in& client_addr);
+void send_without_serialisation(int32_t sockfd, TradeData& data,
+                                const sockaddr_in& client_addr);
