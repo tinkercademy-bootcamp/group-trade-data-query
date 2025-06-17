@@ -162,18 +162,32 @@ void EpollServer::bind_server()
 
 
 void EpollServer::handle_read(int32_t client_fd) {
-    TradeDataQuery query;
-    ssize_t count = recv(client_fd, &query, sizeof(query), 0);
-    
-    if (count > 0) {
-        spdlog::info("Received query from client {}. Offloading to worker.", client_fd);
-        work_queue_.push({client_fd, query});
-        // handle_write(client_fd);
-    } else {
-        // Handle error or connection closed
-        spdlog::info("Client {} disconnected.", client_fd);
-        close(client_fd);
-        write_buffers_.erase(client_fd); // Clean up any pending write buffer
+    while (true) {
+        TradeDataQuery query;
+        ssize_t count = recv(client_fd, &query, sizeof(query), 0);
+        if (count > 0) {
+            spdlog::info("Received query from client {}. Offloading to worker.", client_fd);
+            work_queue_.push({client_fd, query});
+            // If you expect multiple queries per event, continue the loop.
+            // Otherwise, break here if only one query per read is expected.
+        } else if (count == 0) {
+            // Client closed connection
+            spdlog::info("Client {} disconnected.", client_fd);
+            close(client_fd);
+            write_buffers_.erase(client_fd);
+            break;
+        } else {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // No more data to read
+                break;
+            } else {
+                // Real error
+                spdlog::error("recv error on client {}: {}", client_fd, strerror(errno));
+                close(client_fd);
+                write_buffers_.erase(client_fd);
+                break;
+            }
+        }
     }
 }
 
