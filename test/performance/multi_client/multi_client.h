@@ -14,6 +14,15 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "../../../src/utils/query.h"
+#include <optional>
+#include <sstream>
+#include <string>
+
+namespace utils {
+std::optional<TradeDataQuery> string_to_query(const std::string &s);
+} // namespace utils
+
 namespace client {
 class Client {
 public:

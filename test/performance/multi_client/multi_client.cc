@@ -93,3 +93,20 @@ void client::Client::set_non_blocking(int32_t fd) {
     int flags = fcntl(fd, F_GETFL, 0);
     fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
+
+
+
+
+namespace utils {
+std::optional<TradeDataQuery> string_to_query(const std::string &s) {
+    std::stringstream ss(s);
+    TradeDataQuery query;
+
+    if (ss >> query.symbol_id >> query.start_time_point >>
+            query.end_time_point >> query.resolution >> query.metrics) {
+        return query;
+    }
+
+    return std::nullopt;
+}
+} // namespace utils

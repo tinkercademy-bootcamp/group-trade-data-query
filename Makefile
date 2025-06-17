@@ -130,7 +130,7 @@ libs:
 	mkdir -p build/test/performance/multi_client
 	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -c test/performance/multi_client/multi_client.cc  -o build/test/performance/multi_client/multi_client.o -lfmt -lspdlog
 
-./build/mct-bin: ./build/test/performance/multi_client/multi_client.o
-	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) test/performance/multi_client/multi_client_main.cc ./build/test/performance/multi_client/multi_client.o -o build/mct-bin -lfmt -lspdlog
+./build/epoll-clientsim-bin: ./build/test/performance/multi_client/multi_client.o test/performance/multi_client/multi_client_main.cc
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) test/performance/multi_client/multi_client_main.cc ./build/test/performance/multi_client/multi_client.o -o ./build/epoll-clientsim-bin -lfmt -lspdlog
 
-mct: ./build/mct-bin
+epoll-client-sim: ./build/epoll-clientsim-bin
