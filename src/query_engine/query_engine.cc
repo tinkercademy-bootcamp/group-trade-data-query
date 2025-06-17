@@ -10,9 +10,10 @@
 typedef double float64_t;
 Query_engine::Query_engine() {
   data.open("data/processed/trades-example.bin", std::ios::in | std::ios::binary);
-  if (!data.is_open()) {
-    std::cerr << "[Query_engine] Error: could not open trade data file.\n";
-    return;
+  price_prefix_sum_file.open("data/processed/trades-example_price_prefix_sum.bin", std::ios::in | std::ios::binary);
+  if (!data.is_open() || !price_prefix_sum_file.is_open()) {
+      std::cerr << "[Query_engine] Error: could not open trade data file.\n";
+      return;
   }
   trades_size = data.seekg(0, std::ios::end).tellg() / 31;
   data.seekg(0, std::ios::beg);
@@ -21,6 +22,9 @@ Query_engine::Query_engine() {
 Query_engine::~Query_engine() {
   if (data.is_open()) {
     data.close();
+  }
+  if(price_prefix_sum_file.is_open()) {
+    price_prefix_sum_file.close();
   }
 }
 
