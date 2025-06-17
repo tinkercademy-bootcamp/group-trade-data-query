@@ -46,6 +46,41 @@ bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
   return false; // If we reach here, it means reading failed
 }
 
+uint64_t Query_engine::file_lower_bound(uint64_t time, uint64_t l) {
+  uint64_t hi = trades_size;
+  TradeData trade;
+  while(l != hi) {
+    uint64_t mid = (l + hi)/2;
+    read_trade_data(mid,trade);
+    if(trade.created_at >= time) {
+      hi = mid;
+    }
+    else {
+      l = mid+1;
+    }
+  }
+  return l;
+}
+
+double Query_engine::read_price_prefix_sum(uint64_t ind) {
+  price_prefix_sum_file.seekg(ind * sizeof(double), std::ios::beg);
+  double val;
+  if (price_prefix_sum_file.read(reinterpret_cast<char *>(&val), sizeof(double))) {
+    return val;
+  } else {
+    throw std::runtime_error("[Query_engine] Error reading trade data at index " + std::to_string(ind));
+  }
+  return 0; // If we reach here, it means reading failed
+}
+
+double Query_engine::compute_prefix_sum(uint64_t l, uint64_t r) {
+  double out = read_price_prefix_sum(r);
+  if(l > 0) {
+    out -= read_price_prefix_sum(l-1);
+  }
+  return out;
+}
+
 uint64_t int_ceil(uint64_t x, uint64_t y){
   return (x/y) + (x%y != 0);
 }
