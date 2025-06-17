@@ -21,14 +21,14 @@ Query_engine::Query_engine() {
 bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
   data.seekg(ind * sizeof(TradeData), std::ios::beg);
   if (data.read(reinterpret_cast<char *>(&trade), sizeof(TradeData))) {
-    std::cout << trade.symbol_id << " " 
-              << trade.created_at << " "
-              << trade.trade_id << " "
-              << trade.price.price << " * 10^" 
-              << static_cast<int32_t>(trade.price.price_exponent) << " "
-              << trade.quantity.quantity << " * 10^" 
-              << static_cast<int32_t>(trade.quantity.quantity_exponent) << " "
-              << static_cast<int32_t>(trade.taker_side) << "\n";
+    // std::cout << trade.symbol_id << " " 
+    //           << trade.created_at << " "
+    //           << trade.trade_id << " "
+    //           << trade.price.price << " * 10^" 
+    //           << static_cast<int32_t>(trade.price.price_exponent) << " "
+    //           << trade.quantity.quantity << " * 10^" 
+    //           << static_cast<int32_t>(trade.quantity.quantity_exponent) << " "
+    //           << static_cast<int32_t>(trade.taker_side) << "\n";
     return true;
   } else {
     throw std::runtime_error("[Query_engine] Error reading trade data at index " + std::to_string(ind));

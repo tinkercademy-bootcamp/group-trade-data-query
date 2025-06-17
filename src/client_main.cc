@@ -6,6 +6,7 @@
 #include <memory>      
 #include <vector>       
 #include <optional>
+#include <sstream>
 
 #include <spdlog/spdlog.h>
 #include <unistd.h>     
@@ -70,31 +71,25 @@ int32_t main(int32_t argc, char* argv[]) {
     if (output.empty()) {
         oss << std::endl;  // Always at least one line
     } else {
-        oss << "Received " << output.size() << " items:\n";
-        // for (const char& data : output) {
-        //     oss << data << " ";
-        // }
-        // the result format is :
-        // first 5 bytes are the min price, next 5 bytes are the max price
-        // next 4 bytes are the mean price, next 4 bytes are the total quantity
-        // Note: The above assumes the data is in a specific format, adjust as needed
-        if (output.size() >= 10) {
-            uint32_t min_price = *reinterpret_cast<const uint32_t*>(&output[0]);
-            int8_t min_exp = output[4];
-            uint32_t max_price = *reinterpret_cast<const uint32_t*>(&output[5]);
-            int8_t max_exp = output[9];
-            oss << "\nMin Price: " << min_price << "e" << static_cast<int32_t>(min_exp)
+        size_t set_size = 20; // Each result set is 20 bytes (10 + 5 + 5)
+        size_t num_sets = output.size() / set_size;
+
+        for (size_t set = 0; set < num_sets; ++set) {
+            size_t base = set * set_size;
+            uint32_t min_price = *reinterpret_cast<const uint32_t*>(&output[base + 0]);
+            int8_t min_exp = output[base + 4];
+            uint32_t max_price = *reinterpret_cast<const uint32_t*>(&output[base + 5]);
+            int8_t max_exp = output[base + 9];
+            uint32_t mean_price = *reinterpret_cast<const uint32_t*>(&output[base + 10]);
+            int8_t mean_exp = output[base + 14];
+            uint32_t total_quantity = *reinterpret_cast<const uint32_t*>(&output[base + 15]);
+            int8_t total_exp = output[base + 19];
+
+            oss << "\nSet " << set + 1 << ":";
+            oss << "\n  Min Price: " << min_price << "e" << static_cast<int32_t>(min_exp)
                 << ", Max Price: " << max_price << "e" << static_cast<int32_t>(max_exp);
-        }
-        if (output.size() >= 14) {
-            uint32_t mean_price = *reinterpret_cast<const uint32_t*>(&output[10]);
-            int8_t mean_exp = output[14];
-            oss << "\nMean Price: " << mean_price << "e" << static_cast<int32_t>(mean_exp);
-        }
-        if (output.size() >= 18) {
-            uint32_t total_quantity = *reinterpret_cast<const uint32_t*>(&output[15]);
-            int8_t total_exp = output[19];
-            oss << "\nTotal Quantity: " << total_quantity << "e" << static_cast<int32_t>(total_exp);
+            oss << "\n  Mean Price: " << mean_price << "e" << static_cast<int32_t>(mean_exp);
+            oss << "\n  Total Quantity: " << total_quantity << "e" << static_cast<int32_t>(total_exp);
         }
     }
 
