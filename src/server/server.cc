@@ -147,7 +147,7 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
 
 void EpollServer::query_worker()
 {
-  Query_engine exec(file);
+  Query_engine exec(file, outer_page_table, inner_page_table);
   while(true)
   {
     // Change: get unique_ptr from queue and access the pair via pointer

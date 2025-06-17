@@ -9,8 +9,8 @@
 #include <ranges>
 typedef double float64_t;
 Query_engine::Query_engine(const std::string& file, 
-                           uint64_t* outer_page_table, 
-                           uint64_t* inner_page_table)
+                           std::shared_ptr<std::vector<uint64_t> > outer_page_table, 
+                           std::shared_ptr<std::vector<uint64_t> > inner_page_table)
     : outer_page_table(outer_page_table), inner_page_table(inner_page_table) {
   data.open("data/processed/trades-" + file + ".bin", std::ios::in | std::ios::binary);
   if (!data.is_open()) {

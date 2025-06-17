@@ -17,7 +17,8 @@
 class Query_engine {
 public:
     
-  Query_engine(const std::string& file, uint64_t* outer_page_table = nullptr, uint64_t* inner_page_table = nullptr);
+  Query_engine(const std::string& file, std::shared_ptr<std::vector<uint64_t> > outer_page_table,
+    std::shared_ptr<std::vector<uint64_t> > inner_page_table);
   ~Query_engine();
   /**
     * @brief Computes the lowest and highest prices within the given query window.
@@ -48,8 +49,9 @@ public:
 private:
 	int64_t open_page;
 	TradeData* page;
-	uint64_t* outer_page_table;
-  uint64_t* inner_page_table;
+
+  std::shared_ptr<std::vector<uint64_t> > outer_page_table;
+  std::shared_ptr<std::vector<uint64_t> > inner_page_table;
   std::ifstream data;  // File stream for reading trade data
   // Any Internal members can be added here
   // std::vector<TradeData> trades;
