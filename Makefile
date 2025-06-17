@@ -24,7 +24,7 @@ SERVER_HEADERS := $(shell find src/server -type f -name '*.h') $(shell find src/
 
 PROCESS_DATA := $(SRC_DIR)/process_data/process_data_main.cc
 
-all: processed_data build build/server-bin build/client-bin
+all: build build/server-bin build/client-bin
 
 build:
 	mkdir -p build
@@ -122,3 +122,15 @@ libs:
 	if [ ! -f ./test/nlohmann/json.hpp ]; then \
 		curl -sL https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp -o ./test/nlohmann/json.hpp; \
 	fi
+
+
+################## MULTI CLIENT TEST ##################
+
+./build/test/performance/multi_client/multi_client.o:
+	mkdir -p build/test/performance/multi_client
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -c test/performance/multi_client/multi_client.cc  -o build/test/performance/multi_client/multi_client.o -lfmt -lspdlog
+
+./build/mct-bin: ./build/test/performance/multi_client/multi_client.o
+	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) test/performance/multi_client/multi_client_main.cc ./build/test/performance/multi_client/multi_client.o -o build/mct-bin -lfmt -lspdlog
+
+mct: ./build/mct-bin

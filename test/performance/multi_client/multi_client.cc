@@ -1,10 +1,5 @@
 #include "multi_client.h"
-#include "../../../src/utils/helper/utils.h"
 #include "../../../src/utils/net/net.h"
-
-#include <sys/socket.h>
-#include <unistd.h>
-#include <arpa/inet.h>
 
 client::Client::Client(int32_t port, const std::string &server_address, int32_t client_count) {
     epoll_fd_ = epoll_create1(0);
@@ -16,7 +11,7 @@ client::Client::Client(int32_t port, const std::string &server_address, int32_t 
         connect_to_server(sock, address);
 
         set_non_blocking(sock);
-        sockets.push_back(sock);
+        sockets_.push_back(sock);
 
         epoll_event ev;
         ev.data.fd = sock;
@@ -27,7 +22,7 @@ client::Client::Client(int32_t port, const std::string &server_address, int32_t 
 
 
 void client::Client::send_message(const TradeDataQuery &message) {
-    for (auto socket_ : sockets){
+    for (auto socket_ : sockets_){
       ssize_t bytes_sent = send(socket_, &message, sizeof(message), 0);
       if (bytes_sent < 0) {
           helper::check_error(true, "Send failed on client socket.");
@@ -36,11 +31,11 @@ void client::Client::send_message(const TradeDataQuery &message) {
 }
 
 const std::vector<int32_t>& client::Client::get_socket_fds() const {
-    return sockets;
+    return sockets_;
 }
 
 client::Client::~Client() {
-    for (auto socket : sockets) {
+    for (auto socket : sockets_) {
         close(socket);
     }
     close(epoll_fd_);
@@ -61,8 +56,9 @@ void client::Client::connect_to_server(
     helper::check_error(err_code < 0, "Connection Failed.\n");
 }
 
+// the only test for now
 std::vector<std::vector<Result>> client::Client::read_min_max() {
-    std::vector<std::vector<Result>> result(sockets.size());
+    std::vector<std::vector<Result>> result(sockets_.size());
     constexpr int MAX_EVENTS = 10;
     epoll_event events[MAX_EVENTS];
 
@@ -82,10 +78,10 @@ std::vector<std::vector<Result>> client::Client::read_min_max() {
             helper::check_error(n <= 0, "Failed to read result");
         }
 
-        // Find index of this socket in `sockets`
-        auto it = std::find(sockets.begin(), sockets.end(), fd);
-        if (it != sockets.end()) {
-            result[it - sockets.begin()] = std::move(output);
+        // Find index of this socket in `sockets_`
+        auto it = std::find(sockets_.begin(), sockets_.end(), fd);
+        if (it != sockets_.end()) {
+            result[it - sockets_.begin()] = std::move(output);
         }
     }
 
