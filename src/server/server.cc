@@ -18,20 +18,20 @@ void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& resu
   while (true) {
     WorkItem work = work_queue.pop();
 
-    ResultItem result_item;
-    result_item.client_fd = work.client_fd;
-    int8_t metric_list = 0;
-    if (work.query.metrics & (1 << 0)) {
-        metric_list |= 1 << 0; // min and max price
-    }
-    if (work.query.metrics & (1 << 26)) {
-        metric_list |= 1 << 1; // mean price
-    }
-    if (work.query.metrics & (1ull << 33)) {
-        metric_list |= 1 << 2; // total quantity
-    }
-    
-    metric_list = 7; // Assuming we want to compute all metrics (00000111), comment this line out later
+        ResultItem result_item;
+        result_item.client_fd = work.client_fd;
+        int8_t metric_list = 0;
+        if (work.query.metrics & (1 << 0)) {
+            metric_list |= 1 << 0; // min and max price
+        }
+        if (work.query.metrics & (1 << 26)) {
+            metric_list |= 1 << 1; // mean price
+        }
+        if (work.query.metrics & (1ull << 33)) {
+            metric_list |= 1 << 2; // total quantity
+        }
+        // more metrics can be added here
+        // metric_list = 7; // Assuming we want to compute all metrics (00000111), comment this line out later
 
     spdlog::info("Worker thread processing query for client {} with metrics: {}", work.client_fd, metric_list);
 
