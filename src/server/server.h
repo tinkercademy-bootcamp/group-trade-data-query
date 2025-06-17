@@ -4,43 +4,47 @@
 #include <memory>
 
 #include <queue>
-
+#include <unordered_map>
+#include <vector>
 // #include "../utils/net/net.h"
 #include "../utils/query.h"
 #include "../query_engine/query_engine.h"
-#include "../utils/mt_queue.h"
 
-#define MAX_THREADS 4
 
+#include "utils-server.h"
+#include "TS-queue.h"
 void make_non_blocking(int32_t sock);
 
 class EpollServer {
  public:
-  EpollServer(uint16_t port);
+  EpollServer(int32_t port, int32_t num_worker_threads);
   ~EpollServer();
 
   void run();
-
-private:
+ 
+ private:
   sockaddr_in server_address_;
   int32_t server_listen_fd_;
   int32_t epoll_fd_;
-
-  std::mutex task_queue_mutex_;
-  // std::queue<TradeDataQuery> task_queue_;
-  
-  // std::mutex request_queue_mutex_;
-  // std::queue<> request_queue_;
-
-  // std::vector<std::thread> worker_threads_;
-
-  void accept_connection();
-  void add_to_epoll(int32_t sock);
+  void add_to_epoll(int32_t sock, uint32_t events);
   void bind_server();
-  int32_t handle_trade_data_query(int32_t sock, TradeDataQuery query);
-  Mt_Queue<std::pair<int32_t, TradeDataQuery>> task_queue_;
-  Mt_Queue<std::pair<int32_t, std::vector<Result>>> send_queue_;
-  void query_worker();
-  void sender_thread();
+  std::queue<std::pair<int32_t, TradeDataQuery>> task_queue_;
+
+  std::vector<std::thread> worker_threads_;
+  TSQueue<WorkItem> work_queue_;
+  TSQueue<ResultItem> results_queue_;
+
+  // New members for handling asynchronous writes
+  struct OutgoingBuffer {
+      std::vector<char> buffer;
+      size_t sent_bytes = 0;
+  };
+  std::unordered_map<int32_t, OutgoingBuffer> write_buffers_;
+
+
+  void handle_read(int32_t client_fd);
+  void handle_write(int32_t client_fd);
+  void process_results();
+  void send_result(ResultItem& result);
 };
 
