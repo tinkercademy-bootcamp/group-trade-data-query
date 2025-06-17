@@ -257,50 +257,17 @@ Price Query_engine::mean_price_in_range(
     uint64_t start_time,
     uint64_t end_time)
 {
-    assert(end_time > start_time);
-    TradeData trade;
+  assert(end_time > start_time);
 
-    // 1) Binary‐search for the first trade ≥ start_time
-    uint64_t left  = 0;
-    uint64_t right = trades_size - 1;
-    while (left < right) {
-        uint64_t mid = left + ((right - left) >> 1);
-        read_trade_data(mid, trade);
-        if (trade.created_at < start_time)
-            left = mid + 1;
-        else
-            right = mid;
-    }
-    uint64_t start_idx = left;
+  uint64_t left = file_lower_bound(start_time, 0);
+  uint64_t right = file_lower_bound(end_time, left) - 1;
 
-    // 2) Binary‐search for the first trade ≥ end_time, then back up one
-    left  = start_idx;
-    right = trades_size;
-    while (left < right) {
-        uint64_t mid = left + ((right - left) >> 1);
-        read_trade_data(mid, trade);
-        if (trade.created_at < end_time)
-            left = mid + 1;
-        else
-            right = mid;
-    }
-    uint64_t end_idx = (right == 0 ? 0 : right - 1);
-
-    // 3) Scan [start_idx..end_idx] to compute weighted mean
-    double sum_pq = 0.0;  // sum of price * quantity
-    double sum_q  = 0.0;  // sum of quantity
-    for (uint64_t i = start_idx; i <= end_idx; ++i) {
-        read_trade_data(i, trade);
-        double price_val = trade.price.price *
-                           std::pow(10.0, trade.price.price_exponent);
-        double qty_val   = trade.quantity.quantity *
-                           std::pow(10.0, trade.quantity.quantity_exponent);
-        sum_pq += price_val * qty_val;
-        sum_q  += qty_val;
-    }
+  if(left > right) {
+    return {0, 0};
+  }
 
     // 4) Compute weighted mean
-  double mean_val = (sum_q > 0.0 ? sum_pq / sum_q : 0.0);
+  double mean_val = compute_prefix_sum(left, right) / (right - left + 1);
 
   // 5) Convert the double mean back into a Price struct
   int8_t exp = 0;
