@@ -17,6 +17,25 @@ std::vector<TradeData> execute_task(TradeDataQuery& query) {
 
 /////////////////
 
+std::vector<std::pair<std::string, uint16_t>> peer_servers = {
+  {"3.109.98.204", 35000},  // Example IP and port
+  // {"172.31.14.221", 8081}
+};
+static int query_counter = 0;
+constexpr int FORWARD_EVERY = 2;
+int connect_to_server(const char* ip, uint16_t port) {
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  helper::check_error(sock < 0, "Socket creation failed");
+  sockaddr_in serv_addr{};
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_port = htons(port);
+  inet_pton(AF_INET, ip, &serv_addr.sin_addr);
+
+  helper::check_error(connect(sock, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0,
+                      "Connection to peer server failed");
+  return sock;
+}
+
 constexpr int32_t MAX_EVENTS = 10;
 
 EpollServer::EpollServer(uint16_t port)
@@ -93,34 +112,41 @@ int32_t EpollServer::handle_trade_data_query(int32_t sock, TradeDataQuery query)
 
     task_queue_.pop();
     std::vector<Result> result;
-    std::vector<TradeData> tresult;
-    Query_engine exec; 
     int32_t result_size;
-    bool t_not_r;
-    result = exec.lowest_and_highest_prices(task_query);
-    result_size = static_cast<int32_t>(result.size());
-    t_not_r=false;
-    // First, send the size of the result vector
-    ssize_t bytes_sent =
-        send(client_sock, &result_size, sizeof(result_size), 0);
+    Query_engine exec;
+    bool forward_to_peer = (++query_counter % FORWARD_EVERY == 0);
+    if (forward_to_peer && !peer_servers.empty()) {
+        auto& [peer_ip, peer_port] = peer_servers[query_counter % peer_servers.size()];
+        spdlog::info("Forwarding query {} to peer server {}:{}", query_counter, peer_ip, peer_port);
+        try {
+            int sock_fd = connect_to_server(peer_ip.c_str(), peer_port);
+            send(sock_fd, &task_query, sizeof(task_query), 0);
+            recv(sock_fd, &result_size, sizeof(result_size), MSG_WAITALL);
+            result.resize(result_size);
+            recv(sock_fd, result.data(), sizeof(Result) * result_size, MSG_WAITALL);
+            close(sock_fd);
+            spdlog::info("Received {} results from peer server", result_size);
+        } catch (const std::exception& e) {
+            spdlog::error("Failed to forward to peer server: {}", e.what());
+            result = exec.lowest_and_highest_prices(task_query);
+            result_size = static_cast<int32_t>(result.size());
+        }
+    } else {
+        result = exec.lowest_and_highest_prices(task_query);
+        result_size = static_cast<int32_t>(result.size());
+        spdlog::info("Processing query {} locally", query_counter);
+    }
+
+    ssize_t bytes_sent = send(client_sock, &result_size, sizeof(result_size), 0);
     if (bytes_sent < 0) {
-      throw std::runtime_error("Failed to send result size: " +
-                               std::string(strerror(errno)));
+      throw std::runtime_error("Failed to send result size: " + std::string(strerror(errno)));
     } else if (bytes_sent < static_cast<ssize_t>(sizeof(result_size))) {
       std::cerr << "Warning: Only " << bytes_sent << " out of "
                 << sizeof(result_size) << " bytes sent for result size."
                 << std::endl;
     }
-
-    // Then, send each TradeData struct in the result vector
-    if (t_not_r) {
-      for (auto& data : tresult) {
-        send_without_serialisation(client_sock, data);
-      }
-    } else {
-      for (auto& data : result) {
-        send_without_serialisation(client_sock, data);
-      }
+    for (auto& data : result) {
+      send_without_serialisation(client_sock, data);
     }
   }
   return 0;
