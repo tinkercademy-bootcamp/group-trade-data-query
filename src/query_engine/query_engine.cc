@@ -1,3 +1,11 @@
+/**
+ * @file query_engine.cc
+ * @brief Implements the Query_engine class for processing trade data queries.
+ *
+ * Provides methods for aggregating trade data, computing price metrics,
+ * and retrieving raw trade data from a binary file.
+ */
+
 #include "query_engine.h"
 // #include "../../processed_data/preproc.h"
 #include "../utils/query.h"
@@ -7,34 +15,42 @@
 #include <cassert>
 #include <algorithm>
 #include <ranges>
+
 typedef double float64_t;
+
+/**
+ * @brief Constructs a Query_engine and opens the trade data file.
+ */
 Query_engine::Query_engine() {
   data.open("data/processed/trades-example.bin", std::ios::in | std::ios::binary);
   if (!data.is_open()) {
     std::cerr << "[Query_engine] Error: could not open trade data file.\n";
     return;
   }
+  // Calculate the number of trades in the file
   trades_size = data.seekg(0, std::ios::end).tellg() / 31;
   data.seekg(0, std::ios::beg);
 }
 
+/**
+ * @brief Destructor for Query_engine. Closes the trade data file if open.
+ */
 Query_engine::~Query_engine() {
   if (data.is_open()) {
     data.close();
   }
 }
 
+/**
+ * @brief Reads a TradeData record at the specified index from the file.
+ * @param ind Index of the trade record.
+ * @param trade Reference to TradeData struct to fill.
+ * @return true if read was successful, false otherwise.
+ * @throws std::runtime_error if reading fails.
+ */
 bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
   data.seekg(ind * sizeof(TradeData), std::ios::beg);
   if (data.read(reinterpret_cast<char *>(&trade), sizeof(TradeData))) {
-    // std::cout << trade.symbol_id << " " 
-    //           << trade.created_at << " "
-    //           << trade.trade_id << " "
-    //           << trade.price.price << " * 10^" 
-    //           << static_cast<int32_t>(trade.price.price_exponent) << " "
-    //           << trade.quantity.quantity << " * 10^" 
-    //           << static_cast<int32_t>(trade.quantity.quantity_exponent) << " "
-    //           << static_cast<int32_t>(trade.taker_side) << "\n";
     return true;
   } else {
     throw std::runtime_error("[Query_engine] Error reading trade data at index " + std::to_string(ind));
@@ -42,10 +58,19 @@ bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
   return false; // If we reach here, it means reading failed
 }
 
+/**
+ * @brief Helper function for integer ceiling division.
+ */
 uint64_t int_ceil(uint64_t x, uint64_t y){
   return (x/y) + (x%y != 0);
 }
 
+/**
+ * @brief Aggregates trade data metrics over time intervals as specified by the query.
+ * @param chooser Bitmask indicating which metrics to compute.
+ * @param query The TradeDataQuery specifying the time range and resolution.
+ * @return A vector of bytes representing the aggregated results.
+ */
 std::vector<char> Query_engine::aggregator(int8_t chooser, const TradeDataQuery& query){
   std::vector<char> res;
   for (uint64_t start_time = query.start_time_point ; start_time < query.end_time_point; start_time += query.resolution) {
@@ -58,16 +83,14 @@ std::vector<char> Query_engine::aggregator(int8_t chooser, const TradeDataQuery&
         switch (i) {
           case 0: { // min and max price
             auto [min_price, max_price] = min_max_price_in_range(start_time, end_time);
-            // append min_price price (4 bytes, little-endian)
+            // Append min_price (4 bytes) and exponent (1 byte)
             {
               const char* ptr = reinterpret_cast<const char*>(&min_price.price);
               res.insert(res.end(), ptr, ptr + sizeof(min_price.price));
-              // append exponent (1 byte)
               res.push_back(static_cast<char>(min_price.price_exponent));
-              // append max_price price (4 bytes)
+              // Append max_price (4 bytes) and exponent (1 byte)
               ptr = reinterpret_cast<const char*>(&max_price.price);
               res.insert(res.end(), ptr, ptr + sizeof(max_price.price));
-              // append exponent (1 byte)
               res.push_back(static_cast<char>(max_price.price_exponent));
             }
             break;
@@ -97,6 +120,12 @@ std::vector<char> Query_engine::aggregator(int8_t chooser, const TradeDataQuery&
   return res;
 }
 
+/**
+ * @brief Finds the minimum and maximum prices in a given time range.
+ * @param start_time Start of the time range (inclusive).
+ * @param end_time End of the time range (exclusive).
+ * @return Pair of Price structs: (min_price, max_price).
+ */
 std::pair<Price, Price> Query_engine::min_max_price_in_range(
     uint64_t start_time,
     uint64_t end_time)
@@ -151,6 +180,12 @@ std::pair<Price, Price> Query_engine::min_max_price_in_range(
     return { min_p, max_p };
 }
 
+/**
+ * @brief Computes the total quantity traded in a given time range.
+ * @param start_time Start of the time range (inclusive).
+ * @param end_time End of the time range (exclusive).
+ * @return Quantity struct representing the total quantity.
+ */
 Quantity Query_engine::total_quantity_in_range(
     uint64_t start_time,
     uint64_t end_time)
@@ -212,8 +247,12 @@ Quantity Query_engine::total_quantity_in_range(
     return Quantity{ mantissa, exp };
 }
 
-// Computes the volume‐weighted average price between start_time (inclusive)
-// and end_time (exclusive). Returns the result as a packed `Price` struct.
+/**
+ * @brief Computes the volume-weighted average price in a given time range.
+ * @param start_time Start of the time range (inclusive).
+ * @param end_time End of the time range (exclusive).
+ * @return Price struct representing the mean price.
+ */
 Price Query_engine::mean_price_in_range(
     uint64_t start_time,
     uint64_t end_time)
@@ -261,30 +300,32 @@ Price Query_engine::mean_price_in_range(
     }
 
     // 4) Compute weighted mean
-  double mean_val = (sum_q > 0.0 ? sum_pq / sum_q : 0.0);
+    double mean_val = (sum_q > 0.0 ? sum_pq / sum_q : 0.0);
 
-  // 5) Convert the double mean back into a Price struct
-  int8_t exp = 0;
+    // 5) Convert the double mean back into a Price struct
+    int8_t exp = 0;
 
-  // Scale UP if mean_val is very small (to preserve precision)
-  while (mean_val > 0 && mean_val < 1000000000.0 && exp > -18) {
-      mean_val *= 10.0;
-      --exp;
-  }
+    // Scale UP if mean_val is very small (to preserve precision)
+    while (mean_val > 0 && mean_val < 1000000000.0 && exp > -18) {
+        mean_val *= 10.0;
+        --exp;
+    }
 
-  // Scale DOWN if mean_val is too large for uint32_t
-  while (mean_val > static_cast<double>(std::numeric_limits<uint32_t>::max())) {
-      mean_val /= 10.0;
-      ++exp;
-  }
+    // Scale DOWN if mean_val is too large for uint32_t
+    while (mean_val > static_cast<double>(std::numeric_limits<uint32_t>::max())) {
+        mean_val /= 10.0;
+        ++exp;
+    }
 
-  uint32_t mantissa = static_cast<uint32_t>(std::round(mean_val));
-  return Price{ mantissa, exp };
+    uint32_t mantissa = static_cast<uint32_t>(std::round(mean_val));
+    return Price{ mantissa, exp };
 }
 
-
-// namespace ranges = std::ranges;
-
+/**
+ * @brief Retrieves all TradeData records matching the query's time range.
+ * @param query The TradeDataQuery specifying the time window.
+ * @return Vector of TradeData records within the specified range.
+ */
 std::vector<TradeData> Query_engine::send_raw_data(TradeDataQuery &query)
 {
   std::vector<TradeData> trades;
