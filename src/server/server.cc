@@ -44,8 +44,40 @@ void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& resu
         }
         // more metrics can be added here
         metric_list = 7; // Assuming we want to compute all metrics (00000111), comment this line out later
+        // data aggregation implementation
+        spdlog::info("Worker thread processing query for client {} with metrics: {}", work.client_fd, metric_list);
+        // Execute the query and get the results
+        // Pipeline: Calculate and send each interval's results immediately
+        // Accumulate all intervals into one buffer
+        std::vector<char> accumulated_buffer;
 
-        result_item.res = exec.aggregator(metric_list, work.query);
+        for (uint64_t start_time = work.query.start_time_point; start_time < work.query.end_time_point; start_time += work.query.resolution) {
+            uint64_t end_time = start_time + work.query.resolution;
+            if (end_time > work.query.end_time_point) {
+                end_time = work.query.end_time_point;
+            }
+
+        // Create a temporary query for this single interval
+        TradeDataQuery interval_query = work.query;
+        interval_query.start_time_point = start_time;
+        interval_query.end_time_point = end_time;
+
+        // Calculate results for this interval only
+        std::vector<char> interval_result = exec.aggregator(metric_list, interval_query);
+        
+        // Append to accumulated buffer
+        accumulated_buffer.insert(accumulated_buffer.end(), 
+                                interval_result.begin(), 
+                                interval_result.end());
+        }
+
+        // Send all intervals as one result
+        // ResultItem result_item;
+        result_item.client_fd = work.client_fd;
+        result_item.res = std::move(accumulated_buffer);
+        results_queue.push(std::move(result_item));
+        }
+        // result_item.res = exec.aggregator(metric_list, work.query);
 
         // if (work.query.resolution > 0) {
         //     result_item.is_trade_data = false;
@@ -55,9 +87,9 @@ void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& resu
         //     result_item.trade_data_results = exec.send_raw_data(work.query);
         // }
 
-        results_queue.push(std::move(result_item));
+        
     }
-}
+
 
 
 constexpr int32_t MAX_EVENTS = 10;
@@ -216,96 +248,163 @@ void EpollServer::process_results() {
     }
 }
  
-// New function to handle sending and buffering
-void EpollServer::send_result(ResultItem& result) {
-    // 1. Serialize the result into a byte buffer
-    std::vector<char> buffer;
-    buffer = std::move(result.res); // Move the serialized data into the buffer
+// // New function to handle sending and buffering
+// void EpollServer::send_result(ResultItem& result) {
+//     // 1. Serialize the result into a byte buffer
+//     std::vector<char> buffer;
+//     buffer = std::move(result.res); // Move the serialized data into the buffer
     
-    // int32_t result_size;
+//     // int32_t result_size;
 
-    // // This serialization must match the client's expectation
-    // if (result.is_trade_data) {
-    //     result_size = result.trade_data_results.size();
-    //     buffer.resize(sizeof(result_size) + result_size * sizeof(TradeData));
-    //     memcpy(buffer.data(), &result_size, sizeof(result_size));
-    //     memcpy(buffer.data() + sizeof(result_size), result.trade_data_results.data(), result_size * sizeof(TradeData));
-    // } else {
-    //     result_size = result.resolution_results.size();
-    //     buffer.resize(sizeof(result_size) + result_size * sizeof(Result));
-    //     memcpy(buffer.data(), &result_size, sizeof(result_size));
-    //     memcpy(buffer.data() + sizeof(result_size), result.resolution_results.data(), result_size * sizeof(Result));
-    // }
-  int32_t count = static_cast<int32_t>(buffer.size());
-  ssize_t bytes_sent = send(result.client_fd, &count, sizeof(count), 0);
-  if (bytes_sent < 0) {
-      perror("send (count)");
-      close(result.client_fd);
-      return;
-  }
+//     // // This serialization must match the client's expectation
+//     // if (result.is_trade_data) {
+//     //     result_size = result.trade_data_results.size();
+//     //     buffer.resize(sizeof(result_size) + result_size * sizeof(TradeData));
+//     //     memcpy(buffer.data(), &result_size, sizeof(result_size));
+//     //     memcpy(buffer.data() + sizeof(result_size), result.trade_data_results.data(), result_size * sizeof(TradeData));
+//     // } else {
+//     //     result_size = result.resolution_results.size();
+//     //     buffer.resize(sizeof(result_size) + result_size * sizeof(Result));
+//     //     memcpy(buffer.data(), &result_size, sizeof(result_size));
+//     //     memcpy(buffer.data() + sizeof(result_size), result.resolution_results.data(), result_size * sizeof(Result));
+//     // }
+//   int32_t count = static_cast<int32_t>(buffer.size());
+//   ssize_t bytes_sent = send(result.client_fd, &count, sizeof(count), 0);
+//   if (bytes_sent < 0) {
+//       perror("send (count)");
+//       close(result.client_fd);
+//       return;
+//   }
 
-  // 2. Then send the actual buffer
-  bytes_sent = send(result.client_fd, buffer.data(), buffer.size(), 0);
-  if (bytes_sent < 0) {
-      perror("send (buffer)");
-      close(result.client_fd);
-      return;
-  }
+//   // 2. Then send the actual buffer
+//   bytes_sent = send(result.client_fd, buffer.data(), buffer.size(), 0);
+//   if (bytes_sent < 0) {
+//       perror("send (buffer)");
+//       close(result.client_fd);
+//       return;
+//   }
+//     if (bytes_sent < 0) {
+//         if (errno == EAGAIN || errno == EWOULDBLOCK) {
+//             // Kernel buffer is full, need to wait
+//             bytes_sent = 0; // Treat as if nothing was sent yet
+//         } else {
+//             // Real error
+//             perror("send");
+//             close(result.client_fd);
+//             return;
+//         }
+//     }
+
+//     // 3. If not all data was sent, buffer the rest and wait for EPOLLOUT
+//     if (static_cast<size_t>(bytes_sent) < buffer.size()) {
+//         spdlog::warn("Partial send for client {}. Buffering remaining data.", result.client_fd);
+//         write_buffers_[result.client_fd] = {std::move(buffer), static_cast<size_t>(bytes_sent)};
+
+//         // Modify epoll to watch for writability
+//         epoll_event event{};
+//         event.data.fd = result.client_fd;
+//         event.events = EPOLLIN | EPOLLOUT | EPOLLET; // Watch for read AND write
+//         epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, result.client_fd, &event);
+//     }
+// }
+
+// // This is called when the socket is ready for writing again
+// void EpollServer::handle_write(int32_t client_fd) {
+//     spdlog::info("Handling write for client {}", client_fd);
+//     auto it = write_buffers_.find(client_fd);
+//     if (it == write_buffers_.end()) {
+//         spdlog::warn("No write buffer found for client {}", client_fd);
+//         return; // Should not happen
+//     }
+
+//     OutgoingBuffer& ob = it->second;
+//     ssize_t bytes_sent = send(client_fd, ob.buffer.data() + ob.sent_bytes, ob.buffer.size() - ob.sent_bytes, 0);
+//     spdlog::info("Attempting to send {} bytes to client {}", ob.buffer.size() - ob.sent_bytes, client_fd);
+//     if (bytes_sent >= 0) {
+//         spdlog::info("Sent {} bytes to client {}", bytes_sent, client_fd);
+//         ob.sent_bytes += bytes_sent;
+//         if (ob.sent_bytes == ob.buffer.size()) {
+//             // All data sent!
+//             spdlog::info("Finished sending buffered data to client {}.", client_fd);
+//             write_buffers_.erase(it);
+
+//             // Modify epoll to stop watching for writability
+//             epoll_event event{};
+//             event.data.fd = client_fd;
+//             event.events = EPOLLIN | EPOLLET; // Go back to only watching for reads
+//             epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, client_fd, &event);
+//         }
+//     } else {
+//         // Handle error
+//         perror("send on handle_write");
+//         close(client_fd);
+//         write_buffers_.erase(it);
+//     }
+// }
+
+// Add this to your server class:
+std::unordered_map<int32_t, std::queue<std::vector<char>>> pipelined_write_buffers_;
+
+// In send_result:
+void EpollServer::send_result(ResultItem& result) {
+    std::vector<char> buffer = std::move(result.res);
+    int32_t count = static_cast<int32_t>(buffer.size());
+
+    // Prepare a single buffer with count + data
+    std::vector<char> full_buffer(sizeof(count) + buffer.size());
+    memcpy(full_buffer.data(), &count, sizeof(count));
+    memcpy(full_buffer.data() + sizeof(count), buffer.data(), buffer.size());
+
+    auto& queue = pipelined_write_buffers_[result.client_fd];
+    queue.push(std::move(full_buffer));
+
+    // If this is the only buffer, start sending immediately
+    if (queue.size() == 1) {
+        send_next_pipelined(result.client_fd);
+    }
+}
+
+void EpollServer::send_next_pipelined(int32_t client_fd) {
+    auto it = pipelined_write_buffers_.find(client_fd);
+    if (it == pipelined_write_buffers_.end() || it->second.empty()) return;
+
+    auto& queue = it->second;
+    auto& buffer = queue.front();
+    ssize_t bytes_sent = send(client_fd, buffer.data(), buffer.size(), 0);
+
     if (bytes_sent < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            // Kernel buffer is full, need to wait
-            bytes_sent = 0; // Treat as if nothing was sent yet
+            // Wait for EPOLLOUT
+            epoll_event event{};
+            event.data.fd = client_fd;
+            event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+            epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, client_fd, &event);
+            return;
         } else {
-            // Real error
             perror("send");
-            close(result.client_fd);
+            close(client_fd);
+            pipelined_write_buffers_.erase(client_fd);
             return;
         }
     }
 
-    // 3. If not all data was sent, buffer the rest and wait for EPOLLOUT
     if (static_cast<size_t>(bytes_sent) < buffer.size()) {
-        spdlog::warn("Partial send for client {}. Buffering remaining data.", result.client_fd);
-        write_buffers_[result.client_fd] = {std::move(buffer), static_cast<size_t>(bytes_sent)};
-
-        // Modify epoll to watch for writability
+        // Partial send: keep the rest and wait for EPOLLOUT
+        buffer.erase(buffer.begin(), buffer.begin() + bytes_sent);
         epoll_event event{};
-        event.data.fd = result.client_fd;
-        event.events = EPOLLIN | EPOLLOUT | EPOLLET; // Watch for read AND write
-        epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, result.client_fd, &event);
+        event.data.fd = client_fd;
+        event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+        epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, client_fd, &event);
+    } else {
+        // Full buffer sent, pop and send next if any
+        queue.pop();
+        if (!queue.empty()) {
+            send_next_pipelined(client_fd);
+        }
     }
 }
 
-// This is called when the socket is ready for writing again
+// In handle_write, call send_next_pipelined(client_fd);
 void EpollServer::handle_write(int32_t client_fd) {
-    spdlog::info("Handling write for client {}", client_fd);
-    auto it = write_buffers_.find(client_fd);
-    if (it == write_buffers_.end()) {
-        spdlog::warn("No write buffer found for client {}", client_fd);
-        return; // Should not happen
-    }
-
-    OutgoingBuffer& ob = it->second;
-    ssize_t bytes_sent = send(client_fd, ob.buffer.data() + ob.sent_bytes, ob.buffer.size() - ob.sent_bytes, 0);
-    spdlog::info("Attempting to send {} bytes to client {}", ob.buffer.size() - ob.sent_bytes, client_fd);
-    if (bytes_sent >= 0) {
-        spdlog::info("Sent {} bytes to client {}", bytes_sent, client_fd);
-        ob.sent_bytes += bytes_sent;
-        if (ob.sent_bytes == ob.buffer.size()) {
-            // All data sent!
-            spdlog::info("Finished sending buffered data to client {}.", client_fd);
-            write_buffers_.erase(it);
-
-            // Modify epoll to stop watching for writability
-            epoll_event event{};
-            event.data.fd = client_fd;
-            event.events = EPOLLIN | EPOLLET; // Go back to only watching for reads
-            epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, client_fd, &event);
-        }
-    } else {
-        // Handle error
-        perror("send on handle_write");
-        close(client_fd);
-        write_buffers_.erase(it);
-    }
+    send_next_pipelined(client_fd);
 }
