@@ -6,6 +6,7 @@
 #include <memory>      
 #include <vector>       
 #include <optional>
+#include <sstream>
 
 #include <spdlog/spdlog.h>
 #include <unistd.h>     
@@ -63,27 +64,84 @@ int32_t main(int32_t argc, char* argv[]) {
 
     chat_client->send_message(query);
     
-    if (query.metrics & (1 << 0)) {
-    std::vector<Result> output = chat_client->read_struct<Result>();
+    std::vector<char> output = chat_client->read_struct<char>();
     std::ostringstream oss;
 
     if (output.empty()) {
         oss << std::endl;  // Always at least one line
     } else {
-        for (const Result& data : output) {
-            int low_exp = static_cast<int>(data.lowest_price.price_exponent);
-            int high_exp = static_cast<int>(data.highest_price.price_exponent);
+        size_t set_size = 20; // Each result set is 20 bytes (10 + 5 + 5)
+        size_t num_sets = output.size() / set_size;
 
-            oss << "Timestamp: " << data.start_time
-                << "; Min Price: " << data.lowest_price.price << "e" << low_exp
-                << "; Max Price: " << data.highest_price.price << "e" << high_exp
-                << std::endl;
+
+        int8_t metric_list = 0;
+        if (query.metrics & (1 << 0)) {
+            metric_list |= (1 << 0); // min and max price
         }
-    }
+        if (query.metrics & (1 << 26)) {
+            metric_list |= (1 << 1); // mean price
+        }
+        if (query.metrics & (1ull << 33)) {
+            metric_list |= (1 << 2); // total quantity
+        }
+
+        for (size_t set = 0; set < num_sets; ++set) {
+            size_t base = set * set_size;
+            int32_t index = 0;
+            oss << "\nSet " << set + 1 << ":";
+            for (int i=0 ; i<8 ; i++){
+              if (metric_list & (1 << i)) {
+                switch (i) {
+                  case 0: { // min and max price
+                    uint32_t min_price = *reinterpret_cast<const uint32_t*>(&output[base + index]);
+                    int8_t min_exp = output[base + index + 4];
+                    index += 5;
+                    uint32_t max_price = *reinterpret_cast<const uint32_t*>(&output[base + index]);
+                    int8_t max_exp = output[base + index + 4];
+                    index += 5;
+                    oss << "\n  Min Price: " << min_price << "e" << static_cast<int32_t>(min_exp)
+                        << ", Max Price: " << max_price << "e" << static_cast<int32_t>(max_exp);
+                    break;
+                  }
+                  case 1: { // mean price
+                    uint32_t mean_price = *reinterpret_cast<const uint32_t*>(&output[base + index]);
+                    int8_t mean_exp = output[base + index + 4];
+                    index += 5;
+                    oss << "\n  Mean Price: " << mean_price << "e" << static_cast<int32_t>(mean_exp);
+                    break;
+                  }
+                  case 2: { // total quantity
+                    uint32_t total_quantity = *reinterpret_cast<const uint32_t*>(&output[base + index]);
+                    int8_t total_exp = output[base + index + 4];
+                    index += 5;
+                    oss << "\n  Total Quantity: " << total_quantity << "e" << static_cast<int32_t>(total_exp);
+                    break;
+                  }
+                  default:
+                    oss << "\n  Metric " << i+1 << ": Not implemented";
+                }
+              }
+            }
+            oss << "\n";  // Newline after each set
+            // uint32_t min_price = *reinterpret_cast<const uint32_t*>(&output[base + 0]);
+            // int8_t min_exp = output[base + 4];
+            // uint32_t max_price = *reinterpret_cast<const uint32_t*>(&output[base + 5]);
+            // int8_t max_exp = output[base + 9];
+            // uint32_t mean_price = *reinterpret_cast<const uint32_t*>(&output[base + 10]);
+            // int8_t mean_exp = output[base + 14];
+            // uint32_t total_quantity = *reinterpret_cast<const uint32_t*>(&output[base + 15]);
+            // int8_t total_exp = output[base + 19];
+
+            // oss << "\nSet " << set + 1 << ":";
+            // oss << "\n  Min Price: " << min_price << "e" << static_cast<int32_t>(min_exp)
+            //     << ", Max Price: " << max_price << "e" << static_cast<int32_t>(max_exp);
+            // oss << "\n  Mean Price: " << mean_price << "e" << static_cast<int32_t>(mean_exp);
+            // oss << "\n  Total Quantity: " << total_quantity << "e" << static_cast<int32_t>(total_exp);
+        }
+      }
 
     std::cout << oss.str();  // Dump everything at once
     std::cout.flush();       // Ensure immediate flush
-}
     #ifdef TESTMODE
       break;
     #endif
