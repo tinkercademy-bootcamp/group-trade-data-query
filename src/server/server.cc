@@ -168,7 +168,7 @@ void EpollServer::handle_read(int32_t client_fd) {
     if (count > 0) {
         spdlog::info("Received query from client {}. Offloading to worker.", client_fd);
         work_queue_.push({client_fd, query});
-        handle_write(client_fd);
+        // handle_write(client_fd);
     } else {
         // Handle error or connection closed
         spdlog::info("Client {} disconnected.", client_fd);
