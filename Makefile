@@ -126,11 +126,18 @@ libs:
 
 ################## MULTI CLIENT TEST ##################
 
-./build/test/performance/multi_client/multi_client.o: test/performance/multi_client/multi_client.cc
-	mkdir -p build/test/performance/multi_client
-	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) -c test/performance/multi_client/multi_client.cc  -o build/test/performance/multi_client/multi_client.o -lfmt -lspdlog
+EPP_DIR        := test/epoll-performance
+EPP_SRC        := $(EPP_DIR)/antiserver.cc $(EPP_DIR)/main.cc
+EPP_OBJS       := $(patsubst $(EPP_DIR)/%.cc,build/epoll-performance/%.o,$(EPP_SRC))
+EPP_BIN        := build/epoll-antiserver-bin
 
-./build/epoll-clientsim-bin: ./build/test/performance/multi_client/multi_client.o test/performance/multi_client/multi_client_main.cc
-	$(CXX) $(CXXFLAGS) $(CXX_DEBUG_FLAGS) test/performance/multi_client/multi_client_main.cc ./build/test/performance/multi_client/multi_client.o -o ./build/epoll-clientsim-bin -lfmt -lspdlog
+$(EPP_BIN): $(EPP_OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-epoll-client-sim: ./build/epoll-clientsim-bin
+build/epoll-performance/%.o: $(EPP_DIR)/%.cc $(EPP_DIR)/antiserver.h
+	mkdir -p build/epoll-performance
+	$(CXX) $(CXXFLAGS) -I$(EPP_DIR) -c $< -o $@
+
+.PHONY: epoll-perf
+epoll-perf: $(EPP_BIN)
+	@echo "Built $(EPP_BIN)"
