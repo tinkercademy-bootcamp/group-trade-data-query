@@ -16,9 +16,9 @@
  */
 class Query_engine {
 public:
-    
+
   Query_engine();
-  ~Query_engine() = default;
+  ~Query_engine(); // <-- declare destructor here
   /**
     * @brief Computes the lowest and highest prices within the given query window.
     *
@@ -35,6 +35,23 @@ public:
   std::vector<TradeData> send_raw_data(TradeDataQuery &query);
   uint64_t trades_size;
   bool read_trade_data(uint64_t ind, TradeData& trade);
+
+  std::vector<char> aggregator(int8_t metric_list, const TradeDataQuery& query);
+
+  std::pair<Price, Price> min_max_price_in_range(
+    uint64_t start_time,
+    uint64_t end_time)
+  ;
+
+  Quantity total_quantity_in_range(
+    uint64_t start_time,
+    uint64_t end_time)
+  ;
+
+  Price mean_price_in_range(
+    uint64_t start_time,
+    uint64_t end_time)
+  ;
 
 private:
   std::ifstream data;  // File stream for reading trade data
