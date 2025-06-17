@@ -36,7 +36,7 @@ int32_t main(int32_t argc, char** argv) {
     while (ind < query_engine.trades_size) {
         query_engine.read_trade_data(ind, trade);
         outer_page_table_bin.write(reinterpret_cast<const char*>(&trade.created_at), sizeof(uint64_t));
-        if (ind % (1 << 26) == 0) {
+        if (__builtin_ctzll(i) >= 26) {
             inner_page_table_bin.write(reinterpret_cast<const char*>(&trade.created_at), sizeof(uint64_t));
         }
         ind += (1 << 17);
