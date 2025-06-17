@@ -70,20 +70,26 @@ int32_t main(int32_t argc, char* argv[]) {
     if (output.empty()) {
         oss << std::endl;  // Always at least one line
     } else {
-        size_t set_size = 20; // Each result set is 20 bytes (10 + 5 + 5)
-        size_t num_sets = output.size() / set_size;
-
+        size_t set_size = 0; // Each result set is 20 bytes (10 + 5 + 5)
 
         int8_t metric_list = 0;
         if (query.metrics & (1 << 0)) {
             metric_list |= (1 << 0); // min and max price
+            set_size += 10;
         }
         if (query.metrics & (1 << 26)) {
             metric_list |= (1 << 1); // mean price
+            set_size += 5;
         }
         if (query.metrics & (1ull << 33)) {
             metric_list |= (1 << 2); // total quantity
+            set_size += 5;
         }
+
+        size_t num_sets = output.size() / set_size;
+
+
+        
 
         for (size_t set = 0; set < num_sets; ++set) {
             size_t base = set * set_size;
