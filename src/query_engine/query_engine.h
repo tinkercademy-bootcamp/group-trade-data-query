@@ -102,11 +102,13 @@ public:
     uint64_t start_time,
     uint64_t end_time);
 
+  double read_price_prefix_sum(uint64_t ind);
+  double compute_prefix_sum(uint64_t l, uint64_t r);
+  uint64_t file_lower_bound(uint64_t time, uint64_t l);
+
 private:
-  /**
-   * @brief File stream for reading trade data.
-   */
-  std::ifstream data;
+  std::ifstream data;  // File stream for reading trade data
+  std::ifstream price_prefix_sum_file;
   // Any Internal members can be added here
   // std::vector<TradeData> trades;
 };

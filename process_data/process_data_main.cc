@@ -6,13 +6,14 @@
 #include <iostream>
 #include <cstring>
 #include "../src/utils/query.h"
+#include <cmath>
 
 /**
  * @brief Parse a CSV file and return a vector of TradeData structs.
  * @param filename Path to the CSV file
  * @return Vector of parsed TradeData records
  */
-void parse_csv(const std::string& filename, std::ofstream& out) {
+void parse_csv(const std::string& filename, std::ofstream& out, std::ofstream& price_prefix_sum_file) {
   std::vector<TradeData> trades;
   std::ifstream file(filename);
   if (!file.is_open()) {
@@ -26,6 +27,7 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
     return;
   }
   TradeData trade;
+  double prefix_sum_price = 0;
   while (std::getline(file, line)) {
     if (line.empty() || line == "symbol_id,created_at,trade_id,price,quantity,price_exponent,quantity_exponent,taker_side\n") {
       continue; // Skip empty lines or header
@@ -50,8 +52,8 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
     std::getline(ss, token, ',');
     uint32_t quantity_raw = static_cast<uint32_t>(std::stoul(token));
     std::getline(ss, token, ',');
-    uint8_t price_exponent = static_cast<int8_t>(std::stoi(token));
-
+    int8_t price_exponent = static_cast<int8_t>(std::stoi(token));
+    prefix_sum_price += price_raw * std::pow(10, price_exponent);
     std::getline(ss, token, ',');
     uint8_t quantity_exponent = static_cast<int8_t>(std::stoi(token));
 
@@ -75,9 +77,10 @@ void parse_csv(const std::string& filename, std::ofstream& out) {
     trade.quantity.quantity = quantity_raw;
     trade.quantity.quantity_exponent = quantity_exponent;
     trade.taker_side = taker_side;
-
     out.write(reinterpret_cast<const char *>(&trade), sizeof(TradeData));
     out.flush();
+    price_prefix_sum_file.write(reinterpret_cast<const char *>(&prefix_sum_price), sizeof(double));
+    price_prefix_sum_file.flush();
   }
 }
 
@@ -94,15 +97,17 @@ int32_t main(int32_t argc, char** argv) {
   std::string parent_dir = dir.substr(0, dir.find_last_of('/'));
 
   std::string out_path = parent_dir + "/processed/" + base_name.substr(0, base_name.find_last_of('.')) + ".bin";
+  std::string price_prefix_sum_path = parent_dir + "/processed/" + base_name.substr(0, base_name.find_last_of('.')) + "_price_prefix_sum.bin";
 
   std::ofstream out(out_path, std::ios::out | std::ios::trunc | std::ios::binary);
+  std::ofstream price_prefix_sum(price_prefix_sum_path, std::ios::out | std::ios::trunc | std::ios::binary);
 
-  if (!out.is_open()) {
+  if (!out.is_open() || !price_prefix_sum.is_open()) {
     std::cerr << "Error: could not open output file\n";
     return 1;
   }
 
-  parse_csv(filename, out);
+  parse_csv(filename, out, price_prefix_sum);
 
   return 0;
 }

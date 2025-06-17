@@ -42,8 +42,9 @@ void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& resu
         if (work.query.metrics & (1ull << 33)) {
             metric_list |= 1 << 2; // total quantity
         }
+        // std::cout << (int32_t)metric_list << std::endl;
         // more metrics can be added here
-        metric_list = 7; // Assuming we want to compute all metrics (00000111), comment this line out later
+        // metric_list = 7; // Assuming we want to compute all metrics (00000111), comment this line out later
 
         result_item.res = exec.aggregator(metric_list, work.query);
 
