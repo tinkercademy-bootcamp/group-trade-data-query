@@ -45,6 +45,22 @@ public:
     * @return trade.created_at for the corresponding index 
     */
   uint64_t read_outer_page_table_data(uint64_t index);
+  std::vector<char> aggregator(int8_t metric_list, const TradeDataQuery& query);
+
+  std::pair<Price, Price> min_max_price_in_range(
+    uint64_t start_time,
+    uint64_t end_time)
+  ;
+
+  Quantity total_quantity_in_range(
+    uint64_t start_time,
+    uint64_t end_time)
+  ;
+
+  Price mean_price_in_range(
+    uint64_t start_time,
+    uint64_t end_time)
+  ;
 
 private:
 	int64_t open_page;
