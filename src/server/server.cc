@@ -39,7 +39,7 @@ void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& resu
         if (work.query.metrics & (1 << 26)) {
             metric_list |= 1 << 1; // mean price
         }
-        if (work.query.metrics & (1 << 33)) {
+        if (work.query.metrics & (1ull << 33)) {
             metric_list |= 1 << 2; // total quantity
         }
         // more metrics can be added here
