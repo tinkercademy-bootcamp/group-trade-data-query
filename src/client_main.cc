@@ -122,6 +122,7 @@ int32_t main(int32_t argc, char* argv[]) {
                 }
               }
             }
+            oss << "\n";  // Newline after each set
             // uint32_t min_price = *reinterpret_cast<const uint32_t*>(&output[base + 0]);
             // int8_t min_exp = output[base + 4];
             // uint32_t max_price = *reinterpret_cast<const uint32_t*>(&output[base + 5]);
