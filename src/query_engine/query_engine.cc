@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <ranges>
 typedef double float64_t;
+
 Query_engine::Query_engine(const std::string& file, 
                            std::shared_ptr<std::vector<uint64_t> > outer_page_table, 
                            std::shared_ptr<std::vector<uint64_t> > inner_page_table)
@@ -19,7 +20,7 @@ Query_engine::Query_engine(const std::string& file,
   }
   trades_size = data.seekg(0, std::ios::end).tellg() / sizeof(TradeData);
   data.seekg(0, std::ios::beg);
-	page = new TradeData[4 * 1024 * 128];
+  std::vector<TradeData> open_page_data(4 * 1024 * 128);
   open_page = -1;
 }
 
@@ -27,7 +28,6 @@ Query_engine::~Query_engine() {
 	if (data.is_open()) {
 		data.close();
 	}
-	delete[] page;
 }
 
 bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
@@ -46,6 +46,10 @@ bool Query_engine::read_trade_data(uint64_t ind, TradeData& trade) {
 
 uint64_t int_ceil(uint64_t x, uint64_t y){
   return (x/y) + (x%y != 0);
+}
+
+void read_inner_page_table(uint32_t outer_page_table_index) {
+  // To be implemented
 }
 
 std::vector<Result> Query_engine::lowest_and_highest_prices(
@@ -71,23 +75,33 @@ std::vector<Result> Query_engine::lowest_and_highest_prices(
 
   TradeData trade;
 
-	if (open_page != -1) {
+  uint32_t outer_page_table_start_index = std::ranges::lower_bound(*outer_page_table, query.start_time_point) - outer_page_table->begin();
+  if(outer_page_table_start_index != 0) outer_page_table_start_index -= 1;
+  std::cout << "outer_page_table_start_index = " << outer_page_table_start_index << std::endl;
 
-	}
+  uint32_t outer_page_table_end_index = std::ranges::lower_bound(*outer_page_table, query.end_time_point) - outer_page_table->begin();
+  if(outer_page_table_end_index != 0) outer_page_table_end_index -= 1;
+
+  for(uint32_t idx = outer_page_table_start_index; idx <= outer_page_table_end_index; idx++) {
+    read_inner_page_table(idx);
+  }
+	// if(open_page != -1) {
+
+	// }
 
   uint64_t left_index = 0;
-  uint64_t right_index = trades_size - 1;
-  uint64_t middle_index = 0;
-  while(left_index < right_index) {
-    middle_index = left_index + ((right_index - left_index) >> 1);
-    read_trade_data(middle_index, trade);
-    if(query.start_time_point <= trade.created_at) {
-        right_index = middle_index;
-    }
-    else {
-        left_index = middle_index + 1;
-    }
-  }
+  // uint64_t right_index = trades_size - 1;
+  // uint64_t middle_index = 0;
+  // while(left_index < right_index) {
+  //   middle_index = left_index + ((right_index - left_index) >> 1);
+  //   read_trade_data(middle_index, trade);
+  //   if(query.start_time_point <= trade.created_at) {
+  //       right_index = middle_index;
+  //   }
+  //   else {
+  //       left_index = middle_index + 1;
+  //   }
+  // }
 
   uint64_t ind = left_index;
 
