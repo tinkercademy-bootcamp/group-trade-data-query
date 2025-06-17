@@ -40,18 +40,15 @@ EpollServer::EpollServer(uint16_t port, const std::string& file)
   std::ifstream outer_page_table_file("data/processed/page-table-" + file + "-outer.bin", std::ios::in | std::ios::binary);
   std::ifstream inner_page_table_file("data/processed/page-table-" + file + "-inner.bin", std::ios::in | std::ios::binary);
 
-  outer_page_table_size = outer_page_table_file.seekg(0, std::ios::end).tellg() / sizeof(uint64_t);
+  outer_page_table = std::make_shared<std::vector<uint64_t>>(outer_page_table_file.seekg(0, std::ios::end).tellg() / sizeof(uint64_t));
   outer_page_table_file.seekg(0, std::ios::beg);
 
-  outer_page_table = new uint64_t[outer_page_table_size];
 
-  inner_page_table_size = inner_page_table_file.seekg(0, std::ios::end).tellg() / sizeof(uint64_t);
+  inner_page_table = std::make_shared<std::vector<uint64_t>>(inner_page_table_file.seekg(0, std::ios::end).tellg() / sizeof(uint64_t));
   inner_page_table_file.seekg(0, std::ios::beg);
 
-  inner_page_table = new uint64_t[inner_page_table_size];
-
-  outer_page_table_file.read(reinterpret_cast<char*>(outer_page_table), outer_page_table_size * sizeof(uint64_t));
-  inner_page_table_file.read(reinterpret_cast<char*>(inner_page_table), inner_page_table_size * sizeof(uint64_t));
+  outer_page_table_file.read(reinterpret_cast<char*>(outer_page_table->data()), outer_page_table->size() * sizeof(uint64_t));
+  inner_page_table_file.read(reinterpret_cast<char*>(inner_page_table->data()), inner_page_table->size() * sizeof(uint64_t));
 
   outer_page_table_file.close();
   inner_page_table_file.close();
@@ -59,8 +56,6 @@ EpollServer::EpollServer(uint16_t port, const std::string& file)
 
 EpollServer::~EpollServer()
 {
-  delete[] outer_page_table;
-  delete[] inner_page_table;
   close(server_listen_fd_);
   close(epoll_fd_);
   spdlog::info("Server ended");

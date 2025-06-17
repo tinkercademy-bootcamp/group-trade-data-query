@@ -28,11 +28,8 @@ private:
   int32_t server_listen_fd_;
   int32_t epoll_fd_;
 
-  uint64_t* outer_page_table;
-  uint64_t* inner_page_table;
-
-  uint32_t outer_page_table_size;
-  uint32_t inner_page_table_size;
+  std::shared_ptr<std::vector<uint64_t>> outer_page_table;
+  std::shared_ptr<std::vector<uint64_t>> inner_page_table;
 
   // std::mutex task_queue_mutex_;
   // std::queue<TradeDataQuery> task_queue_;
