@@ -59,6 +59,7 @@ public:
 
 private:
   std::ifstream data;  // File stream for reading trade data
+  std::ifstream price_prefix_sum_file;
   // Any Internal members can be added here
   // std::vector<TradeData> trades;
 };
