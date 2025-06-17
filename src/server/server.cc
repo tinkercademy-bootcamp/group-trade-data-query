@@ -43,7 +43,7 @@ void worker_thread_loop(TSQueue<WorkItem>& work_queue, TSQueue<ResultItem>& resu
             metric_list |= 1 << 2; // total quantity
         }
         // more metrics can be added here
-        metric_list = 7; // Assuming we want to compute all metrics (00000111), comment this line out later
+        // metric_list = 7; // Assuming we want to compute all metrics (00000111), comment this line out later
 
         result_item.res = exec.aggregator(metric_list, work.query);
 
