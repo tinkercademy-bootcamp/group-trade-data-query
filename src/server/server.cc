@@ -1,21 +1,15 @@
 #include "server.h"
 #include "../query_engine/query_engine.h"
-// #include "../../processed_data/preproc.cc"
 #include "../utils/helper/utils.h"
 #include "../utils/net/net.h"
 #include "../utils/query.h"
 #include "sender.h"
 #include <spdlog/spdlog.h>
-
-/////////////////
-
-std::vector<TradeData> execute_task(TradeDataQuery& query) {
-  // Dummy implementation: return an empty vector
-  spdlog::info("Query processed for TradeDataQuery id: {}", query.symbol_id);
-  return {};
-}
-
-/////////////////
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 constexpr int32_t MAX_EVENTS = 10;
 

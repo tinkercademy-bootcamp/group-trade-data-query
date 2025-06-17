@@ -33,7 +33,7 @@ private:
   void load_testcases(const std::string &path);
   void prepare_clients();
   void send_next_case(ClientState &c, const TestCase &tc);
-  void process_epoll_events();
+  void process_epoll_events(size_t &test_case_idx);
 
   void add_fd_to_epoll(int fd);
   void handle_readable(ClientState &c);
@@ -45,4 +45,5 @@ private:
   std::vector<TestCase> cases_;
   std::vector<ClientState> clients_;
   std::unordered_map<int, size_t> fd_to_idx_;
+  void run_wrapper();
 };
