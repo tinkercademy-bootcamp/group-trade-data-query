@@ -2,8 +2,9 @@
 
 ## Flamegraph generating script for performance test
 
-BIN=./build/server-bin                    # Adjust if your server binary is named differently
-DURATION=${1:-10}                         # Duration to run perf profiling
+BIN=./build/server-bin                    
+DURATION=${2:-10}                         # Duration to run perf profiling (default 10)
+CLIENTS=${1:-10}                          # Number of clients to simulate,default 10
 
 echo "Starting server under perf..."
 sudo perf record -F 997 -g -- "$BIN" &    # Start server with perf
@@ -12,14 +13,10 @@ echo "Server PID=$PID. Profiling for $DURATION seconds..."
 
 # Wait a bit to let server initialize
 sleep 4
-echo "Running performance tests..."
+echo "Running performance tests with $CLIENTS clients..."
 cd test/performance || exit 1
 
-if [[ "$*" == *"bigtest"* ]]; then
-   make run-perf-tests CLIENTS=20
-else
-    make
-fi
+make run-perf-tests CLIENTS="$CLIENTS"
 
 # Wait for remaining profiling time
 sleep "$DURATION"

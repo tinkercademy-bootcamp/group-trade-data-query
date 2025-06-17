@@ -117,10 +117,8 @@ flamegraph_setup: all
 	if [ ! -d external-tools/FlameGraph ]; then git clone https://github.com/brendangregg/FlameGraph.git external-tools/FlameGraph; fi
 	chmod +x flamegraph.sh
 
-smalltest: all flamegraph_setup
-	./flamegraph.sh
-bigtest: all flamegraph_setup
-	./flamegraph.sh bigtest
+sim_test: all flamegraph_setup
+	./flamegraph.sh $(CLIENTS) $(DURATION)
 
 clean:
 	rm -rf build

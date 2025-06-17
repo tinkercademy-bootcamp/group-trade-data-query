@@ -36,9 +36,9 @@ make processed_data
 ```
 After flamegraph setup, run
 ```
-make smalltest 
-make bigtest
+make sim_test CLIENTS=x DURATION=y 
 ```
+whose defaults are 10 clients and 10s each, if not specified.
 
 ## External Tools
 run `make libs` to install nlohmann (a test dependency)
