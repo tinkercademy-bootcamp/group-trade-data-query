@@ -102,7 +102,7 @@ int32_t main(int32_t argc, char* argv[]) {
     } else {
         // Each result set is 20 bytes (min/max price, mean price, total quantity)
         size_t set_size = 20; // Each result set is 20 bytes (10 + 5 + 5)
-        size_t num_sets = output.size() / set_size;
+        size_t num_sets = (output.size() + set_size - 1) / set_size; // Ensure we round up
 
 
         int8_t metric_list = 0;
