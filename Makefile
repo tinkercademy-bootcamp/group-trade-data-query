@@ -24,7 +24,7 @@ SERVER_HEADERS := $(shell find src/server -type f -name '*.h') $(shell find src/
 
 PROCESS_DATA := $(SRC_DIR)/process_data/process_data_main.cc
 
-all: processed_data build build/server-bin build/client-bin
+all: build build/server-bin build/client-bin
 
 build:
 	mkdir -p build

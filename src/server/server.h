@@ -17,14 +17,13 @@ void make_non_blocking(int32_t sock);
 
 class EpollServer {
  public:
-  EpollServer(uint16_t port, const std::string& file);
+  EpollServer(int32_t port, int32_t num_worker_threads, const std::string& file);
   ~EpollServer();
 
   void run();
 
 private:
   std::string file;
-  EpollServer(int32_t port, int32_t num_worker_threads, const std::string& file);
 
   sockaddr_in server_address_;
   int32_t server_listen_fd_;
@@ -36,7 +35,6 @@ private:
   void accept_connection();
   void add_to_epoll(int32_t sock);
 
-  void run();
   void add_to_epoll(int32_t sock, uint32_t events);
   void bind_server();
   std::queue<std::pair<int32_t, TradeDataQuery>> task_queue_;

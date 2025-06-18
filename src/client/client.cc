@@ -46,7 +46,7 @@ std::vector<T> client::Client::read_struct() {
   ssize_t n = recv(socket_, &count, sizeof(count), 0);
 
   helper::check_error(n < 0, "Failed reading the size.\n");
-
+  
   std::vector<T> output(count);
   for(int32_t i=0; i<count; i++) {
     n = recv(socket_, &(output[i]), sizeof(output[i]), 0);
