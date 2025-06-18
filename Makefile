@@ -1,6 +1,6 @@
 CXX := g++
-CXXFLAGS := -std=c++20
-CXX_DEBUG_FLAGS := -O3
+CXXFLAGS := -std=c++20 -Wall -Wextra -pedantic -fsanitize=address
+CXX_DEBUG_FLAGS := -g3 -ggdb3
 CXX_RELEASE_FLAGS := -O3
 TEST_FLAGS := -DTESTMODE
 
