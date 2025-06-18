@@ -107,12 +107,8 @@ std::vector<char> Query_engine::aggregator(int8_t chooser, const TradeDataQuery&
             break;
           }
           case 2: { // total quantity
-            Quantity total_qty = total_quantity_in_range(start_time, end_time);
-            {
-              const char* ptr = reinterpret_cast<const char*>(&total_qty.quantity);
-              res.insert(res.end(), ptr, ptr + sizeof(total_qty.quantity));
-              res.push_back(static_cast<char>(total_qty.quantity_exponent));
-            }
+            total_quantity_in_range(start_time, end_time, res);
+            
             break;
           }
         }
@@ -188,9 +184,10 @@ void Query_engine::min_max_price_in_range(
 
 }
 
-Quantity Query_engine::total_quantity_in_range(
+void Query_engine::total_quantity_in_range(
     uint64_t start_time,
-    uint64_t end_time)
+    uint64_t end_time,
+    std::vector<char> &res)
 {
     assert(end_time > start_time);
     TradeData trade;
@@ -246,7 +243,11 @@ Quantity Query_engine::total_quantity_in_range(
     }
 
     uint32_t mantissa = static_cast<uint32_t>(std::round(total_val));
-    return Quantity{ mantissa, exp };
+    {
+      const char* ptr = reinterpret_cast<const char*>(&mantissa);
+      res.insert(res.end(), ptr, ptr + sizeof(mantissa));
+      res.push_back(static_cast<char>(exp));
+    }
 }
 
 // Computes the volume‐weighted average price between start_time (inclusive)

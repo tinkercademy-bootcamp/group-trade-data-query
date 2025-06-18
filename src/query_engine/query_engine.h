@@ -43,9 +43,10 @@ public:
     uint64_t end_time, std::vector<char> &res)
   ;
 
-  Quantity total_quantity_in_range(
+  void total_quantity_in_range(
     uint64_t start_time,
-    uint64_t end_time)
+    uint64_t end_time,
+    std::vector<char> &res)
   ;
 
   void mean_price_in_range(
