@@ -96,28 +96,14 @@ std::vector<char> Query_engine::aggregator(int8_t chooser, const TradeDataQuery&
       if (chooser & (1 << i)){
         switch (i) {
           case 0: { // min and max price
-            auto [min_price, max_price] = min_max_price_in_range(start_time, end_time);
+            min_max_price_in_range(start_time, end_time, res);
             // append min_price price (4 bytes, little-endian)
-            {
-              const char* ptr = reinterpret_cast<const char*>(&min_price.price);
-              res.insert(res.end(), ptr, ptr + sizeof(min_price.price));
-              // append exponent (1 byte)
-              res.push_back(static_cast<char>(min_price.price_exponent));
-              // append max_price price (4 bytes)
-              ptr = reinterpret_cast<const char*>(&max_price.price);
-              res.insert(res.end(), ptr, ptr + sizeof(max_price.price));
-              // append exponent (1 byte)
-              res.push_back(static_cast<char>(max_price.price_exponent));
-            }
+            
             break;
           }
           case 1: { // mean price
-            Price mean_price = mean_price_in_range(start_time, end_time);
-            {
-              const char* ptr = reinterpret_cast<const char*>(&mean_price.price);
-              res.insert(res.end(), ptr, ptr + sizeof(mean_price.price));
-              res.push_back(static_cast<char>(mean_price.price_exponent));
-            }
+            mean_price_in_range(start_time, end_time, res);
+            
             break;
           }
           case 2: { // total quantity
@@ -136,9 +122,9 @@ std::vector<char> Query_engine::aggregator(int8_t chooser, const TradeDataQuery&
   return res;
 }
 
-std::pair<Price, Price> Query_engine::min_max_price_in_range(
+void Query_engine::min_max_price_in_range(
     uint64_t start_time,
-    uint64_t end_time)
+    uint64_t end_time, std::vector<char> &res)
 {
     assert(end_time > start_time);
     TradeData trade;
@@ -187,7 +173,19 @@ std::pair<Price, Price> Query_engine::min_max_price_in_range(
         first = false;
     }
 
-    return { min_p, max_p };
+    // append min_price price (4 bytes, little-endian)
+    {
+      const char* ptr = reinterpret_cast<const char*>(&min_p.price);
+      res.insert(res.end(), ptr, ptr + sizeof(min_p.price));
+      // append exponent (1 byte)
+      res.push_back(static_cast<char>(min_p.price_exponent));
+      // append max_price price (4 bytes)
+      ptr = reinterpret_cast<const char*>(&max_p.price);
+      res.insert(res.end(), ptr, ptr + sizeof(max_p.price));
+      // append exponent (1 byte)
+      res.push_back(static_cast<char>(max_p.price_exponent));
+    }
+
 }
 
 Quantity Query_engine::total_quantity_in_range(
@@ -253,9 +251,9 @@ Quantity Query_engine::total_quantity_in_range(
 
 // Computes the volume‐weighted average price between start_time (inclusive)
 // and end_time (exclusive). Returns the result as a packed `Price` struct.
-Price Query_engine::mean_price_in_range(
+void Query_engine::mean_price_in_range(
     uint64_t start_time,
-    uint64_t end_time)
+    uint64_t end_time, std::vector<char> &res)
 {
   assert(end_time > start_time);
 
@@ -263,7 +261,11 @@ Price Query_engine::mean_price_in_range(
   uint64_t right = file_lower_bound(end_time, left) - 1;
 
   if(left > right) {
-    return {0, 0};
+    uint32_t mantissa = 0;
+    int8_t exp = 0;
+    const char* ptr = reinterpret_cast<const char*>(&mantissa);
+                res.insert(res.end(), ptr, ptr + sizeof(mantissa));
+                res.push_back(static_cast<char>(exp));
   }
 
     // 4) Compute weighted mean
@@ -285,7 +287,9 @@ Price Query_engine::mean_price_in_range(
   }
 
   uint32_t mantissa = static_cast<uint32_t>(std::round(mean_val));
-  return Price{ mantissa, exp };
+  const char* ptr = reinterpret_cast<const char*>(&mantissa);
+              res.insert(res.end(), ptr, ptr + sizeof(mantissa));
+              res.push_back(static_cast<char>(exp));
 }
 
 

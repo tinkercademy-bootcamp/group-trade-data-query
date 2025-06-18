@@ -38,9 +38,9 @@ public:
 
   std::vector<char> aggregator(int8_t metric_list, const TradeDataQuery& query);
 
-  std::pair<Price, Price> min_max_price_in_range(
+  void min_max_price_in_range(
     uint64_t start_time,
-    uint64_t end_time)
+    uint64_t end_time, std::vector<char> &res)
   ;
 
   Quantity total_quantity_in_range(
@@ -48,9 +48,9 @@ public:
     uint64_t end_time)
   ;
 
-  Price mean_price_in_range(
+  void mean_price_in_range(
     uint64_t start_time,
-    uint64_t end_time)
+    uint64_t end_time, std::vector<char> &res)
   ;
 
   double read_price_prefix_sum(uint64_t ind);
